@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -20,7 +21,18 @@ namespace NKDiscordChatWidget.DiscordBot
         private static volatile int msBetweenPing = 10000;
         private static DateTime lastIncomingMessageTime = DateTime.MinValue;
         private static DateTime lastIncomingPingTime = DateTime.MinValue;
-        private static readonly List<EventGuildCreate> guilds = new List<EventGuildCreate>();
+
+        private static readonly ConcurrentDictionary<string, EventGuildCreate> guilds =
+            new ConcurrentDictionary<string, EventGuildCreate>();
+
+        private static readonly ConcurrentDictionary<string,
+            ConcurrentDictionary<string, EventGuildCreate.EventGuildCreate_Channel>> channels =
+            new ConcurrentDictionary<string, ConcurrentDictionary<string, EventGuildCreate.EventGuildCreate_Channel>>();
+
+        private static readonly ConcurrentDictionary<string,
+            ConcurrentDictionary<string, ConcurrentDictionary<string, EventMessageCreate>>> messages =
+            new ConcurrentDictionary<string,
+                ConcurrentDictionary<string, ConcurrentDictionary<string, EventMessageCreate>>>();
 
         public static async void StartTask()
         {
@@ -198,22 +210,49 @@ namespace NKDiscordChatWidget.DiscordBot
                     {
                         case "READY":
                         {
+                            // https://discordapp.com/developers/docs/topics/gateway#ready
                             sessionID = message.d.session_id;
                             JsonConvert.SerializeObject(message.d);
                             break;
                         }
                         case "GUILD_CREATE":
                         {
+                            // https://discordapp.com/developers/docs/topics/gateway#guild-create
                             var guild = JsonConvert.DeserializeObject<EventGuildCreate>(message.dAsString);
-                            guilds.Add(guild);
+                            guilds[guild.id] = guild;
+                            if (!channels.ContainsKey(guild.id))
+                            {
+                                channels[guild.id] =
+                                    new ConcurrentDictionary<string, EventGuildCreate.EventGuildCreate_Channel>();
+                            }
+
+                            foreach (var channel in guild.channels)
+                            {
+                                channels[guild.id][channel.id] = channel;
+                            }
+
                             break;
                         }
                         case "MESSAGE_CREATE":
-                        case "MESSAGE_UPDATE":
                         {
-                            var messageCreate = JsonConvert.DeserializeObject<EventMessageCreate>(message.dAsString);
-
                             // https://discordapp.com/developers/docs/topics/gateway#message-create
+                            // https://discordapp.com/developers/docs/resources/channel#message-object
+                            var messageCreate = JsonConvert.DeserializeObject<EventMessageCreate>(message.dAsString);
+                            if (!messages.ContainsKey(messageCreate.guild_id))
+                            {
+                                messages[messageCreate.guild_id] = new ConcurrentDictionary<string,
+                                    ConcurrentDictionary<string, EventMessageCreate>>();
+                            }
+
+                            if (!messages[messageCreate.guild_id].ContainsKey(messageCreate.channel_id))
+                            {
+                                messages[messageCreate.guild_id][messageCreate.channel_id] =
+                                    new ConcurrentDictionary<string, EventMessageCreate>();
+                            }
+
+                            messages[messageCreate.guild_id][messageCreate.channel_id][messageCreate.id] =
+                                messageCreate;
+
                             Console.WriteLine("channel_id {0} user {1} say: {2}",
                                 messageCreate.channel_id,
                                 messageCreate.author.username,
@@ -221,7 +260,71 @@ namespace NKDiscordChatWidget.DiscordBot
                             );
                             break;
                         }
-                        // @todo message delete
+                        case "MESSAGE_UPDATE":
+                        {
+                            // https://discordapp.com/developers/docs/topics/gateway#message-update
+                            // https://discordapp.com/developers/docs/resources/channel#message-object
+                            var messageUpdate = JsonConvert.DeserializeObject<EventMessageCreate>(message.dAsString);
+                            if (
+                                !messages.ContainsKey(messageUpdate.guild_id) ||
+                                !messages[messageUpdate.guild_id].ContainsKey(messageUpdate.channel_id) ||
+                                !messages[messageUpdate.guild_id][messageUpdate.channel_id]
+                                    .ContainsKey(messageUpdate.id)
+                            )
+                            {
+                                // Такого сообщения нет. Возможно, оно было создано раньше. Это не проблема 
+                                break;
+                            }
+
+                            var existedMessage =
+                                messages[messageUpdate.guild_id][messageUpdate.channel_id][messageUpdate.id];
+                            existedMessage.content = messageUpdate.content;
+                            existedMessage.edited_timestamp = messageUpdate.edited_timestamp;
+                            existedMessage.embeds = messageUpdate.embeds;
+                            existedMessage.attachments = messageUpdate.attachments;
+                            existedMessage.mention_roles = messageUpdate.mention_roles;
+                            existedMessage.mention_everyone = messageUpdate.mention_everyone;
+                            existedMessage.mentions = messageUpdate.mentions;
+                            existedMessage.pinned = messageUpdate.pinned;
+
+                            Console.WriteLine("channel_id {0} user {1} edited: {2}",
+                                messageUpdate.channel_id,
+                                messageUpdate.author.username,
+                                messageUpdate.content
+                            );
+                            break;
+                        }
+                        case "CHANNEL_CREATE":
+                        {
+                            // https://discordapp.com/developers/docs/topics/gateway#channel-create
+                            var messageChannelCreate =
+                                JsonConvert.DeserializeObject<EventGuildCreate.EventChannelCreate>(message.dAsString);
+                            if (!channels.ContainsKey(messageChannelCreate.guild_id))
+                            {
+                                channels[messageChannelCreate.guild_id] =
+                                    new ConcurrentDictionary<string, EventGuildCreate.EventGuildCreate_Channel>();
+                            }
+
+                            channels[messageChannelCreate.guild_id][messageChannelCreate.id] = messageChannelCreate;
+
+                            break;
+                        }
+                        case "MESSAGE_DELETE":
+                        {
+                            // https://discordapp.com/developers/docs/topics/gateway#message-delete
+                            if (
+                                !messages.ContainsKey(message.d.guild_id as string) ||
+                                !messages[message.d.guild_id as string].ContainsKey(message.d.channel_id as string)
+                            )
+                            {
+                                // Такого сообщения нет. Возможно, оно было создано раньше. Это не проблема 
+                                break;
+                            }
+
+                            messages[message.d.guild_id as string][message.d.channel_id as string]
+                                .TryRemove(message.d.id as string, out _);
+                            break;
+                        }
                     }
 
                     break;

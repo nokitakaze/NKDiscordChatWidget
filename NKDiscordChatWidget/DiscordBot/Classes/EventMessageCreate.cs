@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
@@ -30,6 +31,14 @@ namespace NKDiscordChatWidget.DiscordBot.Classes
         // https://discordapp.com/developers/docs/resources/channel#reaction-object
         public List<dynamic> reactions;
 
+        public DateTime timestampAsDT => DateTime.TryParse(this.timestamp, out var dt)
+            ? dt.ToUniversalTime()
+            : DateTime.MinValue;
+
+        public DateTime edited_timestampAsDT => DateTime.TryParse(this.edited_timestamp, out var dt)
+            ? dt.ToUniversalTime()
+            : DateTime.MinValue;
+
         // ReSharper disable once ClassNeverInstantiated.Global
         public class EventMessageCreate_Mention
         {
@@ -41,6 +50,9 @@ namespace NKDiscordChatWidget.DiscordBot.Classes
             public string avatar;
         }
 
+        /// <summary>
+        /// https://discordapp.com/developers/docs/resources/user#user-object
+        /// </summary>
         // ReSharper disable once ClassNeverInstantiated.Global
         public class EventMessageCreate_Author
         {
@@ -48,6 +60,12 @@ namespace NKDiscordChatWidget.DiscordBot.Classes
             public string id;
             public string discriminator;
             public string avatar;
+
+            public string avatarURL =>
+                string.Format("https://cdn.discordapp.com/avatars/{0}/{1}.png",
+                    this.id,
+                    this.avatar
+                );
         }
 
         // ReSharper disable once ClassNeverInstantiated.Global
@@ -61,6 +79,15 @@ namespace NKDiscordChatWidget.DiscordBot.Classes
             public string id;
             public string avatar;
             public string filename;
+
+            // @todo url
+            /*
+            public string avatarURL =>
+                string.Format("https://cdn.discordapp.com/avatars/{0}/{1}.png",
+                    this.id,
+                    this.avatar
+                );
+            */
         }
 
         /// <summary>

@@ -26,6 +26,11 @@ namespace NKDiscordChatWidget.DiscordBot.Classes
             public int? rate_limit_per_user;
         }
 
+        public class EventChannelCreate : EventGuildCreate_Channel
+        {
+            public string guild_id;
+        }
+
         public class EventGuildCreate_PermissionOverwrite
         {
             public string type;
