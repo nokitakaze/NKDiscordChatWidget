@@ -17,7 +17,7 @@ namespace NKDiscordChatWidget.WidgetServer
     {
         public Startup(IConfiguration configuration)
         {
-            if (string.IsNullOrEmpty(Global.options.GoogleAuthToken))
+            if (string.IsNullOrEmpty(Global.options.DiscordBotToken))
             {
                 throw new Exception("GoogleAuthToken is empty");
             }

@@ -7,7 +7,7 @@ namespace NKDiscordChatWidget.General
     public class Options
     {
         [Option('t', "discord-token", Required = true, HelpText = "Discord bot token")]
-        public string GoogleAuthToken { get; set; }
+        public string DiscordBotToken { get; set; }
 
         [Option('p', "port", Required = false, HelpText = "Port for local HTTP server", Default = 5050)]
         public int HttpPort { get; set; }

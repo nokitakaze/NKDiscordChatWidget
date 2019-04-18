@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
@@ -17,12 +19,13 @@ namespace NKDiscordChatWidget
             globalCancellationToken = new CancellationTokenSource();
             Global.globalCancellationToken = globalCancellationToken.Token;
 
+            var tasks = new List<Task>();
+
             try
             {
                 Parser.Default.ParseArguments<Options>(args)
                     .WithParsed(RunOptionsAndReturnExitCode);
-                // Task.Factory.StartNew(BackgroundUpdate.UpdateAllCounters, TaskCreationOptions.LongRunning);
-                // @todo Запускаем бота
+                Task.Factory.StartNew(DiscordBot.Bot.StartTask, TaskCreationOptions.LongRunning);
             }
             catch (Exception)
             {
@@ -34,6 +37,9 @@ namespace NKDiscordChatWidget
 
             // Тред отменили, закрываемся
             globalCancellationToken.Cancel();
+
+            // Ждём всех
+            Task.WaitAll(tasks.ToArray());
         }
 
         public static void RunOptionsAndReturnExitCode(object rawOptions)
