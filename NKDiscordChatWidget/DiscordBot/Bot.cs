@@ -22,15 +22,15 @@ namespace NKDiscordChatWidget.DiscordBot
         private static DateTime lastIncomingMessageTime = DateTime.MinValue;
         private static DateTime lastIncomingPingTime = DateTime.MinValue;
 
-        private static readonly ConcurrentDictionary<string, EventGuildCreate> guilds =
+        public static ConcurrentDictionary<string, EventGuildCreate> guilds { get; } =
             new ConcurrentDictionary<string, EventGuildCreate>();
 
-        private static readonly ConcurrentDictionary<string,
-            ConcurrentDictionary<string, EventGuildCreate.EventGuildCreate_Channel>> channels =
+        public static ConcurrentDictionary<string,
+            ConcurrentDictionary<string, EventGuildCreate.EventGuildCreate_Channel>> channels { get; } =
             new ConcurrentDictionary<string, ConcurrentDictionary<string, EventGuildCreate.EventGuildCreate_Channel>>();
 
-        private static readonly ConcurrentDictionary<string,
-            ConcurrentDictionary<string, ConcurrentDictionary<string, EventMessageCreate>>> messages =
+        public static ConcurrentDictionary<string,
+            ConcurrentDictionary<string, ConcurrentDictionary<string, EventMessageCreate>>> messages { get; } =
             new ConcurrentDictionary<string,
                 ConcurrentDictionary<string, ConcurrentDictionary<string, EventMessageCreate>>>();
 

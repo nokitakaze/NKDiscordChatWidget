@@ -1,14 +1,20 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
+using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
+using System.Web;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Newtonsoft.Json;
+using NKDiscordChatWidget.DiscordBot.Classes;
 using NKDiscordChatWidget.General;
 
 namespace NKDiscordChatWidget.WidgetServer
@@ -47,6 +53,67 @@ namespace NKDiscordChatWidget.WidgetServer
             {
                 // Главная
                 var html = File.ReadAllText(Options.WWWRoot + "/index.html");
+                string guildsHTML = "";
+                foreach (var (guildID, channels) in NKDiscordChatWidget.DiscordBot.Bot.channels)
+                {
+                    string guildHTML = "";
+                    var dics = new Dictionary<string, List<EventGuildCreate.EventGuildCreate_Channel>>();
+                    foreach (var channel in channels.Values)
+                    {
+                        if (channel.type == 0)
+                        {
+                            if (!dics.ContainsKey(channel.parent_id))
+                            {
+                                dics[channel.parent_id] = new List<EventGuildCreate.EventGuildCreate_Channel>();
+                            }
+
+                            dics[channel.parent_id].Add(channel);
+                        }
+                    }
+
+                    foreach (var (parentChannelId, localChannels) in dics)
+                    {
+                        guildHTML += string.Format("<li class='item'>{0}</li>",
+                            HttpUtility.HtmlEncode(channels[parentChannelId].name)
+                        );
+
+                        localChannels.Sort((a, b) =>
+                        {
+                            if (a.position == null)
+                            {
+                                return -1;
+                            }
+
+                            // ReSharper disable once ConvertIfStatementToReturnStatement
+                            if (b.position == null)
+                            {
+                                return 1;
+                            }
+
+                            return a.position.Value.CompareTo(b.position.Value);
+                        });
+
+                        foreach (var realChannel in localChannels.ToArray())
+                        {
+                            guildHTML += string.Format(
+                                "<li class='item-sub'><a href='/chat.cgi?guild={1}&channel={2}' target='_blank'>{0}</a></li>",
+                                HttpUtility.HtmlEncode(realChannel.name),
+                                guildID,
+                                realChannel.id
+                            );
+                        }
+                    }
+
+                    guildHTML = string.Format(
+                        "<div class='block-guild'><h2>{1}</h2><ul>{0}</ul></div>",
+                        guildHTML,
+                        HttpUtility.HtmlEncode(NKDiscordChatWidget.DiscordBot.Bot.guilds[guildID].name)
+                    );
+                    guildsHTML += guildHTML;
+                }
+
+                html = html.Replace("{#wait:guilds#}", guildsHTML);
+
                 httpContext.Response.ContentType = "text/html; charset=utf-8";
 
                 await httpContext.Response.WriteAsync(html);

@@ -1,0 +1,57 @@
+body {
+    background-color: #36393f;
+    font-family: "Whitney", Arial, sans-serif;
+    font-weight: 500;
+    letter-spacing: 0;
+}
+
+.block-guild {
+    background-color: #2f3136;
+    color: #72767d;
+
+    display: inline-block;
+    padding: 10px 30px 10px 10px;
+    float: left;
+}
+
+.block-guild h2 {
+    color: #f6f6f7;
+    margin: 0;
+}
+
+.block-guild ul {
+    padding-left: 0;
+    margin: 0;
+}
+
+.block-guild ul li.item {
+    list-style-type: none;
+    padding: 7px 0 3px 0;
+}
+
+.block-guild ul li.item-sub {
+    list-style-type: none;
+    color: #f6f6f7;
+}
+
+.block-guild ul li.item-sub a {
+    color: #f6f6f7;
+    padding-left: 30px;
+    text-decoration: none;
+}
+
+.main {
+    background-color: #36393f;
+}
+
+
+
+
+
+
+
+
+
+
+
+

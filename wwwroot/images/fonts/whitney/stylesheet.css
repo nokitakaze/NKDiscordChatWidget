@@ -1,0 +1,132 @@
+@font-face {
+    font-family: 'Whitney';
+    src: url('Whitney-Semibold.eot');
+    src: local('Whitney Semibold Regular'), local('Whitney-Semibold'),
+        url('Whitney-Semibold.eot?#iefix') format('embedded-opentype'),
+        url('Whitney-Semibold.woff') format('woff'),
+        url('Whitney-Semibold.ttf') format('truetype');
+    font-weight: 600;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Whitney';
+    src: url('Whitney-MediumItalic.eot');
+    src: local('Whitney-MediumItalic'),
+        url('Whitney-MediumItalic.eot?#iefix') format('embedded-opentype'),
+        url('Whitney-MediumItalic.woff') format('woff'),
+        url('Whitney-MediumItalic.ttf') format('truetype');
+    font-weight: 500;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Whitney';
+    src: url('Whitney-Medium.eot');
+    src: local('Whitney Medium Regular'), local('Whitney-Medium'),
+        url('Whitney-Medium.eot?#iefix') format('embedded-opentype'),
+        url('Whitney-Medium.woff') format('woff'),
+        url('Whitney-Medium.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Whitney Book';
+    src: url('Whitney-Book.eot');
+    src: local('Whitney Book Regular'), local('Whitney-Book'),
+        url('Whitney-Book.eot?#iefix') format('embedded-opentype'),
+        url('Whitney-Book.woff') format('woff'),
+        url('Whitney-Book.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Whitney Black';
+    src: url('Whitney-BlackItalic.eot');
+    src: local('Whitney-BlackItalic'),
+        url('Whitney-BlackItalic.eot?#iefix') format('embedded-opentype'),
+        url('Whitney-BlackItalic.woff') format('woff'),
+        url('Whitney-BlackItalic.ttf') format('truetype');
+    font-weight: 500;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Whitney Book';
+    src: url('Whitney-BookItalic.eot');
+    src: local('Whitney-BookItalic'),
+        url('Whitney-BookItalic.eot?#iefix') format('embedded-opentype'),
+        url('Whitney-BookItalic.woff') format('woff'),
+        url('Whitney-BookItalic.ttf') format('truetype');
+    font-weight: normal;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Whitney';
+    src: url('Whitney-BoldItalic.eot');
+    src: local('Whitney-BoldItalic'),
+        url('Whitney-BoldItalic.eot?#iefix') format('embedded-opentype'),
+        url('Whitney-BoldItalic.woff') format('woff'),
+        url('Whitney-BoldItalic.ttf') format('truetype');
+    font-weight: bold;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Whitney';
+    src: url('Whitney-Light.eot');
+    src: local('Whitney Light Regular'), local('Whitney-Light'),
+        url('Whitney-Light.eot?#iefix') format('embedded-opentype'),
+        url('Whitney-Light.woff') format('woff'),
+        url('Whitney-Light.ttf') format('truetype');
+    font-weight: 300;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Whitney';
+    src: url('Whitney-Bold.eot');
+    src: local('Whitney Bold Regular'), local('Whitney-Bold'),
+        url('Whitney-Bold.eot?#iefix') format('embedded-opentype'),
+        url('Whitney-Bold.woff') format('woff'),
+        url('Whitney-Bold.ttf') format('truetype');
+    font-weight: bold;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Whitney Black';
+    src: url('Whitney-Black.eot');
+    src: local('Whitney-Black'),
+        url('Whitney-Black.eot?#iefix') format('embedded-opentype'),
+        url('Whitney-Black.woff') format('woff'),
+        url('Whitney-Black.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Whitney';
+    src: url('Whitney-SemiboldItalic.eot');
+    src: local('Whitney-SemiboldItalic'),
+        url('Whitney-SemiboldItalic.eot?#iefix') format('embedded-opentype'),
+        url('Whitney-SemiboldItalic.woff') format('woff'),
+        url('Whitney-SemiboldItalic.ttf') format('truetype');
+    font-weight: 600;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Whitney';
+    src: url('Whitney-LightItalic.eot');
+    src: local('Whitney-LightItalic'),
+        url('Whitney-LightItalic.eot?#iefix') format('embedded-opentype'),
+        url('Whitney-LightItalic.woff') format('woff'),
+        url('Whitney-LightItalic.ttf') format('truetype');
+    font-weight: 300;
+    font-style: italic;
+}
+

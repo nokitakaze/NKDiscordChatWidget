@@ -24,6 +24,11 @@ namespace NKDiscordChatWidget.DiscordBot.Classes
             public string name;
             public string last_message_id;
             public int? rate_limit_per_user;
+
+            public override string ToString()
+            {
+                return string.Format("[{0}]", this.name);
+            }
         }
 
         public class EventChannelCreate : EventGuildCreate_Channel
