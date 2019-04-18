@@ -4,6 +4,9 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace NKDiscordChatWidget.DiscordBot.Classes
 {
+    /// <summary>
+    /// https://discordapp.com/developers/docs/resources/channel#message-object
+    /// </summary>
     // ReSharper disable once ClassNeverInstantiated.Global
     [SuppressMessage("ReSharper", "UnassignedField.Global")]
     public class EventMessageCreate
@@ -16,10 +19,13 @@ namespace NKDiscordChatWidget.DiscordBot.Classes
         public string nonce;
         public List<EventMessageCreate_Mention> mentions;
         public List<dynamic> mention_roles;
-        public Dictionary<string, object> member;
+        public EventMessageCreate_Member member;
 
-        // https://discordapp.com/developers/docs/resources/channel#embed-object
+        /// <summary>
+        /// https://discordapp.com/developers/docs/resources/channel#embed-object
+        /// </summary>
         public List<EventMessageCreate_Embed> embeds;
+
         public bool mention_everyone;
         public string id;
         public string content;
@@ -28,7 +34,9 @@ namespace NKDiscordChatWidget.DiscordBot.Classes
         public List<EventMessageCreate_Attachment> attachments;
         public string guild_id;
 
-        // https://discordapp.com/developers/docs/resources/channel#reaction-object
+        /// <summary>
+        /// https://discordapp.com/developers/docs/resources/channel#reaction-object
+        /// </summary>
         public List<dynamic> reactions;
 
         public DateTime timestampAsDT => DateTime.TryParse(this.timestamp, out var dt)
@@ -88,6 +96,20 @@ namespace NKDiscordChatWidget.DiscordBot.Classes
                     this.avatar
                 );
             */
+        }
+
+        /// <summary>
+        /// https://discordapp.com/developers/docs/resources/guild#guild-member-object
+        /// </summary>
+        // ReSharper disable once ClassNeverInstantiated.Global
+        public class EventMessageCreate_Member
+        {
+            public dynamic user;
+            public string nick;
+            public List<string> roles;
+            public string joined_at;
+            public bool deaf;
+            public bool mute;
         }
 
         /// <summary>

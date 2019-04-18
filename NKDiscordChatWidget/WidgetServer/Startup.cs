@@ -1,14 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -93,21 +90,17 @@ namespace NKDiscordChatWidget.WidgetServer
                             return a.position.Value.CompareTo(b.position.Value);
                         });
 
-                        foreach (var realChannel in localChannels.ToArray())
-                        {
-                            guildHTML += string.Format(
+                        guildHTML = localChannels.Aggregate(guildHTML, (current, realChannel) =>
+                            current + string.Format(
                                 "<li class='item-sub'><a href='/chat.cgi?guild={1}&channel={2}' target='_blank'>{0}</a></li>",
-                                HttpUtility.HtmlEncode(realChannel.name),
-                                guildID,
-                                realChannel.id
-                            );
-                        }
+                                HttpUtility.HtmlEncode(realChannel.name), guildID, realChannel.id));
                     }
 
                     guildHTML = string.Format(
-                        "<div class='block-guild'><h2>{1}</h2><ul>{0}</ul></div>",
+                        "<div class='block-guild'><h2>{1} <img src='{2}'></h2><ul>{0}</ul></div>",
                         guildHTML,
-                        HttpUtility.HtmlEncode(NKDiscordChatWidget.DiscordBot.Bot.guilds[guildID].name)
+                        HttpUtility.HtmlEncode(NKDiscordChatWidget.DiscordBot.Bot.guilds[guildID].name),
+                        HttpUtility.HtmlEncode(NKDiscordChatWidget.DiscordBot.Bot.guilds[guildID].GetIconURL)
                     );
                     guildsHTML += guildHTML;
                 }
@@ -127,6 +120,19 @@ namespace NKDiscordChatWidget.WidgetServer
                 return;
             }
 
+            if (path == "/chat.cgi")
+            {
+                var html = File.ReadAllText(Options.WWWRoot + "/chat.html");
+                await httpContext.Response.WriteAsync(html);
+                return;
+            }
+
+            if (path == "/chat_ajax.cgi")
+            {
+                await GetMessages(httpContext);
+                return;
+            }
+
             /*
             if (path == "/current.cgi")
             {
@@ -140,45 +146,98 @@ namespace NKDiscordChatWidget.WidgetServer
             await httpContext.Response.WriteAsync("Not found");
         }
 
-        /*
-        private static async void GetCurrentCgi(Microsoft.AspNetCore.Http.HttpContext httpContext)
+        private static async Task GetMessages(Microsoft.AspNetCore.Http.HttpContext httpContext)
         {
-            string id;
+            string guildID, channelID;
             {
-                if (!httpContext.Request.Query.TryGetValue("id", out var id1))
+                if (!httpContext.Request.Query.TryGetValue("guild", out var a1))
                 {
                     httpContext.Response.StatusCode = 400;
                     await httpContext.Response.WriteAsync("Bad request");
                     return;
                 }
 
-                id = id1.ToString();
+                guildID = a1.ToString();
+
+                if (!httpContext.Request.Query.TryGetValue("channel", out var a2))
+                {
+                    httpContext.Response.StatusCode = 400;
+                    await httpContext.Response.WriteAsync("Bad request");
+                    return;
+                }
+
+                channelID = a2.ToString();
             }
 
-            httpContext.Response.ContentType = "application/json; charset=utf-8";
-            BackgroundUpdate.AddYouTubeChannel(id);
-            var dictionary = BackgroundUpdate.YouTubeValues;
-            if (dictionary.ContainsKey(id))
+            httpContext.Response.ContentType = "application/javascript; charset=utf-8";
+            var outerMessages = new List<AnswerMessage>();
+            var answer = new Dictionary<string, object>()
             {
-                await httpContext.Response.WriteAsync(JsonConvert.SerializeObject(
-                    new Dictionary<string, object>()
-                    {
-                        ["status"] = "ok",
-                        ["sub_status"] = "exist",
-                        ["value"] = dictionary[id],
-                    }));
-            }
-            else
+                ["messages"] = outerMessages,
+            };
+            if (!NKDiscordChatWidget.DiscordBot.Bot.messages.ContainsKey(guildID))
             {
-                await httpContext.Response.WriteAsync(JsonConvert.SerializeObject(
-                    new Dictionary<string, object>()
-                    {
-                        ["status"] = "ok",
-                        ["sub_status"] = "new",
-                        ["value"] = null,
-                    }));
+                await httpContext.Response.WriteAsync(JsonConvert.SerializeObject(answer));
+                return;
             }
+
+            if (!NKDiscordChatWidget.DiscordBot.Bot.messages[guildID].ContainsKey(channelID))
+            {
+                await httpContext.Response.WriteAsync(JsonConvert.SerializeObject(answer));
+                return;
+            }
+
+            var messages = NKDiscordChatWidget.DiscordBot.Bot.messages[guildID][channelID].Values.ToList();
+            messages.Sort((a, b) => a.timestampAsDT.CompareTo(b.timestampAsDT));
+            foreach (var message in messages)
+            {
+                var htmlContent = HttpUtility.HtmlEncode(message.content);
+                string nickColor = "inherit";
+                {
+                    var roleID = message.member.roles.First();
+                    EventGuildCreate.EventGuildCreate_Role role = NKDiscordChatWidget.DiscordBot.Bot.guilds[guildID].roles
+                        .FirstOrDefault(t => t.id == roleID);
+                    if (role != null)
+                    {
+                        nickColor = role.color.ToString("X");
+                        nickColor = "#" + nickColor.PadLeft(6, '0');
+                    }
+                }
+
+                var html = string.Format(
+                    "<div class='user'><img src='{0}' alt='{1}'></div>" +
+                    "<div class='content'><span class='content-user' style='color: {4};'>{1}</span><span class='content-time'>{3:hh:mm:ss dd.MM.yyyy}</span>" +
+                    "<div class='content-message'>{2}</div>" +
+                    "</div><hr>",
+                    HttpUtility.HtmlEncode(message.author.avatarURL),
+                    HttpUtility.HtmlEncode(message.author.username),
+                    htmlContent,
+                    message.timestampAsDT,
+                    nickColor
+                );
+
+                var timeUpdate = (message.edited_timestampAsDT != DateTime.MinValue)
+                    ? message.edited_timestampAsDT
+                    : message.timestampAsDT;
+
+                outerMessages.Add(new AnswerMessage()
+                {
+                    id = message.id,
+                    time = ((DateTimeOffset) message.timestampAsDT).ToUnixTimeMilliseconds() * 0.001d,
+                    time_update = ((DateTimeOffset) timeUpdate).ToUnixTimeMilliseconds() * 0.001d,
+                    html = html,
+                });
+            }
+
+            await httpContext.Response.WriteAsync(JsonConvert.SerializeObject(answer));
         }
-        */
+
+        protected class AnswerMessage
+        {
+            public string id;
+            public double time;
+            public double time_update;
+            public string html;
+        }
     }
 }

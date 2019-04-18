@@ -44,7 +44,53 @@ body {
     background-color: #36393f;
 }
 
+#chat {
 
+}
+
+#chat .message {
+    clear: both;
+    padding: 20px 20px 0 20px;
+}
+
+#chat .message > hr {
+    border: none;
+    clear: both;
+    border-bottom: 1px solid transparent;
+    /* margin: 20px 20px -20px; */
+    border-bottom-color: hsla(0, 0%, 100%, .04);
+}
+
+#chat .message > .user {
+    float: left;
+}
+
+#chat .message > .user img {
+    width: 50px
+}
+
+#chat .message .content {
+    float: left;
+    padding-left: 20px;
+    color: #f6f6f7;
+}
+
+#chat .message .content .content-user {
+    display: inline-block;
+    font-weight: 500;
+}
+
+#chat .message .content .content-time {
+    display: inline-block;
+    padding-left: 20px;
+    color: hsla(0, 0%, 100%, .2);
+    font-size: 0.75rem;
+    font-weight: 400;
+}
+
+#chat .message .content .content-message {
+    color: #dcddde;
+}
 
 
 
