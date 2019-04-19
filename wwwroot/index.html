@@ -18,10 +18,8 @@
                 options.each(function () {
                     let option_name = $(this).attr('data-option');
 
-                    if ((this.nodeName.toLowerCase() === 'div') && ($(this).attr('type') === 'checkbox')) {
-                        if (this.checked) {
-                            link_postfix += '&option_' + option_name + '=1';
-                        }
+                    if ((this.nodeName.toLowerCase() === 'input') && ($(this).attr('type') === 'checkbox')) {
+                        link_postfix += '&option_' + option_name + '=' + (this.checked ? '1' : '0');
                     } else if (this.nodeName.toLowerCase() === 'select') {
                         link_postfix += '&option_' + option_name + '=' + this.value;
                     }
@@ -29,7 +27,7 @@
 
                 $('.item-sub a').each(function () {
                     let url = '/chat.cgi?guild=' + $(this).attr('data-guild-id') +
-                        '&channel=' + $(this).attr('data-guild-id') + link_postfix;
+                        '&channel=' + $(this).attr('data-channel-id') + link_postfix;
                     $(this).attr('href', url);
                 });
             });
@@ -62,7 +60,7 @@
         </div>
         <div>
             <label for="option_message_relative_reaction">Реакции с этого сервера для сообщений</label>
-            <select id="option_message_relative_reaction" data-option="link_preview">
+            <select id="option_message_relative_reaction" data-option="message_relative_reaction">
                 <option value="0">Показывать</option>
                 <option value="1">Размазывать</option>
                 <option value="2">Не подгружать</option>
@@ -70,7 +68,7 @@
         </div>
         <div>
             <label for="option_message_stranger_reaction">Реакции с чужого сервера для сообщений</label>
-            <select id="option_message_stranger_reaction" data-option="link_preview">
+            <select id="option_message_stranger_reaction" data-option="message_stranger_reaction">
                 <option value="0">Показывать</option>
                 <option value="1">Размазывать</option>
                 <option value="2">Не подгружать</option>

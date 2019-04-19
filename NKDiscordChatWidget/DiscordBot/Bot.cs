@@ -312,17 +312,18 @@ namespace NKDiscordChatWidget.DiscordBot
                         case "MESSAGE_DELETE":
                         {
                             // https://discordapp.com/developers/docs/topics/gateway#message-delete
+                            var guild_id = message.d.guild_id.ToString() as string;
+                            var channel_id = message.d.channel_id.ToString() as string;
                             if (
-                                !messages.ContainsKey(message.d.guild_id as string) ||
-                                !messages[message.d.guild_id as string].ContainsKey(message.d.channel_id as string)
+                                messages.ContainsKey(guild_id) &&
+                                messages[guild_id].ContainsKey(channel_id)
                             )
                             {
-                                // Такого сообщения нет. Возможно, оно было создано раньше. Это не проблема 
-                                break;
+                                var messageId = message.d.id.ToString() as string;
+                                messages[guild_id][channel_id].TryRemove(messageId, out _);
                             }
 
-                            messages[message.d.guild_id as string][message.d.channel_id as string]
-                                .TryRemove(message.d.id as string, out _);
+                            // Такого сообщения нет. Возможно, оно было создано раньше. Это не проблема 
                             break;
                         }
                     }

@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using Microsoft.AspNetCore.Builder;
@@ -136,15 +138,6 @@ namespace NKDiscordChatWidget.WidgetServer
                 return;
             }
 
-            /*
-            if (path == "/current.cgi")
-            {
-                // Текущее значение
-                GetCurrentCgi(httpContext);
-                return;
-            }
-            */
-
             httpContext.Response.StatusCode = 404;
             await httpContext.Response.WriteAsync("Not found");
         }
@@ -222,16 +215,27 @@ namespace NKDiscordChatWidget.WidgetServer
             for (var i = 0; i < messages.Count; i++)
             {
                 var message = messages[i];
-                string htmlContent = string.Format("<div class='content-message'>{0}</div>",
-                    DrawMessageContent(message, chatOption));
+                string htmlContent = string.Format("<div class='content-message' data-id='{1}'>{0}</div>",
+                    DrawMessageContent(message, chatOption), message.id);
+                var timeUpdate = (message.edited_timestampAsDT != DateTime.MinValue)
+                    ? message.edited_timestampAsDT
+                    : message.timestampAsDT;
                 if (chatOption.merge_same_user_messages)
                 {
                     for (var j = i + 1; j < messages.Count; j++)
                     {
                         if (messages[j].author.id == messages[i].author.id)
                         {
-                            htmlContent += string.Format("<div class='content-message'>{0}</div>",
-                                DrawMessageContent(message, chatOption));
+                            var localTimeUpdate = (messages[j].edited_timestampAsDT != DateTime.MinValue)
+                                ? messages[j].edited_timestampAsDT
+                                : messages[j].timestampAsDT;
+                            if (localTimeUpdate > timeUpdate)
+                            {
+                                timeUpdate = localTimeUpdate;
+                            }
+
+                            htmlContent += string.Format("<div class='content-message' data-id='{1}'>{0}</div>",
+                                DrawMessageContent(messages[j], chatOption), messages[j].id);
                             i = j;
                         }
                     }
@@ -249,6 +253,13 @@ namespace NKDiscordChatWidget.WidgetServer
                     }
                 }
 
+                string sha1hash;
+                using (var hashA = SHA1.Create())
+                {
+                    byte[] data = hashA.ComputeHash(Encoding.UTF8.GetBytes(htmlContent));
+                    sha1hash = data.Aggregate("", (current, c) => current + c.ToString("x2"));
+                }
+
                 var html = string.Format(
                     "<div class='user'><img src='{0}' alt='{1}'></div>" +
                     "<div class='content'><span class='content-user' style='color: {4};'>{1}</span><span class='content-time'>{3:hh:mm:ss dd.MM.yyyy}</span>" +
@@ -261,16 +272,13 @@ namespace NKDiscordChatWidget.WidgetServer
                     nickColor
                 );
 
-                var timeUpdate = (message.edited_timestampAsDT != DateTime.MinValue)
-                    ? message.edited_timestampAsDT
-                    : message.timestampAsDT;
-
                 outerMessages.Add(new AnswerMessage()
                 {
                     id = message.id,
                     time = ((DateTimeOffset) message.timestampAsDT).ToUnixTimeMilliseconds() * 0.001d,
                     time_update = ((DateTimeOffset) timeUpdate).ToUnixTimeMilliseconds() * 0.001d,
                     html = html,
+                    hash = sha1hash,
                 });
             }
 
@@ -296,6 +304,7 @@ namespace NKDiscordChatWidget.WidgetServer
             public double time;
             public double time_update;
             public string html;
+            public string hash;
         }
 
         protected class ChatDrawOption

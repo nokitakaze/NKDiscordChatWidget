@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Logging;
 using NKDiscordChatWidget.General;
 
 namespace NKDiscordChatWidget
@@ -53,6 +53,11 @@ namespace NKDiscordChatWidget
                 .UseKestrel()
                 .UseStartup<WidgetServer.Startup>()
                 .UseUrls(string.Format("http://localhost:{0}", Global.options.HttpPort))
+                .ConfigureLogging(logging =>
+                {
+                    // https://docs.microsoft.com/ru-ru/aspnet/core/fundamentals/logging/?view=aspnetcore-2.2
+                    logging.ClearProviders();
+                })
                 .Build();
     }
 }

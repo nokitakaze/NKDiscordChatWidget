@@ -37,14 +37,14 @@ namespace NKDiscordChatWidget.General
 
         private static string RenderLineAsHTML(string text)
         {
-            var links = new Dictionary<string, string>();
+            var waitDictionary = new Dictionary<string, string>();
             var rnd = new Random();
 
             // Format
             text = rWithoutMark.Replace(text, m1 =>
             {
                 var wait = string.Format("{1}wait:{0:F5}{2}", rnd.NextDouble(), '{', '}');
-                links[wait] = string.Format("<div class='without-mark'>{0}</div>",
+                waitDictionary[wait] = string.Format("<div class='without-mark'>{0}</div>",
                     HttpUtility.HtmlEncode(m1.Groups[1].Value)
                 );
 
@@ -60,7 +60,7 @@ namespace NKDiscordChatWidget.General
                     m1.Groups[3].Value,
                     m1.Groups[4].Value
                 );
-                links[wait] = string.Format("<a href='{0}' target='_blank'>{1}</a>",
+                waitDictionary[wait] = string.Format("<a href='{0}' target='_blank'>{1}</a>",
                     HttpUtility.HtmlEncode(url),
                     HttpUtility.HtmlEncode(url)
                 );
@@ -71,24 +71,16 @@ namespace NKDiscordChatWidget.General
             // mark
             // Strong
             string html = rBold.Replace(text,
-                m1 =>
-                {
-                    // ReSharper disable once ConvertToLambdaExpression
-                    return string.Format("<strong>{0}</strong>", m1.Groups[1].Value);
-                });
+                m1 => string.Format("<strong>{0}</strong>", m1.Groups[1].Value));
 
             // Em
             html = rEm.Replace(html,
-                m1 =>
-                {
-                    // ReSharper disable once ConvertToLambdaExpression
-                    return string.Format("<em>{0}</em>", m1.Groups[1].Value);
-                });
+                m1 => string.Format("<em>{0}</em>", m1.Groups[1].Value));
 
             // wait
-            foreach (var (wait, replace) in links)
+            foreach (var (wait, replace) in waitDictionary)
             {
-                text = text.Replace(wait, replace);
+                html = html.Replace(wait, replace);
             }
 
             return html;

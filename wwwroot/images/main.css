@@ -93,6 +93,10 @@ body {
     color: #dcddde;
 }
 
+#chat .message .content .content-message a {
+    color: #0096cf;
+}
+
 .chat_options label {
     color: #dcddde;
 }
