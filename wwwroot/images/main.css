@@ -145,7 +145,18 @@ body {
     filter: blur(5px);
 }
 
+#chat .message .content .content-message .attachment-block {
+    padding: 10px 0;
+}
 
+#chat .message .content .content-message .attachment-block .attachment {
+    margin-right: 20px;
+}
+
+#chat .message .content .content-message .attachment-block .attachment img {
+    max-width: 90%;
+    max-height: 200px;
+}
 
 
 

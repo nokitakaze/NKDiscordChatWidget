@@ -321,7 +321,24 @@ namespace NKDiscordChatWidget.WidgetServer
             string html = string.Format("<div class='content-direct {1}'>{0}</div>",
                 directContentHTML, containOnlyUnicodeAndSpace ? "only-emoji" : "");
 
-            // @todo attachments
+            // attachments
+            if (message.attachments.Any())
+            {
+                string attachmentHTML = "";
+
+                foreach (var attachment in message.attachments)
+                {
+                    attachmentHTML += string.Format(
+                        "<div class='attachment'><img src='{0}' data-width='{1}' data-height='{2}'></div>",
+                        HttpUtility.HtmlEncode(attachment.proxy_url),
+                        attachment.width,
+                        attachment.height
+                    );
+                }
+
+                html += string.Format("<div class='attachment-block'>{0}</div>", attachmentHTML);
+            }
+
             // @todo preview
             // Реакции
             if (
