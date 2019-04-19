@@ -13,6 +13,7 @@ body {
     display: inline-block;
     padding: 10px 30px 10px 10px;
     float: left;
+    margin-left: 20px;
 }
 
 .block-guild h2 {
@@ -127,6 +128,10 @@ body {
     filter: blur(5px);
 }
 
+#chat .message .content .content-message .content-direct {
+    word-break: break-all;
+}
+
 #chat .message .content .content-message .content-direct .without-mark {
 }
 
@@ -157,12 +162,14 @@ body {
     margin-right: 20px;
 }
 
-#chat .message .content .content-message .attachment-block .attachment img {
+#chat .message .content .content-message .attachment-block .attachment img,
+#chat .message .content .content-message .attachment-block .attachment video {
     max-width: 90%;
     max-height: 200px;
 }
 
-#chat .message .content .content-message .attachment-block .attachment.blur img {
+#chat .message .content .content-message .attachment-block .attachment.blur img,
+#chat .message .content .content-message .attachment-block .attachment.blur video {
     filter: blur(20px);
 }
 

@@ -141,6 +141,9 @@ namespace NKDiscordChatWidget.DiscordBot.Classes
                 );
         }
 
+        /// <summary>
+        /// https://discordapp.com/developers/docs/resources/channel#attachment-object
+        /// </summary>
         // ReSharper disable once ClassNeverInstantiated.Global
         public class EventMessageCreate_Attachment
         {

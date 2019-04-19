@@ -261,10 +261,12 @@ namespace NKDiscordChatWidget.WidgetServer
                 }
 
                 string nickColor = "inherit";
+                if (message.member.roles.Any())
                 {
                     var roleID = message.member.roles.First();
-                    EventGuildCreate.EventGuildCreate_Role role = NKDiscordChatWidget.DiscordBot.Bot.guilds[guildID]
-                        .roles.FirstOrDefault(t => t.id == roleID);
+                    var roles = NKDiscordChatWidget.DiscordBot.Bot.guilds[guildID].roles.ToList();
+                    roles.Sort((a, b) => a.position.CompareTo(b.position));
+                    EventGuildCreate.EventGuildCreate_Role role = roles.FirstOrDefault(t => t.id == roleID);
                     if (role != null)
                     {
                         nickColor = role.color.ToString("X");
@@ -316,33 +318,57 @@ namespace NKDiscordChatWidget.WidgetServer
             bool containOnlyUnicodeAndSpace;
             {
                 var rEmojiWithinText = new Regex(@"<\:(.+?)\:([0-9]+)>", RegexOptions.Compiled);
-                var longs = Utf8ToUnicode.ToUnicode(rEmojiWithinText.Replace(message.content, ""));
+                long[] longs = { };
+                if (message.content != null)
+                {
+                    longs = Utf8ToUnicode.ToUnicode(rEmojiWithinText.Replace(message.content, ""));
+                }
+
                 containOnlyUnicodeAndSpace = Utf8ToUnicode.ContainOnlyUnicodeAndSpace(longs);
             }
             string html = string.Format("<div class='content-direct {1}'>{0}</div>",
                 directContentHTML, containOnlyUnicodeAndSpace ? "only-emoji" : "");
 
             // attachments
-            if (message.attachments.Any() && (chatOption.attachments != 2))
+            if ((message.attachments != null) && message.attachments.Any() && (chatOption.attachments != 2))
             {
                 string attachmentHTML = "";
 
                 foreach (var attachment in message.attachments)
                 {
-                    attachmentHTML += string.Format(
-                        "<div class='attachment {3}'><img src='{0}' data-width='{1}' data-height='{2}'></div>",
-                        HttpUtility.HtmlEncode(attachment.proxy_url),
-                        attachment.width,
-                        attachment.height,
-                        (chatOption.attachments == 1) ? "blur" : ""
-                    );
+                    var extension = attachment.filename.Split('.').Last().ToLowerInvariant();
+                    // ReSharper disable once SwitchStatementMissingSomeCases
+                    switch (extension)
+                    {
+                        case "mp4":
+                        case "webm":
+                            attachmentHTML += string.Format(
+                                "<div class='attachment {1}'><video><source src='{0}'></video></div>",
+                                HttpUtility.HtmlEncode(attachment.proxy_url),
+                                (chatOption.attachments == 1) ? "blur" : ""
+                            );
+                            break;
+                        case "jpeg":
+                        case "jpg":
+                        case "bmp":
+                        case "gif":
+                        case "png":
+                            attachmentHTML += string.Format(
+                                "<div class='attachment {3}'><img src='{0}' data-width='{1}' data-height='{2}'></div>",
+                                HttpUtility.HtmlEncode(attachment.proxy_url),
+                                attachment.width,
+                                attachment.height,
+                                (chatOption.attachments == 1) ? "blur" : ""
+                            );
+                            break;
+                    }
                 }
 
                 html += string.Format("<div class='attachment-block'>{0}</div>", attachmentHTML);
             }
 
             // Preview
-            if (message.embeds.Any() && (chatOption.link_preview != 2))
+            if ((message.embeds != null) && message.embeds.Any() && (chatOption.link_preview != 2))
             {
                 string previewHTML = "";
 
@@ -389,7 +415,7 @@ namespace NKDiscordChatWidget.WidgetServer
 
             // Реакции
             if (
-                message.reactions.Any() &&
+                (message.reactions != null) && message.reactions.Any() &&
                 ((chatOption.message_relative_reaction != 2) || (chatOption.message_stranger_reaction != 2))
             )
             {
