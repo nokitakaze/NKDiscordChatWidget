@@ -50,6 +50,23 @@ $(document).ready(function () {
                         .html(message.html);
                     chatBlock[0].appendChild(d);
                 }
+
+                // Стираем удалённые сообщения
+                {
+                    let existed = new Set();
+                    for (let id of answer.existedID) {
+                        existed.add(id);
+                    }
+
+                    chatBlock.find('> .message').each(function () {
+                        let id = $(this).attr('data-id');
+                        if (!existed.has(id)) {
+                            $(this).remove();
+                        }
+                    });
+
+                    // hint: Подсообщения удаляются сами, со стороны сервера
+                }
             },
         });
     }, 100);

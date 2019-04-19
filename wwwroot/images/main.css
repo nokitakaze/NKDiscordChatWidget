@@ -58,7 +58,7 @@ body {
     border: none;
     clear: both;
     border-bottom: 1px solid transparent;
-    /* margin: 20px 20px -20px; */
+    margin-top: 20px;
     border-bottom-color: hsla(0, 0%, 100%, .04);
 }
 
@@ -93,7 +93,7 @@ body {
     color: #dcddde;
 }
 
-#chat .message .content .content-message a {
+#chat .message .content .content-message .content-direct a {
     color: #0096cf;
 }
 
@@ -101,7 +101,49 @@ body {
     color: #dcddde;
 }
 
+#chat .message .content .content-message .content-reaction {
+    margin-top: 8px;
+}
 
+#chat .message .content .content-message .content-reaction .emoji {
+    padding: 3px 5px;
+    border-radius: 3px;
+    display: inline-block;
+    margin-right: 3px;
+    background: rgba(92, 106, 158, .3);
+}
+
+#chat .message .content .content-message .content-reaction .emoji .count {
+    display: inline-block;
+    margin: 0 5px;
+    color: #7289da;
+}
+
+#chat .message .content .content-message .content-reaction .emoji img {
+    width: 17px;
+}
+
+#chat .message .content .content-message .content-reaction .emoji.blur img {
+    filter: blur(5px);
+}
+
+#chat .message .content .content-message .content-direct .without-mark {
+}
+
+#chat .message .content .content-message .content-direct .emoji {
+}
+
+#chat .message .content .content-message .content-direct.only-emoji {
+    font-size: 28px;
+}
+
+#chat .message .content .content-message .content-direct .emoji img {
+    height: 17px;
+}
+
+#chat .message .content .content-message .content-direct .emoji.blur img {
+    filter: blur(5px);
+}
 
 
 

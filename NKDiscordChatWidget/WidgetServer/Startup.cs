@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
 using Microsoft.AspNetCore.Builder;
@@ -190,13 +191,25 @@ namespace NKDiscordChatWidget.WidgetServer
                 {
                     chatOption.message_stranger_reaction = int.Parse(s.ToString());
                 }
+
+                if (httpContext.Request.Query.TryGetValue("option_emoji_relative", out s))
+                {
+                    chatOption.emoji_relative = int.Parse(s.ToString());
+                }
+
+                if (httpContext.Request.Query.TryGetValue("option_emoji_stranger", out s))
+                {
+                    chatOption.emoji_stranger = int.Parse(s.ToString());
+                }
             }
 
             httpContext.Response.ContentType = "application/javascript; charset=utf-8";
             var outerMessages = new List<AnswerMessage>();
+            var existedMessageIDs = new HashSet<string>();
             var answer = new Dictionary<string, object>()
             {
                 ["messages"] = outerMessages,
+                ["existedID"] = existedMessageIDs,
             };
             if (!NKDiscordChatWidget.DiscordBot.Bot.messages.ContainsKey(guildID))
             {
@@ -212,6 +225,11 @@ namespace NKDiscordChatWidget.WidgetServer
 
             var messages = NKDiscordChatWidget.DiscordBot.Bot.messages[guildID][channelID].Values.ToList();
             messages.Sort((a, b) => a.timestampAsDT.CompareTo(b.timestampAsDT));
+            for (var i = Math.Max(messages.Count - 1000, 0); i < messages.Count; i++)
+            {
+                existedMessageIDs.Add(messages[i].id);
+            }
+
             for (var i = 0; i < messages.Count; i++)
             {
                 var message = messages[i];
@@ -264,7 +282,7 @@ namespace NKDiscordChatWidget.WidgetServer
                     "<div class='user'><img src='{0}' alt='{1}'></div>" +
                     "<div class='content'><span class='content-user' style='color: {4};'>{1}</span><span class='content-time'>{3:hh:mm:ss dd.MM.yyyy}</span>" +
                     "{2}" +
-                    "</div><hr>",
+                    "</div><div style='clear: both;'></div><hr>",
                     HttpUtility.HtmlEncode(message.author.avatarURL),
                     HttpUtility.HtmlEncode(message.author.username),
                     htmlContent,
@@ -287,12 +305,67 @@ namespace NKDiscordChatWidget.WidgetServer
 
         private static string DrawMessageContent(EventMessageCreate message, ChatDrawOption chatOption)
         {
+            var guildID = message.guild_id;
+            var guild = NKDiscordChatWidget.DiscordBot.Bot.guilds[guildID];
+            var thisGuildEmojis = new HashSet<string>(guild.emojis.Select(emoji => emoji.id).ToList());
+
             // Основной текст
-            string html = NKDiscordChatWidget.General.MessageMark.RenderAsHTML(message.content);
+            string directContentHTML = NKDiscordChatWidget.General.MessageMark.RenderAsHTML(
+                message.content, chatOption, guildID);
+            bool containOnlyUnicodeAndSpace;
+            {
+                var rEmojiWithinText = new Regex(@"<\:(.+?)\:([0-9]+)>", RegexOptions.Compiled);
+                var longs = Utf8ToUnicode.ToUnicode(rEmojiWithinText.Replace(message.content, ""));
+                containOnlyUnicodeAndSpace = Utf8ToUnicode.ContainOnlyUnicodeAndSpace(longs);
+            }
+            string html = string.Format("<div class='content-direct {1}'>{0}</div>",
+                directContentHTML, containOnlyUnicodeAndSpace ? "only-emoji" : "");
 
             // @todo attachments
             // @todo preview
-            // @todo реакции
+            // Реакции
+            if (
+                message.reactions.Any() &&
+                ((chatOption.message_relative_reaction != 2) || (chatOption.message_stranger_reaction != 2))
+            )
+            {
+                // Реакции
+                var reactionHTMLs = new List<string>();
+                foreach (var reaction in message.reactions)
+                {
+                    bool isRelative = ((reaction.emoji.id == null) || thisGuildEmojis.Contains(reaction.emoji.id));
+                    int emojiShow = isRelative
+                        ? chatOption.message_relative_reaction
+                        : chatOption.message_stranger_reaction;
+                    if (emojiShow == 2)
+                    {
+                        continue;
+                    }
+
+                    if (reaction.emoji.id != null)
+                    {
+                        reactionHTMLs.Add(string.Format(
+                            "<div class='emoji {2}'><img src='{0}' alt=':{1}:'><span class='count'>{3}</span></div>",
+                            HttpUtility.HtmlEncode(reaction.emoji.URL),
+                            HttpUtility.HtmlEncode(reaction.emoji.name),
+                            (emojiShow == 1) ? "blur" : "",
+                            reaction.count
+                        ));
+                    }
+                    else
+                    {
+                        reactionHTMLs.Add(string.Format(
+                            "<div class='emoji {1}'>{0}<span class='count'>{2}</span></div>",
+                            HttpUtility.HtmlEncode(reaction.emoji.name),
+                            (emojiShow == 1) ? "blur" : "",
+                            reaction.count
+                        ));
+                    }
+                }
+
+                var s = reactionHTMLs.Aggregate("", (current, s1) => current + s1);
+                html += string.Format("<div class='content-reaction'>{0}</div>", s);
+            }
 
             return html;
         }
@@ -304,15 +377,6 @@ namespace NKDiscordChatWidget.WidgetServer
             public double time_update;
             public string html;
             public string hash;
-        }
-
-        protected class ChatDrawOption
-        {
-            public bool merge_same_user_messages;
-            public int attachments;
-            public int link_preview;
-            public int message_relative_reaction;
-            public int message_stranger_reaction;
         }
     }
 }

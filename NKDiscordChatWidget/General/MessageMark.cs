@@ -8,11 +8,13 @@ namespace NKDiscordChatWidget.General
 {
     public static class MessageMark
     {
-        public static string RenderAsHTML(string text)
+        public static string RenderAsHTML(string text, ChatDrawOption chatOption, string guildID)
         {
             return text
                 .Split("\n")
-                .Aggregate("", (current, line) => current + RenderLineAsHTML(line.TrimEnd('\r')));
+                .Aggregate("", (current, line) =>
+                    current + string.Format("<div>{0}</div>",
+                        RenderLineAsHTML(line.TrimEnd('\r'), chatOption, guildID)));
         }
 
         private static readonly Regex rLink = new Regex(
@@ -22,6 +24,11 @@ namespace NKDiscordChatWidget.General
 
         private static readonly Regex rWithoutMark = new Regex(
             @"`(.+?)`",
+            RegexOptions.Compiled
+        );
+
+        private static readonly Regex rEmojiWithinText = new Regex(
+            @"<\:(.+?)\:([0-9]+)>",
             RegexOptions.Compiled
         );
 
@@ -35,7 +42,7 @@ namespace NKDiscordChatWidget.General
             RegexOptions.Compiled
         );
 
-        private static string RenderLineAsHTML(string text)
+        private static string RenderLineAsHTML(string text, ChatDrawOption chatOption, string guildID)
         {
             var waitDictionary = new Dictionary<string, string>();
             var rnd = new Random();
@@ -44,7 +51,7 @@ namespace NKDiscordChatWidget.General
             text = rWithoutMark.Replace(text, m1 =>
             {
                 var wait = string.Format("{1}wait:{0:F5}{2}", rnd.NextDouble(), '{', '}');
-                waitDictionary[wait] = string.Format("<div class='without-mark'>{0}</div>",
+                waitDictionary[wait] = string.Format("<span class='without-mark'>{0}</span>",
                     HttpUtility.HtmlEncode(m1.Groups[1].Value)
                 );
 
@@ -66,6 +73,34 @@ namespace NKDiscordChatWidget.General
                 );
 
                 return m1.Groups[1].Value + wait;
+            });
+
+            // Emoji
+            var thisGuildEmojis = new HashSet<string>();
+            var guild = NKDiscordChatWidget.DiscordBot.Bot.guilds[guildID];
+            foreach (var emoji in guild.emojis)
+            {
+                thisGuildEmojis.Add(emoji.id);
+            }
+
+            text = rEmojiWithinText.Replace(text, m1 =>
+            {
+                string emojiID = m1.Groups[2].Value;
+                bool isRelative = thisGuildEmojis.Contains(emojiID);
+                int emojiShow = isRelative ? chatOption.emoji_relative : chatOption.emoji_stranger;
+                if (emojiShow == 2)
+                {
+                    return "  ";
+                }
+
+                var wait = string.Format("{1}wait:{0:F5}{2}", rnd.NextDouble(), '{', '}');
+                var url = string.Format("https://cdn.discordapp.com/emojis/{0}.png", emojiID);
+
+                waitDictionary[wait] = string.Format("<span class='emoji {2}'><img src='{0}' alt=':{1}:'></span>",
+                    HttpUtility.HtmlEncode(url), HttpUtility.HtmlEncode(m1.Groups[1].Value),
+                    (emojiShow == 1) ? "blur" : "");
+
+                return wait;
             });
 
             // mark
