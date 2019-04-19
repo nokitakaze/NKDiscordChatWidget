@@ -238,6 +238,7 @@ namespace NKDiscordChatWidget.DiscordBot
                             // https://discordapp.com/developers/docs/topics/gateway#message-create
                             // https://discordapp.com/developers/docs/resources/channel#message-object
                             var messageCreate = JsonConvert.DeserializeObject<EventMessageCreate>(message.dAsString);
+                            messageCreate.FixUp();
                             if (!messages.ContainsKey(messageCreate.guild_id))
                             {
                                 messages[messageCreate.guild_id] = new ConcurrentDictionary<string,
@@ -326,6 +327,43 @@ namespace NKDiscordChatWidget.DiscordBot
                             // Такого сообщения нет. Возможно, оно было создано раньше. Это не проблема 
                             break;
                         }
+                        case "MESSAGE_REACTION_ADD":
+                        {
+                            // https://discordapp.com/developers/docs/topics/gateway#message-reaction-add
+                            var reaction = JsonConvert.DeserializeObject<Reaction>(message.dAsString);
+                            if (
+                                !messages.ContainsKey(reaction.guild_id) ||
+                                !messages[reaction.guild_id].ContainsKey(reaction.channel_id) ||
+                                !messages[reaction.guild_id][reaction.channel_id].ContainsKey(reaction.message_id)
+                            )
+                            {
+                                break;
+                            }
+
+                            messages[reaction.guild_id][reaction.channel_id][reaction.message_id]
+                                .AddReaction(reaction);
+
+                            break;
+                        }
+                        case "MESSAGE_REACTION_REMOVE":
+                        {
+                            // https://discordapp.com/developers/docs/topics/gateway#message-reaction-remove
+                            var reaction = JsonConvert.DeserializeObject<Reaction>(message.dAsString);
+                            if (
+                                !messages.ContainsKey(reaction.guild_id) ||
+                                !messages[reaction.guild_id].ContainsKey(reaction.channel_id) ||
+                                !messages[reaction.guild_id][reaction.channel_id].ContainsKey(reaction.message_id)
+                            )
+                            {
+                                break;
+                            }
+
+                            messages[reaction.guild_id][reaction.channel_id][reaction.message_id]
+                                .RemoveReaction(reaction);
+
+                            break;
+                        }
+                        // @todo GUILD_EMOJIS_UPDATE
                     }
 
                     break;

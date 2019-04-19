@@ -287,10 +287,9 @@ namespace NKDiscordChatWidget.WidgetServer
 
         private static string DrawMessageContent(EventMessageCreate message, ChatDrawOption chatOption)
         {
+            // Основной текст
             string html = NKDiscordChatWidget.General.MessageMark.RenderAsHTML(message.content);
-            // @todo
 
-            // @todo content
             // @todo attachments
             // @todo preview
             // @todo реакции

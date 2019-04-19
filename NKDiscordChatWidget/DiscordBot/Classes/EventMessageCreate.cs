@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 namespace NKDiscordChatWidget.DiscordBot.Classes
 {
@@ -37,7 +38,7 @@ namespace NKDiscordChatWidget.DiscordBot.Classes
         /// <summary>
         /// https://discordapp.com/developers/docs/resources/channel#reaction-object
         /// </summary>
-        public List<dynamic> reactions;
+        public List<EventMessageCreate_Reaction> reactions;
 
         public DateTime timestampAsDT => DateTime.TryParse(this.timestamp, out var dt)
             ? dt.ToUniversalTime()
@@ -46,6 +47,70 @@ namespace NKDiscordChatWidget.DiscordBot.Classes
         public DateTime edited_timestampAsDT => DateTime.TryParse(this.edited_timestamp, out var dt)
             ? dt.ToUniversalTime()
             : DateTime.MinValue;
+
+        public void FixUp()
+        {
+            if (this.reactions == null)
+            {
+                this.reactions = new List<EventMessageCreate_Reaction>();
+            }
+
+            foreach (var reaction in this.reactions)
+            {
+                reaction.__count_offset = reaction.count;
+            }
+        }
+
+        public void AddReaction(Reaction reaction)
+        {
+            EventMessageCreate_Reaction foundReaction = this.reactions
+                .FirstOrDefault(existReaction => existReaction.emoji.IsEqual(reaction.emoji));
+
+            if (foundReaction == null)
+            {
+                foundReaction = new EventMessageCreate_Reaction
+                {
+                    __count_offset = 0, count = 0, emoji = reaction.emoji, me = false,
+                };
+                this.reactions.Add(foundReaction);
+            }
+
+            bool found = foundReaction.userID.Any(userId => userId == reaction.user_id);
+
+            if (!found)
+            {
+                foundReaction.count++;
+                foundReaction.userID.Add(reaction.user_id);
+            }
+        }
+
+        public void RemoveReaction(Reaction reaction)
+        {
+            EventMessageCreate_Reaction foundReaction = this.reactions
+                .FirstOrDefault(existReaction => existReaction.emoji.IsEqual(reaction.emoji));
+
+            if (foundReaction == null)
+            {
+                return;
+            }
+
+            foundReaction.count = Math.Max(foundReaction.count - 1, 0);
+            bool found = foundReaction.userID.Any(userId => userId == reaction.user_id);
+
+            if (found)
+            {
+                foundReaction.userID.Remove(reaction.user_id);
+            }
+            else
+            {
+                foundReaction.__count_offset--;
+            }
+
+            if (foundReaction.count == 0)
+            {
+                this.reactions.Remove(foundReaction);
+            }
+        }
 
         // ReSharper disable once ClassNeverInstantiated.Global
         public class EventMessageCreate_Mention
@@ -173,6 +238,19 @@ namespace NKDiscordChatWidget.DiscordBot.Classes
             public string name;
             public string icon_url;
             public string proxy_icon_url;
+        }
+
+        /// <summary>
+        /// https://discordapp.com/developers/docs/resources/channel#reaction-object
+        /// </summary>
+        public class EventMessageCreate_Reaction
+        {
+            public int __count_offset;
+            public readonly List<string> userID = new List<string>();
+
+            public int count;
+            public bool me;
+            public NKDiscordChatWidget.DiscordBot.Classes.Emoji emoji;
         }
     }
 }

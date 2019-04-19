@@ -17,6 +17,7 @@ namespace NKDiscordChatWidget.DiscordBot.Classes
         public List<EventGuildCreate_Channel> channels;
         public List<EventGuildCreate_PermissionOverwrite> permission_overwrites;
         public List<EventGuildCreate_Role> roles;
+        public List<NKDiscordChatWidget.DiscordBot.Classes.Emoji> emojis;
 
         public string GetIconURL => string.Format("https://cdn.discordapp.com/icons/{0}/{1}.png", this.id, this.icon);
 
