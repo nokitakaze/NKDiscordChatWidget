@@ -158,6 +158,58 @@ body {
     max-height: 200px;
 }
 
+#chat .message .content .content-message .attachment-block .attachment.blur img {
+    filter: blur(20px);
+}
 
+#chat .message .content .content-message .embed-block {
+    padding: 10px 0;
+}
 
+#chat .message .content .content-message .embed-block .embed {
+    margin: 0 20px 10px 0;
+    width: 90%;
+    max-width: 500px;
+    display: flex;
+}
+
+#chat .message .content .content-message .embed-block .embed .embed-pill {
+    display: inline-block;
+    background-color: red;
+    border-radius: 3px 0 0 3px;
+    width: 4px;
+    flex-shrink: 0;
+}
+
+#chat .message .content .content-message .embed-block .embed .embed-content {
+    display: inline-block;
+    padding: 10px;
+    border-radius: 0 3px 3px 0;
+
+    border: 1px solid rgba(46, 48, 54, .6);
+    background-color: rgba(46, 48, 54, .3);
+}
+
+#chat .message .content .content-message .embed-block .embed .embed-content .provider {
+    color: #87909c;
+}
+
+#chat .message .content .content-message .embed-block .embed .embed-content .author {
+    color: white;
+}
+
+#chat .message .content .content-message .embed-block .embed .embed-content .title {
+    color: #0096cf;
+}
+
+#chat .message .content .content-message .embed-block .embed .embed-content .preview {
+}
+
+#chat .message .content .content-message .embed-block .embed .embed-content .preview img {
+    max-height: 200px;
+}
+
+#chat .message .content .content-message .embed-block .embed.blur .embed-content .preview img {
+    filter: blur(20px);
+}
 

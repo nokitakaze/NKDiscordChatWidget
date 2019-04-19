@@ -10,6 +10,12 @@ namespace NKDiscordChatWidget.General
     {
         public static string RenderAsHTML(string text, ChatDrawOption chatOption, string guildID)
         {
+            // ReSharper disable once UseNullPropagation
+            if (text == null)
+            {
+                return null;
+            }
+
             return text
                 .Split("\n")
                 .Aggregate("", (current, line) =>
@@ -18,8 +24,8 @@ namespace NKDiscordChatWidget.General
         }
 
         private static readonly Regex rLink = new Regex(
-            @"(^|\W)([a-z]+)://([a-z0-9.-]+)([a-z0-9/%().+-]+)?",
-            RegexOptions.Compiled
+            @"(^|\W)([a-z]+)://([a-z0-9.-]+)([a-z0-9/%().+&=-]+)?(\?[a-z0-9/%().+&=-]*)?",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase
         );
 
         private static readonly Regex rWithoutMark = new Regex(
@@ -62,10 +68,11 @@ namespace NKDiscordChatWidget.General
             text = rLink.Replace(text, m1 =>
             {
                 var wait = string.Format("{1}wait:{0:F5}{2}", rnd.NextDouble(), '{', '}');
-                var url = string.Format("{0}://{1}{2}",
+                var url = string.Format("{0}://{1}{2}{3}",
                     m1.Groups[2].Value,
                     m1.Groups[3].Value,
-                    m1.Groups[4].Value
+                    m1.Groups[4].Value,
+                    m1.Groups[5].Value
                 );
                 waitDictionary[wait] = string.Format("<a href='{0}' target='_blank'>{1}</a>",
                     HttpUtility.HtmlEncode(url),

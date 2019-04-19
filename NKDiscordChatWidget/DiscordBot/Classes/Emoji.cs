@@ -26,5 +26,10 @@ namespace NKDiscordChatWidget.DiscordBot.Classes
 
             return (other.id == this.id);
         }
+
+        public override string ToString()
+        {
+            return id ?? this.name;
+        }
     }
 }

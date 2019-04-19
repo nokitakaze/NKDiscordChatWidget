@@ -67,6 +67,10 @@ $(document).ready(function () {
 
                     // hint: Подсообщения удаляются сами, со стороны сервера
                 }
+
+                //
+                window.scrollY = document.body.scrollHeight;
+                window.scrollTo(0, document.body.scrollHeight);
             },
         });
     }, 100);

@@ -42,6 +42,7 @@ namespace NKDiscordChatWidget.WidgetServer
                 FileProvider = new PhysicalFileProvider(Path.Combine(Options.WWWRoot, "images")),
                 RequestPath = "/images"
             });
+            app.UseDeveloperExceptionPage();
 
             app.Run(Request);
         }
@@ -322,24 +323,70 @@ namespace NKDiscordChatWidget.WidgetServer
                 directContentHTML, containOnlyUnicodeAndSpace ? "only-emoji" : "");
 
             // attachments
-            if (message.attachments.Any())
+            if (message.attachments.Any() && (chatOption.attachments != 2))
             {
                 string attachmentHTML = "";
 
                 foreach (var attachment in message.attachments)
                 {
                     attachmentHTML += string.Format(
-                        "<div class='attachment'><img src='{0}' data-width='{1}' data-height='{2}'></div>",
+                        "<div class='attachment {3}'><img src='{0}' data-width='{1}' data-height='{2}'></div>",
                         HttpUtility.HtmlEncode(attachment.proxy_url),
                         attachment.width,
-                        attachment.height
+                        attachment.height,
+                        (chatOption.attachments == 1) ? "blur" : ""
                     );
                 }
 
                 html += string.Format("<div class='attachment-block'>{0}</div>", attachmentHTML);
             }
 
-            // @todo preview
+            // Preview
+            if (message.embeds.Any() && (chatOption.link_preview != 2))
+            {
+                string previewHTML = "";
+
+                foreach (var embed in message.embeds)
+                {
+                    var subHTML = "";
+                    if (embed.provider != null)
+                    {
+                        subHTML += string.Format("<div class='provider'>{0}</div>",
+                            HttpUtility.HtmlEncode(embed.provider.name));
+                    }
+
+                    if (embed.author != null)
+                    {
+                        subHTML += string.Format("<div class='author'>{0}</div>",
+                            HttpUtility.HtmlEncode(embed.author.name));
+                    }
+
+                    subHTML += string.Format("<div class='title'>{0}</div>",
+                        HttpUtility.HtmlEncode(embed.title));
+
+                    if (embed.thumbnail != null)
+                    {
+                        subHTML += string.Format("<div class='preview'><img src='{0}' alt='{1}'></div>",
+                            HttpUtility.HtmlEncode(embed.thumbnail.proxy_url),
+                            HttpUtility.HtmlEncode("Превью для «" + embed.title + "»")
+                        );
+                    }
+
+                    var nickColor = embed.color.ToString("X");
+                    nickColor = "#" + nickColor.PadLeft(6, '0');
+
+                    previewHTML += string.Format(
+                        "<div class='embed {2}'><div class='embed-pill' style='background-color: {1};'></div>" +
+                        "<div class='embed-content'>{0}</div></div>",
+                        subHTML,
+                        nickColor,
+                        (chatOption.link_preview == 1) ? "blur" : ""
+                    );
+                }
+
+                html += string.Format("<div class='embed-block'>{0}</div>", previewHTML);
+            }
+
             // Реакции
             if (
                 message.reactions.Any() &&

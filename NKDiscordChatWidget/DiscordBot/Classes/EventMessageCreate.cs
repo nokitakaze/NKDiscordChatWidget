@@ -161,6 +161,11 @@ namespace NKDiscordChatWidget.DiscordBot.Classes
                     this.avatar
                 );
             */
+
+            public override string ToString()
+            {
+                return this.id + " / " + this.url;
+            }
         }
 
         /// <summary>
@@ -175,6 +180,11 @@ namespace NKDiscordChatWidget.DiscordBot.Classes
             public string joined_at;
             public bool deaf;
             public bool mute;
+
+            public override string ToString()
+            {
+                return this.nick;
+            }
         }
 
         /// <summary>
@@ -192,6 +202,11 @@ namespace NKDiscordChatWidget.DiscordBot.Classes
             public Embed_Provider provider;
             public Embed_Thumbnail thumbnail;
             public Embed_Video video;
+
+            public override string ToString()
+            {
+                return this.title;
+            }
         }
 
         /// <summary>
@@ -204,6 +219,11 @@ namespace NKDiscordChatWidget.DiscordBot.Classes
             public string proxy_url;
             public int width;
             public int height;
+
+            public override string ToString()
+            {
+                return this.proxy_url;
+            }
         }
 
         /// <summary>
@@ -216,6 +236,11 @@ namespace NKDiscordChatWidget.DiscordBot.Classes
             public string proxy_url;
             public int width;
             public int height;
+
+            public override string ToString()
+            {
+                return this.proxy_url;
+            }
         }
 
         /// <summary>
@@ -226,6 +251,11 @@ namespace NKDiscordChatWidget.DiscordBot.Classes
         {
             public string url;
             public string name;
+
+            public override string ToString()
+            {
+                return this.name;
+            }
         }
 
         /// <summary>
@@ -238,6 +268,11 @@ namespace NKDiscordChatWidget.DiscordBot.Classes
             public string name;
             public string icon_url;
             public string proxy_icon_url;
+
+            public override string ToString()
+            {
+                return this.name;
+            }
         }
 
         /// <summary>
@@ -251,6 +286,11 @@ namespace NKDiscordChatWidget.DiscordBot.Classes
             public int count;
             public bool me;
             public NKDiscordChatWidget.DiscordBot.Classes.Emoji emoji;
+
+            public override string ToString()
+            {
+                return emoji.ToString();
+            }
         }
     }
 }

@@ -92,7 +92,7 @@ namespace NKDiscordChatWidget.General
                 if ((b & 0b1111_1110) == 0b1111_1100)
                 {
                     // @todo не хватает байт
-                    long L = (b & 0b0000_0011) << 30;
+                    long L = (b & 0b0000_0001) << 30;
                     long L1 = (utf8[i + 1] & 0b0011_1111) << 24;
                     long L2 = (utf8[i + 2] & 0b0011_1111) << 18;
                     long L3 = (utf8[i + 3] & 0b0011_1111) << 12;
