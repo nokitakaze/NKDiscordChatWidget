@@ -3,6 +3,7 @@ body {
     font-family: "Whitney", Arial, sans-serif;
     font-weight: 500;
     letter-spacing: 0;
+    color: #f6f6f7;
 }
 
 .block-guild {
@@ -92,7 +93,9 @@ body {
     color: #dcddde;
 }
 
-
+.chat_options label {
+    color: #dcddde;
+}
 
 
 

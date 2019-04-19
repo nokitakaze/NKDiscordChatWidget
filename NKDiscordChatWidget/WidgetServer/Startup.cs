@@ -22,7 +22,7 @@ namespace NKDiscordChatWidget.WidgetServer
         {
             if (string.IsNullOrEmpty(Global.options.DiscordBotToken))
             {
-                throw new Exception("GoogleAuthToken is empty");
+                throw new Exception("DiscordBotToken is empty");
             }
         }
 
@@ -32,6 +32,7 @@ namespace NKDiscordChatWidget.WidgetServer
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
+            // Можно решить это через nginx
             Console.WriteLine("WWWRoot: {0}", Options.WWWRoot);
             app.UseStaticFiles(new StaticFileOptions
             {
@@ -54,21 +55,22 @@ namespace NKDiscordChatWidget.WidgetServer
                 foreach (var (guildID, channels) in NKDiscordChatWidget.DiscordBot.Bot.channels)
                 {
                     string guildHTML = "";
-                    var dics = new Dictionary<string, List<EventGuildCreate.EventGuildCreate_Channel>>();
+                    var channelsByGroup = new Dictionary<string, List<EventGuildCreate.EventGuildCreate_Channel>>();
                     foreach (var channel in channels.Values)
                     {
                         if (channel.type == 0)
                         {
-                            if (!dics.ContainsKey(channel.parent_id))
+                            if (!channelsByGroup.ContainsKey(channel.parent_id))
                             {
-                                dics[channel.parent_id] = new List<EventGuildCreate.EventGuildCreate_Channel>();
+                                channelsByGroup[channel.parent_id] =
+                                    new List<EventGuildCreate.EventGuildCreate_Channel>();
                             }
 
-                            dics[channel.parent_id].Add(channel);
+                            channelsByGroup[channel.parent_id].Add(channel);
                         }
                     }
 
-                    foreach (var (parentChannelId, localChannels) in dics)
+                    foreach (var (parentChannelId, localChannels) in channelsByGroup)
                     {
                         guildHTML += string.Format("<li class='item'>{0}</li>",
                             HttpUtility.HtmlEncode(channels[parentChannelId].name)
@@ -92,12 +94,13 @@ namespace NKDiscordChatWidget.WidgetServer
 
                         guildHTML = localChannels.Aggregate(guildHTML, (current, realChannel) =>
                             current + string.Format(
-                                "<li class='item-sub'><a href='/chat.cgi?guild={1}&channel={2}' target='_blank'>{0}</a></li>",
+                                "<li class='item-sub'><a href='/chat.cgi?guild={1}&channel={2}' " +
+                                "data-guild-id='{1}' data-channel-id='{2}' target='_blank'>{0}</a></li>",
                                 HttpUtility.HtmlEncode(realChannel.name), guildID, realChannel.id));
                     }
 
                     guildHTML = string.Format(
-                        "<div class='block-guild'><h2>{1} <img src='{2}'></h2><ul>{0}</ul></div>",
+                        "<div class='block-guild'><h2><img src='{2}'> {1}</h2><ul>{0}</ul></div>",
                         guildHTML,
                         HttpUtility.HtmlEncode(NKDiscordChatWidget.DiscordBot.Bot.guilds[guildID].name),
                         HttpUtility.HtmlEncode(NKDiscordChatWidget.DiscordBot.Bot.guilds[guildID].GetIconURL)
@@ -168,6 +171,33 @@ namespace NKDiscordChatWidget.WidgetServer
 
                 channelID = a2.ToString();
             }
+            var chatOption = new ChatDrawOption();
+            {
+                if (httpContext.Request.Query.TryGetValue("option_merge_same_user_messages", out var s))
+                {
+                    chatOption.merge_same_user_messages = (int.Parse(s.ToString()) == 1);
+                }
+
+                if (httpContext.Request.Query.TryGetValue("option_attachments", out s))
+                {
+                    chatOption.attachments = int.Parse(s.ToString());
+                }
+
+                if (httpContext.Request.Query.TryGetValue("option_link_preview", out s))
+                {
+                    chatOption.link_preview = int.Parse(s.ToString());
+                }
+
+                if (httpContext.Request.Query.TryGetValue("option_message_relative_reaction", out s))
+                {
+                    chatOption.message_relative_reaction = int.Parse(s.ToString());
+                }
+
+                if (httpContext.Request.Query.TryGetValue("option_message_stranger_reaction", out s))
+                {
+                    chatOption.message_stranger_reaction = int.Parse(s.ToString());
+                }
+            }
 
             httpContext.Response.ContentType = "application/javascript; charset=utf-8";
             var outerMessages = new List<AnswerMessage>();
@@ -189,14 +219,29 @@ namespace NKDiscordChatWidget.WidgetServer
 
             var messages = NKDiscordChatWidget.DiscordBot.Bot.messages[guildID][channelID].Values.ToList();
             messages.Sort((a, b) => a.timestampAsDT.CompareTo(b.timestampAsDT));
-            foreach (var message in messages)
+            for (var i = 0; i < messages.Count; i++)
             {
-                var htmlContent = HttpUtility.HtmlEncode(message.content);
+                var message = messages[i];
+                string htmlContent = string.Format("<div class='content-message'>{0}</div>",
+                    DrawMessageContent(message, chatOption));
+                if (chatOption.merge_same_user_messages)
+                {
+                    for (var j = i + 1; j < messages.Count; j++)
+                    {
+                        if (messages[j].author.id == messages[i].author.id)
+                        {
+                            htmlContent += string.Format("<div class='content-message'>{0}</div>",
+                                DrawMessageContent(message, chatOption));
+                            i = j;
+                        }
+                    }
+                }
+
                 string nickColor = "inherit";
                 {
                     var roleID = message.member.roles.First();
-                    EventGuildCreate.EventGuildCreate_Role role = NKDiscordChatWidget.DiscordBot.Bot.guilds[guildID].roles
-                        .FirstOrDefault(t => t.id == roleID);
+                    EventGuildCreate.EventGuildCreate_Role role = NKDiscordChatWidget.DiscordBot.Bot.guilds[guildID]
+                        .roles.FirstOrDefault(t => t.id == roleID);
                     if (role != null)
                     {
                         nickColor = role.color.ToString("X");
@@ -207,7 +252,7 @@ namespace NKDiscordChatWidget.WidgetServer
                 var html = string.Format(
                     "<div class='user'><img src='{0}' alt='{1}'></div>" +
                     "<div class='content'><span class='content-user' style='color: {4};'>{1}</span><span class='content-time'>{3:hh:mm:ss dd.MM.yyyy}</span>" +
-                    "<div class='content-message'>{2}</div>" +
+                    "{2}" +
                     "</div><hr>",
                     HttpUtility.HtmlEncode(message.author.avatarURL),
                     HttpUtility.HtmlEncode(message.author.username),
@@ -232,12 +277,34 @@ namespace NKDiscordChatWidget.WidgetServer
             await httpContext.Response.WriteAsync(JsonConvert.SerializeObject(answer));
         }
 
+        private static string DrawMessageContent(EventMessageCreate message, ChatDrawOption chatOption)
+        {
+            string html = NKDiscordChatWidget.General.MessageMark.RenderAsHTML(message.content);
+            // @todo
+
+            // @todo content
+            // @todo attachments
+            // @todo preview
+            // @todo реакции
+
+            return html;
+        }
+
         protected class AnswerMessage
         {
             public string id;
             public double time;
             public double time_update;
             public string html;
+        }
+
+        protected class ChatDrawOption
+        {
+            public bool merge_same_user_messages;
+            public int attachments;
+            public int link_preview;
+            public int message_relative_reaction;
+            public int message_stranger_reaction;
         }
     }
 }

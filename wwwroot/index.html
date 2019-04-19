@@ -5,8 +5,79 @@
     <title>NK Discord Chat Widget</title>
     <link rel="stylesheet" href="/images/main.css">
     <link href="/images/fonts/whitney-parallel/stylesheet.css" type="text/css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+            integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+            crossorigin="anonymous"></script>
+    <script>
+        let link_postfix = '';
+
+        $(document).ready(function () {
+            let options = $('.chat_options [data-option]');
+            options.on('change', function () {
+                link_postfix = '';
+                options.each(function () {
+                    let option_name = $(this).attr('data-option');
+
+                    if ((this.nodeName.toLowerCase() === 'div') && ($(this).attr('type') === 'checkbox')) {
+                        if (this.checked) {
+                            link_postfix += '&option_' + option_name + '=1';
+                        }
+                    } else if (this.nodeName.toLowerCase() === 'select') {
+                        link_postfix += '&option_' + option_name + '=' + this.value;
+                    }
+                });
+
+                $('.item-sub a').each(function () {
+                    let url = '/chat.cgi?guild=' + $(this).attr('data-guild-id') +
+                        '&channel=' + $(this).attr('data-guild-id') + link_postfix;
+                    $(this).attr('href', url);
+                });
+            });
+        });
+    </script>
 </head>
 <body>
+<div class="chat_options">
+    <div>
+        <div>
+            <input type="checkbox" data-option="merge_same_user_messages" id="option_merge_same_user_messages">
+            <label for="option_merge_same_user_messages">Сжимать сообщения подряд одного пользователя в одно сообщение
+                (как в Discord)</label>
+        </div>
+        <div>
+            <label for="option_attachments">Аттачи в чате</label>
+            <select id="option_attachments" data-option="attachments">
+                <option value="0">Показывать</option>
+                <option value="1">Размазывать</option>
+                <option value="2">Не показывать</option>
+            </select>
+        </div>
+        <div>
+            <label for="option_link_preview">Превью для ссылок</label>
+            <select id="option_link_preview" data-option="link_preview">
+                <option value="0">Показывать</option>
+                <option value="1">Размазывать</option>
+                <option value="2">Не подгружать</option>
+            </select>
+        </div>
+        <div>
+            <label for="option_message_relative_reaction">Реакции с этого сервера для сообщений</label>
+            <select id="option_message_relative_reaction" data-option="link_preview">
+                <option value="0">Показывать</option>
+                <option value="1">Размазывать</option>
+                <option value="2">Не подгружать</option>
+            </select>
+        </div>
+        <div>
+            <label for="option_message_stranger_reaction">Реакции с чужого сервера для сообщений</label>
+            <select id="option_message_stranger_reaction" data-option="link_preview">
+                <option value="0">Показывать</option>
+                <option value="1">Размазывать</option>
+                <option value="2">Не подгружать</option>
+            </select>
+        </div>
+    </div>
+</div>
 {#wait:guilds#}
 <div style="clear: both;"></div>
 </body>
