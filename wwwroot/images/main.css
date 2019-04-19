@@ -141,6 +141,10 @@ body {
     height: 17px;
 }
 
+#chat .message .content .content-message .content-direct.only-emoji .emoji img {
+    height: 30px;
+}
+
 #chat .message .content .content-message .content-direct .emoji.blur img {
     filter: blur(5px);
 }
