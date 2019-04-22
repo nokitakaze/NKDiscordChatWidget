@@ -45,7 +45,7 @@ namespace NKDiscordChatWidget.General
         );
 
         private static readonly Regex rMentionNick = new Regex(
-            @"<@([0-9]+)>",
+            @"<@!?([0-9]+)>",
             RegexOptions.Compiled
         );
 

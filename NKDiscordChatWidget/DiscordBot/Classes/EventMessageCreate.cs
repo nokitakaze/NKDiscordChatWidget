@@ -130,11 +130,22 @@ namespace NKDiscordChatWidget.DiscordBot.Classes
             public string discriminator;
             public string avatar;
 
-            public string avatarURL =>
-                string.Format("https://cdn.discordapp.com/avatars/{0}/{1}.png",
-                    this.id,
-                    this.avatar
-                );
+            public string avatarURL
+            {
+                get
+                {
+                    if ((this.avatar == null) || (this.avatar == ""))
+                    {
+                        // Нет аватарки, отображаем Дефолтную
+                        return "https://discordapp.com/assets/322c936a8c8be1b803cd94861bdfa868.png";
+                    }
+
+                    return string.Format("https://cdn.discordapp.com/avatars/{0}/{1}.png",
+                        this.id,
+                        this.avatar
+                    );
+                }
+            }
         }
 
         /// <summary>

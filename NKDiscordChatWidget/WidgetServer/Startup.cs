@@ -287,7 +287,11 @@ namespace NKDiscordChatWidget.WidgetServer
                     "{2}" +
                     "</div><div style='clear: both;'></div><hr>",
                     HttpUtility.HtmlEncode(message.author.avatarURL),
-                    HttpUtility.HtmlEncode(message.author.username),
+                    HttpUtility.HtmlEncode(
+                        !string.IsNullOrEmpty(message.member.nick)
+                            ? message.member.nick
+                            : message.author.username
+                    ),
                     htmlContent,
                     message.timestampAsDT,
                     nickColor
