@@ -1,5 +1,9 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace NKDiscordChatWidget.DiscordBot.Classes
 {
+    [SuppressMessage("ReSharper", "UnassignedField.Global")]
+    [SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
     public class Reaction
     {
         public string user_id;

@@ -62,7 +62,7 @@ namespace NKDiscordChatWidget.WidgetServer
                     var channelsByGroup = new Dictionary<string, List<EventGuildCreate.EventGuildCreate_Channel>>();
                     foreach (var channel in channels.Values)
                     {
-                        if (channel.type == 0)
+                        if ((channel.type == 0) && (channel.parent_id != null))
                         {
                             if (!channelsByGroup.ContainsKey(channel.parent_id))
                             {
@@ -266,7 +266,7 @@ namespace NKDiscordChatWidget.WidgetServer
                     var roleID = message.member.roles.First();
                     var roles = NKDiscordChatWidget.DiscordBot.Bot.guilds[guildID].roles.ToList();
                     roles.Sort((a, b) => a.position.CompareTo(b.position));
-                    EventGuildCreate.EventGuildCreate_Role role = roles.FirstOrDefault(t => t.id == roleID);
+                    Role role = roles.FirstOrDefault(t => t.id == roleID);
                     if (role != null)
                     {
                         nickColor = role.color.ToString("X");
@@ -314,7 +314,7 @@ namespace NKDiscordChatWidget.WidgetServer
 
             // Основной текст
             string directContentHTML = NKDiscordChatWidget.General.MessageMark.RenderAsHTML(
-                message.content, chatOption, guildID);
+                message.content, chatOption, message.mentions, guildID);
             bool containOnlyUnicodeAndSpace;
             {
                 var rEmojiWithinText = new Regex(@"<\:(.+?)\:([0-9]+)>", RegexOptions.Compiled);

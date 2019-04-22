@@ -1,10 +1,13 @@
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace NKDiscordChatWidget.DiscordBot.Classes
 {
     /// <summary>
     /// https://discordapp.com/developers/docs/resources/guild#guild-object
     /// </summary>
+    [SuppressMessage("ReSharper", "UnassignedField.Global")]
+    [SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
     public class EventGuildCreate
     {
         public string system_channel_id;
@@ -16,8 +19,9 @@ namespace NKDiscordChatWidget.DiscordBot.Classes
         public string description;
         public List<EventGuildCreate_Channel> channels;
         public List<EventGuildCreate_PermissionOverwrite> permission_overwrites;
-        public List<EventGuildCreate_Role> roles;
+        public List<Role> roles;
         public List<NKDiscordChatWidget.DiscordBot.Classes.Emoji> emojis;
+        public List<NKDiscordChatWidget.DiscordBot.Classes.GuildMember> members;
 
         public string GetIconURL => string.Format("https://cdn.discordapp.com/icons/{0}/{1}.png", this.id, this.icon);
 
@@ -56,21 +60,6 @@ namespace NKDiscordChatWidget.DiscordBot.Classes
             public string id;
             public int deny;
             public int allow;
-        }
-
-        /// <summary>
-        /// https://discordapp.com/developers/docs/topics/permissions#role-object
-        /// </summary>
-        public class EventGuildCreate_Role
-        {
-            public string id;
-            public string name;
-            public long color;
-            public bool hoist;
-            public int position;
-            public long permissions;
-            public bool managed;
-            public bool mentionable;
         }
     }
 }

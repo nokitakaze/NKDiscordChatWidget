@@ -10,6 +10,7 @@ namespace NKDiscordChatWidget.DiscordBot.Classes
     /// </summary>
     // ReSharper disable once ClassNeverInstantiated.Global
     [SuppressMessage("ReSharper", "UnassignedField.Global")]
+    [SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
     public class EventMessageCreate
     {
         public int type;
@@ -19,7 +20,7 @@ namespace NKDiscordChatWidget.DiscordBot.Classes
         public bool pinned;
         public string nonce;
         public List<EventMessageCreate_Mention> mentions;
-        public List<dynamic> mention_roles;
+        public List<string> mention_roles;
         public EventMessageCreate_Member member;
 
         /// <summary>
@@ -113,14 +114,9 @@ namespace NKDiscordChatWidget.DiscordBot.Classes
         }
 
         // ReSharper disable once ClassNeverInstantiated.Global
-        public class EventMessageCreate_Mention
+        public class EventMessageCreate_Mention : User
         {
-            public string username;
-            public dynamic member;
-            public string id;
-            public string discriminator;
-            public bool bot;
-            public string avatar;
+            public GuildMember member;
         }
 
         /// <summary>

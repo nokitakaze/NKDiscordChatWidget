@@ -1,10 +1,13 @@
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace NKDiscordChatWidget.DiscordBot.Classes
 {
     /// <summary>
     /// https://discordapp.com/developers/docs/resources/emoji
     /// </summary>
+    [SuppressMessage("ReSharper", "UnassignedField.Global")]
+    [SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
     public class Emoji
     {
         public string id;

@@ -363,6 +363,11 @@ namespace NKDiscordChatWidget.DiscordBot
 
                             break;
                         }
+                        case "GUILD_MEMBER_ADD":
+                        {
+                            // https://discordapp.com/developers/docs/topics/gateway#guild-member-add
+                            break;
+                        }
                         // @todo GUILD_EMOJIS_UPDATE
                     }
 
