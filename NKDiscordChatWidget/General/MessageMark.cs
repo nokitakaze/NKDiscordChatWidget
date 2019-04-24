@@ -142,6 +142,7 @@ namespace NKDiscordChatWidget.General
                 }
 
                 var nickColor = "inherit";
+                if ((guild.roles != null) && (mention.member?.roles != null))
                 {
                     var mention_roles_local =
                         guild.roles.Where(t => mention.member.roles.Contains(t.id)).ToList();
