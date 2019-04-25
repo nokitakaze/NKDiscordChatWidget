@@ -34,7 +34,7 @@ namespace NKDiscordChatWidget.DiscordBot
             new ConcurrentDictionary<string,
                 ConcurrentDictionary<string, ConcurrentDictionary<string, EventMessageCreate>>>();
 
-        public static async void StartTask()
+        public static async Task StartTask()
         {
             var options = NKDiscordChatWidget.General.Global.options;
             string wsBaseUrl;
@@ -63,15 +63,20 @@ namespace NKDiscordChatWidget.DiscordBot
 
             do
             {
-                using (wsClient = new ClientWebSocket())
+                try
                 {
-                    var fullConnectURI = string.Format("{0}?v=6&encoding=json", wsBaseUrl);
-                    await wsClient.ConnectAsync(new Uri(fullConnectURI), Global.globalCancellationToken);
-                    await ProcessWebSocket();
+                    using (wsClient = new ClientWebSocket())
+                    {
+                        var fullConnectURI = string.Format("{0}?v=6&encoding=json", wsBaseUrl);
+                        await wsClient.ConnectAsync(new Uri(fullConnectURI), Global.globalCancellationToken);
+                        await ProcessWebSocket();
+                    }
                 }
-            } while (true);
-
-            Console.WriteLine("...");
+                catch (Exception e)
+                {
+                    Console.Error.WriteLine(e);
+                }
+            } while (!Global.globalCancellationToken.IsCancellationRequested);
         }
 
         private static async Task SendMessageToWebSocket(object data)
