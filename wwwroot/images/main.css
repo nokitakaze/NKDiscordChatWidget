@@ -120,8 +120,9 @@ body {
     padding: 3px 5px;
     border-radius: 3px;
     display: inline-block;
-    margin-right: 3px;
+    margin: 0 3px 3px 0;
     background: rgba(92, 106, 158, .3);
+    width: 42px;
 }
 
 #chat .message .content .content-message .content-reaction .emoji .count {
