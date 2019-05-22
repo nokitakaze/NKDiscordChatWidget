@@ -284,7 +284,12 @@ namespace NKDiscordChatWidget.DiscordBot
 
                             var existedMessage =
                                 messages[messageUpdate.guild_id][messageUpdate.channel_id][messageUpdate.id];
-                            existedMessage.content = messageUpdate.content;
+                            if ((existedMessage.content == null) || (messageUpdate.content != null))
+                            {
+                                // При обновлении сообщения Дискорд пропускает контент, если контент не обновляется,
+                                // поэтому тут нужен ===null предикат
+                                existedMessage.content = messageUpdate.content;
+                            }
                             existedMessage.edited_timestamp = messageUpdate.edited_timestamp;
                             existedMessage.embeds = messageUpdate.embeds;
                             existedMessage.attachments = messageUpdate.attachments;

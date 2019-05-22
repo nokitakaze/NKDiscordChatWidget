@@ -263,6 +263,7 @@ namespace NKDiscordChatWidget.WidgetServer
                     : message.timestampAsDT;
                 if (chatOption.merge_same_user_messages)
                 {
+                    // Соединяем сообщения одного и того же человека
                     for (var j = i + 1; j < messages.Count; j++)
                     {
                         if (messages[j].author.id == messages[i].author.id)
@@ -494,6 +495,10 @@ namespace NKDiscordChatWidget.WidgetServer
             public double time;
             public double time_update;
             public string html;
+
+            /// <summary>
+            /// Уникальный хеш, взятый от HTML-контента сообщения
+            /// </summary>
             public string hash;
         }
 

@@ -30,7 +30,7 @@ namespace NKDiscordChatWidget.General
         }
 
         private static readonly Regex rLink = new Regex(
-            @"(^|\W)([a-z]+)://([a-z0-9.-]+)([a-z0-9/%().+&=-]+)?(\?[a-z0-9/%().+&=-]*)?",
+            @"(^|\W)([a-z]+)://([a-z0-9.-]+)([a-z0-9/%().+&=_-]+)?(\?[a-z0-9/%().+&=_-]*)?",
             RegexOptions.Compiled | RegexOptions.IgnoreCase
         );
 
