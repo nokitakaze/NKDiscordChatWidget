@@ -2,6 +2,7 @@
 
 $(document).ready(function () {
     let query = {};
+    let last_server_answer_time = 0;
     for (let pair of document.location.search.substr(1).split('&')) {
         let a = pair.split('=');
         query[a[0]] = a[1];
@@ -23,6 +24,12 @@ $(document).ready(function () {
             dataType: 'json',
             data: queryData,
             success: function (answer, status, c) {
+                if (answer.time_answer < last_server_answer_time) {
+                    // Это более старый ответ от сервера, пропускаем его
+                    return;
+                }
+                last_server_answer_time = parseFloat(answer.time_answer);
+
                 for (let message of answer.messages) {
                     {
                         let existed = chatBlock.find('> [data-id="' + message.id + '"]');

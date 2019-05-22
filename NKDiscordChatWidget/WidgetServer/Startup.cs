@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using Microsoft.AspNetCore.Builder;
@@ -108,6 +109,7 @@ namespace NKDiscordChatWidget.WidgetServer
                             channelsByGroup[parentId].Add(channel);
                             break;
                         }
+
                         case 4:
                             groupPositions[channel.id] = channel.position ?? -1;
                             break;
@@ -231,13 +233,7 @@ namespace NKDiscordChatWidget.WidgetServer
             }
 
             httpContext.Response.ContentType = "application/javascript; charset=utf-8";
-            var outerMessages = new List<AnswerMessage>();
-            var existedMessageIDs = new HashSet<string>();
-            var answer = new Dictionary<string, object>()
-            {
-                ["messages"] = outerMessages,
-                ["existedID"] = existedMessageIDs,
-            };
+            var answer = new AnswerFull();
             if (!NKDiscordChatWidget.DiscordBot.Bot.messages.ContainsKey(guildID))
             {
                 await httpContext.Response.WriteAsync(JsonConvert.SerializeObject(answer));
@@ -254,7 +250,7 @@ namespace NKDiscordChatWidget.WidgetServer
             messages.Sort((a, b) => a.timestampAsDT.CompareTo(b.timestampAsDT));
             for (var i = Math.Max(messages.Count - 1000, 0); i < messages.Count; i++)
             {
-                existedMessageIDs.Add(messages[i].id);
+                answer.existedID.Add(messages[i].id);
             }
 
             for (var i = 0; i < messages.Count; i++)
@@ -323,7 +319,7 @@ namespace NKDiscordChatWidget.WidgetServer
                     nickColor
                 );
 
-                outerMessages.Add(new AnswerMessage()
+                answer.messages.Add(new AnswerMessage()
                 {
                     id = message.id,
                     time = ((DateTimeOffset) message.timestampAsDT).ToUnixTimeMilliseconds() * 0.001d,
@@ -333,6 +329,7 @@ namespace NKDiscordChatWidget.WidgetServer
                 });
             }
 
+            answer.time_answer = ((DateTimeOffset) DateTime.Now).ToUnixTimeMilliseconds() * 0.001d;
             await httpContext.Response.WriteAsync(JsonConvert.SerializeObject(answer));
         }
 
@@ -490,6 +487,7 @@ namespace NKDiscordChatWidget.WidgetServer
             return html;
         }
 
+        // ReSharper disable NotAccessedField.Global
         protected class AnswerMessage
         {
             public string id;
@@ -498,5 +496,13 @@ namespace NKDiscordChatWidget.WidgetServer
             public string html;
             public string hash;
         }
+
+        protected class AnswerFull
+        {
+            public readonly List<AnswerMessage> messages = new List<AnswerMessage>();
+            public double time_answer;
+            public readonly HashSet<string> existedID = new HashSet<string>();
+        }
+        // ReSharper restore NotAccessedField.Global
     }
 }
