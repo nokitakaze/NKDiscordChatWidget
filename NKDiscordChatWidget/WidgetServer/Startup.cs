@@ -233,7 +233,10 @@ namespace NKDiscordChatWidget.WidgetServer
             }
 
             httpContext.Response.ContentType = "application/javascript; charset=utf-8";
-            var answer = new AnswerFull();
+            var answer = new AnswerFull
+            {
+                channel_title = string.Format("Discord Widget Chat: {0}-{1} [nkt]", guildID, channelID),
+            };
             if (!NKDiscordChatWidget.DiscordBot.Bot.messages.ContainsKey(guildID))
             {
                 await httpContext.Response.WriteAsync(JsonConvert.SerializeObject(answer));
@@ -306,7 +309,8 @@ namespace NKDiscordChatWidget.WidgetServer
 
                 var html = string.Format(
                     "<div class='user'><img src='{0}' alt='{1}'></div>" +
-                    "<div class='content'><span class='content-user' style='color: {4};'>{1}</span><span class='content-time'>{3:hh:mm:ss dd.MM.yyyy}</span>" +
+                    "<div class='content'>" +
+                    "<div class='content-header'><span class='content-user' style='color: {4};'>{1}</span><span class='content-time'>{3:hh:mm:ss dd.MM.yyyy}</span></div>" +
                     "{2}" +
                     "</div><div style='clear: both;'></div><hr>",
                     HttpUtility.HtmlEncode(message.author.avatarURL),
@@ -507,6 +511,11 @@ namespace NKDiscordChatWidget.WidgetServer
             public readonly List<AnswerMessage> messages = new List<AnswerMessage>();
             public double time_answer;
             public readonly HashSet<string> existedID = new HashSet<string>();
+
+            /// <summary>
+            /// Заголовок для окна виджета (нужно только для дебага этого виджета)
+            /// </summary>
+            public string channel_title;
         }
         // ReSharper restore NotAccessedField.Global
     }

@@ -158,11 +158,11 @@ namespace NKDiscordChatWidget.DiscordBot
                 websocketSequenceId = Convert.ToUInt64(message.s);
             }
 
-            Console.WriteLine("{0}\top = {1,3}\t{2}\n\t{3}",
+            Console.WriteLine("{0}\top = {1,3}\t{2,-30}\t{3} chars",
                 DateTime.Now.ToUniversalTime(),
                 message.op,
                 message.t,
-                JsonConvert.SerializeObject(message.d)
+                message.d.Lenght
             );
 
             // ReSharper disable once SwitchStatementMissingSomeCases

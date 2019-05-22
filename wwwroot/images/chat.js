@@ -29,6 +29,7 @@ $(document).ready(function () {
                     return;
                 }
                 last_server_answer_time = parseFloat(answer.time_answer);
+                document.title = answer.channel_title;
 
                 for (let message of answer.messages) {
                     {
