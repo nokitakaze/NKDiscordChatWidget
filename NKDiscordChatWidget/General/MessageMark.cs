@@ -133,6 +133,12 @@ namespace NKDiscordChatWidget.General
             text = rMentionNick.Replace(text, m1 =>
             {
                 string mentionID = m1.Groups[1].Value;
+                if (mentions == null)
+                {
+                    // Приколы дискорда
+                    return string.Format("<Пользователь Unknown #{0}>", mentionID);
+                }
+
                 EventMessageCreate.EventMessageCreate_Mention mention =
                     mentions.FirstOrDefault(eMention => eMention.id == mentionID);
 
