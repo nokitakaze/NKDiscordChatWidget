@@ -67,8 +67,7 @@ namespace NKDiscordChatWidget.WidgetServer
 
             if (path == "/chat.cgi")
             {
-                var html = File.ReadAllText(Options.WWWRoot + "/chat.html");
-                await httpContext.Response.WriteAsync(html);
+                await ChatHTML(httpContext);
                 return;
             }
 
@@ -86,6 +85,7 @@ namespace NKDiscordChatWidget.WidgetServer
         {
             // Главная
             var html = File.ReadAllText(Options.WWWRoot + "/index.html");
+            html = replaceLinksInHTML(html);
             string guildsHTML = "";
             foreach (var (guildID, channels) in NKDiscordChatWidget.DiscordBot.Bot.channels)
             {
@@ -490,6 +490,38 @@ namespace NKDiscordChatWidget.WidgetServer
             }
 
             return html;
+        }
+
+        private static readonly Regex rHTMLIncludeLink =
+            new Regex("{#include_link:(.+?)#}", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+        private static async Task ChatHTML(Microsoft.AspNetCore.Http.HttpContext httpContext)
+        {
+            var html = File.ReadAllText(Options.WWWRoot + "/chat.html");
+            html = replaceLinksInHTML(html);
+            await httpContext.Response.WriteAsync(html);
+        }
+
+        private static string replaceLinksInHTML(string html)
+        {
+            return rHTMLIncludeLink.Replace(html, (m) =>
+            {
+                var filename = m.Groups[1].Value;
+                // hint: тут специально не проверяется путь до файла
+                var bytes = File.ReadAllBytes(Options.WWWRoot + filename);
+
+                string sha1hash;
+                using (var hashA = SHA1.Create())
+                {
+                    byte[] data = hashA.ComputeHash(bytes);
+                    sha1hash = data.Aggregate("", (current, c) => current + c.ToString("x2"));
+                }
+
+                return string.Format("{0}?hash={1}",
+                    filename,
+                    sha1hash.Substring(0, 6)
+                );
+            });
         }
 
         // ReSharper disable NotAccessedField.Global
