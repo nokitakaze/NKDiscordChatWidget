@@ -25,7 +25,7 @@ namespace NKDiscordChatWidget
             {
                 Parser.Default.ParseArguments<Options>(args)
                     .WithParsed(RunOptionsAndReturnExitCode);
-                Task.Factory.StartNew(DiscordBot.Bot.StartTask, TaskCreationOptions.LongRunning);
+                tasks.Add(Task.Factory.StartNew(DiscordBot.Bot.StartTask, TaskCreationOptions.LongRunning));
             }
             catch (Exception)
             {

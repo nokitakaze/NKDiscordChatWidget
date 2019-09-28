@@ -39,20 +39,33 @@ namespace NKDiscordChatWidget.DiscordBot
             var options = NKDiscordChatWidget.General.Global.options;
             string wsBaseUrl;
             {
-                // https://discordapp.com/developers/docs/topics/gateway#get-gateway-bot
-                using (var client = new HttpClient())
+                Console.WriteLine("Load https://discordapp.com/api/gateway/bot");
+                while (true)
                 {
-                    client.DefaultRequestHeaders.Add("Authorization",
-                        "Bot " + options.DiscordBotToken);
+                    try
+                    {
+                        // https://discordapp.com/developers/docs/topics/gateway#get-gateway-bot
+                        using (var client = new HttpClient())
+                        {
+                            client.DefaultRequestHeaders.Add("Authorization",
+                                "Bot " + options.DiscordBotToken);
 
-                    client.DefaultRequestHeaders
-                        .Accept
-                        .Add(new MediaTypeWithQualityHeaderValue("application/json")); //ACCEPT header
+                            client.DefaultRequestHeaders
+                                .Accept
+                                .Add(new MediaTypeWithQualityHeaderValue("application/json")); //ACCEPT header
 
-                    var response = await client.GetAsync("https://discordapp.com/api/gateway/bot");
-                    var rawAnswer = await response.Content.ReadAsStringAsync();
-                    var dict = JsonConvert.DeserializeObject<Dictionary<string, object>>(rawAnswer);
-                    wsBaseUrl = dict["url"] as string;
+                            var response = await client.GetAsync("https://discordapp.com/api/gateway/bot");
+                            Console.WriteLine("Load gateway/bot loaded");
+                            var rawAnswer = await response.Content.ReadAsStringAsync();
+                            var dict = JsonConvert.DeserializeObject<Dictionary<string, object>>(rawAnswer);
+                            wsBaseUrl = dict["url"] as string;
+                            break;
+                        }
+                    }
+                    catch (Exception wsException)
+                    {
+                        Console.Error.WriteLine("wsException: {0}", wsException);
+                    }
                 }
             }
 
@@ -290,6 +303,7 @@ namespace NKDiscordChatWidget.DiscordBot
                                 // поэтому тут нужен ===null предикат
                                 existedMessage.content = messageUpdate.content;
                             }
+
                             existedMessage.edited_timestamp = messageUpdate.edited_timestamp;
                             existedMessage.embeds = messageUpdate.embeds;
                             existedMessage.attachments = messageUpdate.attachments;

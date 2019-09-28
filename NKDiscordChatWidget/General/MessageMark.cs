@@ -40,7 +40,7 @@ namespace NKDiscordChatWidget.General
         );
 
         private static readonly Regex rEmojiWithinText = new Regex(
-            @"<\:(.+?)\:([0-9]+)>",
+            @"<(a)?\:(.+?)\:([0-9]+)>",
             RegexOptions.Compiled
         );
 
@@ -113,20 +113,25 @@ namespace NKDiscordChatWidget.General
 
             text = rEmojiWithinText.Replace(text, m1 =>
             {
-                string emojiID = m1.Groups[2].Value;
+                string emojiID = m1.Groups[3].Value;
                 bool isRelative = thisGuildEmojis.Contains(emojiID);
                 int emojiShow = isRelative ? chatOption.emoji_relative : chatOption.emoji_stranger;
                 if (emojiShow == 2)
                 {
-                    return "  ";
+                    return " ";
                 }
 
                 var wait = string.Format("{1}wait:{0:F5}{2}", rnd.NextDouble(), '{', '}');
-                var url = string.Format("https://cdn.discordapp.com/emojis/{0}.png", emojiID);
+                var url = string.Format("https://cdn.discordapp.com/emojis/{0}.{1}",
+                    emojiID,
+                    (m1.Groups[1].Value == "a") ? "gif" : "png"
+                );
 
                 waitDictionary[wait] = string.Format("<span class='emoji {2}'><img src='{0}' alt=':{1}:'></span>",
-                    HttpUtility.HtmlEncode(url), HttpUtility.HtmlEncode(m1.Groups[1].Value),
-                    (emojiShow == 1) ? "blur" : "");
+                    HttpUtility.HtmlEncode(url),
+                    HttpUtility.HtmlEncode(m1.Groups[2].Value),
+                    (emojiShow == 1) ? "blur" : ""
+                );
 
                 return wait;
             });
