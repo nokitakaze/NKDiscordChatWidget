@@ -1,3 +1,5 @@
+using NKDiscordChatWidget.General;
+
 namespace NKDiscordChatWidget
 {
     public class ChatDrawOption
@@ -9,5 +11,10 @@ namespace NKDiscordChatWidget
         public int message_stranger_reaction;
         public int emoji_stranger;
         public int emoji_relative;
+
+        /// <summary>
+        /// Какой пак эмодзи отображать
+        /// </summary>
+        public EmojiPackType unicode_emoji_displaying = EmojiPackType.JoyPixels;
     }
 }

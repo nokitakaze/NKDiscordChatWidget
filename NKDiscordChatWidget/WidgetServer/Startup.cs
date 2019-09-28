@@ -44,6 +44,7 @@ namespace NKDiscordChatWidget.WidgetServer
                 RequestPath = "/images"
             });
             app.UseDeveloperExceptionPage();
+            UnicodeEmojiEngine.LoadAllEmojiPacks(Options.WWWRoot);
 
             app.Run(Request);
         }
@@ -230,6 +231,11 @@ namespace NKDiscordChatWidget.WidgetServer
                 {
                     chatOption.emoji_stranger = int.Parse(s.ToString());
                 }
+
+                if (httpContext.Request.Query.TryGetValue("option_unicode_emoji_displaying", out s))
+                {
+                    chatOption.unicode_emoji_displaying = (EmojiPackType) int.Parse(s.ToString());
+                }
             }
 
             httpContext.Response.ContentType = "application/javascript; charset=utf-8";
@@ -353,7 +359,7 @@ namespace NKDiscordChatWidget.WidgetServer
                 long[] longs = { };
                 if (message.content != null)
                 {
-                    longs = Utf8ToUnicode.ToUnicode(rEmojiWithinText.Replace(message.content, ""));
+                    longs = Utf8ToUnicode.ToUnicodeCode(rEmojiWithinText.Replace(message.content, ""));
                 }
 
                 containOnlyUnicodeAndSpace = Utf8ToUnicode.ContainOnlyUnicodeAndSpace(longs);

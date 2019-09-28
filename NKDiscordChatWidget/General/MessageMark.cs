@@ -72,12 +72,11 @@ namespace NKDiscordChatWidget.General
         )
         {
             var waitDictionary = new Dictionary<string, string>();
-            var rnd = new Random();
 
             // Format
             text = rWithoutMark.Replace(text, m1 =>
             {
-                var wait = string.Format("{1}wait:{0:F5}{2}", rnd.NextDouble(), '{', '}');
+                var wait = GetWaitString();
                 waitDictionary[wait] = string.Format("<span class='without-mark'>{0}</span>",
                     HttpUtility.HtmlEncode(m1.Groups[1].Value)
                 );
@@ -88,22 +87,77 @@ namespace NKDiscordChatWidget.General
             // Ссылка
             text = rLink.Replace(text, m1 =>
             {
-                var wait = string.Format("{1}wait:{0:F5}{2}", rnd.NextDouble(), '{', '}');
+                var wait = GetWaitString();
                 var url = string.Format("{0}://{1}{2}{3}",
                     m1.Groups[2].Value,
                     m1.Groups[3].Value,
                     m1.Groups[4].Value,
                     m1.Groups[5].Value
                 );
-                waitDictionary[wait] = string.Format("<a href='{0}' target='_blank'>{1}</a>",
-                    HttpUtility.HtmlEncode(url),
+                waitDictionary[wait] = string.Format("<a href='{0}' target='_blank'>{0}</a>",
                     HttpUtility.HtmlEncode(url)
                 );
 
                 return m1.Groups[1].Value + wait;
             });
 
-            // Emoji
+            // Emoji (Unicode)
+            if (UnicodeEmojiEngine.emojiList[chatOption.unicode_emoji_displaying].Any())
+            {
+                var activeEmoji = new List<long>();
+
+                var longs = Utf8ToUnicode.ToUnicodeCode(text);
+                var textAfter = "";
+                var containEmoji = false;
+                foreach (var code in longs)
+                {
+                    if (!UnicodeEmojiEngine.IsInIntervalEmoji(code, chatOption.unicode_emoji_displaying))
+                    {
+                        // Этот символ НЕ является unicode emoji
+                        if (activeEmoji.Any())
+                        {
+                            // У нас не пустой буффер emoji символов, надо их записать в строку
+                            var localEmojiList = UnicodeEmojiEngine.RenderEmojiAsStringList(
+                                chatOption.unicode_emoji_displaying, activeEmoji);
+                            textAfter += RenderEmojiStringListAsHtml(
+                                localEmojiList,
+                                chatOption.unicode_emoji_displaying,
+                                waitDictionary,
+                                chatOption.emoji_relative
+                            );
+                            activeEmoji = new List<long>();
+                        }
+
+                        textAfter += Utf8ToUnicode.UnicodeCodeToString(code);
+
+                        continue;
+                    }
+
+                    // Этот символ ЯВЛЯЕТСЯ unicode emoji
+                    containEmoji = true;
+                    activeEmoji.Add(code);
+                } // foreach
+
+                if (activeEmoji.Any())
+                {
+                    // У нас не пустой буффер emoji символов, надо их записать в строку
+                    var localEmojiList = UnicodeEmojiEngine.RenderEmojiAsStringList(
+                        chatOption.unicode_emoji_displaying, activeEmoji);
+                    textAfter += RenderEmojiStringListAsHtml(
+                        localEmojiList,
+                        chatOption.unicode_emoji_displaying,
+                        waitDictionary,
+                        chatOption.emoji_relative
+                    );
+                }
+
+                if (containEmoji)
+                {
+                    text = textAfter;
+                }
+            }
+
+            // Emoji (картинки)
             var thisGuildEmojis = new HashSet<string>();
             var guild = NKDiscordChatWidget.DiscordBot.Bot.guilds[guildID];
             foreach (var emoji in guild.emojis)
@@ -121,7 +175,7 @@ namespace NKDiscordChatWidget.General
                     return " ";
                 }
 
-                var wait = string.Format("{1}wait:{0:F5}{2}", rnd.NextDouble(), '{', '}');
+                var wait = GetWaitString();
                 var url = string.Format("https://cdn.discordapp.com/emojis/{0}.{1}",
                     emojiID,
                     (m1.Groups[1].Value == "a") ? "gif" : "png"
@@ -167,7 +221,7 @@ namespace NKDiscordChatWidget.General
                 }
                 //
 
-                var wait = string.Format("{1}wait:{0:F5}{2}", rnd.NextDouble(), '{', '}');
+                var wait = GetWaitString();
 
                 waitDictionary[wait] = string.Format("<span class='user mention' style='color: {1};'>@{0}</span>",
                     HttpUtility.HtmlEncode(mention.username),
@@ -190,7 +244,7 @@ namespace NKDiscordChatWidget.General
 
                 string nickColor = role.color.ToString("X");
                 nickColor = "#" + nickColor.PadLeft(6, '0');
-                var wait = string.Format("{1}wait:{0:F5}{2}", rnd.NextDouble(), '{', '}');
+                var wait = GetWaitString();
 
                 waitDictionary[wait] = string.Format("<span class='role mention' style='color: {1};'>@{0}</span>",
                     HttpUtility.HtmlEncode(role.name),
@@ -217,5 +271,61 @@ namespace NKDiscordChatWidget.General
 
             return html;
         }
+
+        public static string RenderEmojiStringListAsHtml(
+            IEnumerable<UnicodeEmojiEngine.EmojiRenderResult> codes,
+            EmojiPackType pack,
+            Dictionary<string, string> waitDictionary,
+            int emojiShow
+        )
+        {
+            var text = "";
+            var emojiSubFolderName = UnicodeEmojiEngine.GetImageSubFolder(pack);
+            var emojiExtension = UnicodeEmojiEngine.GetImageExtension(pack);
+
+            foreach (var item in codes)
+            {
+                if (item.isSuccess)
+                {
+                    var wait = GetWaitString();
+                    var url = string.Format("/images/emoji/{0}/{1}.{2}",
+                        emojiSubFolderName,
+                        item.emojiCode,
+                        emojiExtension
+                    );
+
+                    waitDictionary[wait] = string.Format(
+                        "<span class='emoji unicode-emoji {0}'><img src='{1}' alt=':{2}:'></span>",
+                        (emojiShow == 1) ? "blur" : "",
+                        HttpUtility.HtmlEncode(url),
+                        HttpUtility.HtmlEncode(item.emojiCode)
+                    );
+
+                    text += wait;
+                }
+                else
+                {
+                    text += item.rawText;
+                }
+            }
+
+            return text;
+        }
+
+        #region UnionRandom
+
+        private static readonly Random _stdRandom = new Random();
+        private static readonly object _stdRandomLock = new object();
+
+        public static string GetWaitString()
+        {
+            lock (_stdRandomLock)
+            {
+                // @todo добавить больше данных в код
+                return string.Format("{1}wait:{0:F5}{2}", _stdRandom.NextDouble(), '{', '}');
+            }
+        }
+
+        #endregion
     }
 }

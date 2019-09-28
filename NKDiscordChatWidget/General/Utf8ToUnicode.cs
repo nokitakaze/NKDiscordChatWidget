@@ -6,12 +6,12 @@ namespace NKDiscordChatWidget.General
 {
     public static class Utf8ToUnicode
     {
-        public static long[] ToUnicode(string utf8)
+        public static long[] ToUnicodeCode(string utf8)
         {
-            return ToUnicode(Encoding.UTF8.GetBytes(utf8));
+            return ToUnicodeCode(Encoding.UTF8.GetBytes(utf8));
         }
 
-        public static long[] ToUnicode(byte[] utf8)
+        public static long[] ToUnicodeCode(byte[] utf8)
         {
             var longs = new List<long>();
 
@@ -109,12 +109,61 @@ namespace NKDiscordChatWidget.General
 
         public static bool ContainOnlyUnicodeAndSpace(IEnumerable<long> bytes)
         {
-            return (from b in bytes
-                    where (b != 32) && (b != 0xFE0F) && (b != 0x200D)
-                    where (b < 0x1F300) || (b > 0x1F5FF)
-                    where b != 0x2630A
-                    select b)
-                .All(b => (b >= 0x1F600) && (b <= 0x1F64F));
+            foreach (var b in bytes)
+            {
+                if ((b == 32) || (b == 0xFE0F) || (b == 0x200D))
+                {
+                    continue;
+                }
+
+                // 0x1F300
+                if ((b >= 0x1F000) && (b <= 0x1FA9F))
+                {
+                    continue;
+                }
+
+                if (b == 0x2630A)
+                {
+                    continue;
+                }
+
+                return false;
+            }
+
+            return true;
+        }
+
+        public static byte[] UnicodeCodeToUnicodeBytes(long code)
+        {
+            if (code <= 0xFFFF)
+            {
+                return new[]
+                {
+                    (byte) (code & 0xFF),
+                    (byte) ((code >> 8) & 0xFF),
+                };
+            }
+
+            var a = code - 0x1_0000;
+            var a1 = (a & 0x3FF) + 0xDC00;
+            var a2 = ((a >> 10) & 0x3FF) + 0xD800;
+
+            return new[]
+            {
+                (byte) (a2 & 0xFF),
+                (byte) ((a2 >> 8) & 0xFF),
+                (byte) (a1 & 0xFF),
+                (byte) ((a1 >> 8) & 0xFF),
+            };
+        }
+
+        public static string UnicodeCodeToString(long code)
+        {
+            byte[] unicodeBytes = UnicodeCodeToUnicodeBytes(code);
+
+            var utf8Bytes = Encoding.Convert(Encoding.Unicode, Encoding.UTF8, unicodeBytes);
+
+            return Encoding.UTF8.GetString(utf8Bytes);
         }
     }
 }
