@@ -19,6 +19,7 @@ $(document).ready(function () {
         }
     }
     setInterval(function () {
+        // return; // @todo Нужно удалить весь setInterval
         $.ajax({
             url: '/chat_ajax.cgi',
             dataType: 'json',
@@ -82,7 +83,42 @@ $(document).ready(function () {
             },
         });
     }, 100);
+    // startSignalRClient(); // @todo Верни меня
 });
 
+function startSignalRClient(queryData) {
+    let url = "/sentEventsChat";
+    const connection = new signalR
+        .HubConnectionBuilder()
+        .withUrl(url)
+        .build();
 
+    connection.on("ReceiveMessage", function (user, message) {
+        console.debug("signalR::ReceiveMessage", user, message);
+    });
 
+    connection.start()
+        .then(function () {
+            console.debug("signalR::onStart");
+
+            connection.invoke("SendMessage", "default user", "default message: " + Math.random().toString());
+        })
+        .catch(function (err) {
+            return console.error(err.toString());
+        });
+
+    // @todo нигде не вызывается
+    /*
+    document.getElementById("sendButton").addEventListener("click", function (event) {
+        console.debug("sendButton", user, message, err);
+        var user = document.getElementById("userInput").value;
+        var message = document.getElementById("messageInput").value;
+        connection.invoke("SendMessage", user, message)
+            .catch(function (err) {
+                console.debug("signalR::SendMessage::catch", user, message, err);
+                return console.error(err.toString());
+            });
+        event.preventDefault();
+    });
+    */
+}

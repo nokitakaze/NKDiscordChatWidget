@@ -23,7 +23,7 @@ namespace NKDiscordChatWidget
 
             var tasks = new List<Task>
             {
-                Task.Run(NKDiscordChatWidget.General.ClearChatTimer.StartTask),
+                Task.Run(() => { NKDiscordChatWidget.General.ClearChatTimer.StartTask(); }),
             };
 
             try

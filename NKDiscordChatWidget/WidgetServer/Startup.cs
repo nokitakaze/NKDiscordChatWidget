@@ -12,6 +12,8 @@ using System.Web;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Internal;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
@@ -33,6 +35,7 @@ namespace NKDiscordChatWidget.WidgetServer
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSignalR();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
@@ -47,6 +50,14 @@ namespace NKDiscordChatWidget.WidgetServer
             app.UseDeveloperExceptionPage();
             UnicodeEmojiEngine.LoadAllEmojiPacks(Options.WWWRoot);
 
+            app.UseSignalR(routes =>
+            {
+                routes.MapHub<NKDiscordChatWidget.WidgetServer.SentEventsChat>("/sentEventsChat");
+
+                // @todo Так и оставить, переписав на статичный атрибут
+                var hubContext = app.ApplicationServices.GetService<IHubContext<SentEventsChat>>();
+                Console.WriteLine(hubContext);
+            });
             app.Run(Request);
         }
 
