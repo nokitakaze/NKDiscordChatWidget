@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -465,13 +466,14 @@ namespace NKDiscordChatWidget.WidgetServer
                     int emojiShow = isRelative
                         ? chatOption.message_relative_reaction
                         : chatOption.message_stranger_reaction;
-                    if (emojiShow == 2)
+                    if (emojiShow == 2)// @todo убрать магическую константу
                     {
                         continue;
                     }
 
                     if (reaction.emoji.id != null)
                     {
+                        // Эмодзи из Дискорда (паки эмодзей с серверов)
                         reactionHTMLs.Add(string.Format(
                             "<div class='emoji {2}'><img src='{0}' alt=':{1}:'><span class='count'>{3}</span></div>",
                             HttpUtility.HtmlEncode(reaction.emoji.URL),
@@ -482,9 +484,51 @@ namespace NKDiscordChatWidget.WidgetServer
                     }
                     else
                     {
+                        // Стандартные Unicode-эмодзи
+                        string emojiHtml;
+                        var emojiPack = chatOption.unicode_emoji_displaying;
+                        if (emojiPack != EmojiPackType.StandardOS)
+                        {
+                            var longs = Utf8ToUnicode.ToUnicodeCode(reaction.emoji.name);
+                            var u = longs.Any(code => !UnicodeEmojiEngine.IsInIntervalEmoji(code, emojiPack));
+
+                            if (u)
+                            {
+                                // Реакция без ID, но при этом не является эмодзи, рисуем как есть
+                                emojiHtml = HttpUtility.HtmlEncode(reaction.emoji.name);
+                            }
+                            else
+                            {
+                                // Реакция без ID и является эмодзи, поэтому рисуем как картинку
+                                var localEmojiList = UnicodeEmojiEngine.RenderEmojiAsStringList(
+                                    emojiPack, longs);
+                                emojiHtml = "";
+                                foreach (var item in localEmojiList)
+                                {
+                                    // hint: вообще-то localEmojiList.Count==1 ВСЕГДА, но на всякий случай...
+                                    var emojiSubFolderName = UnicodeEmojiEngine.GetImageSubFolder(emojiPack);
+                                    var emojiExtension = UnicodeEmojiEngine.GetImageExtension(emojiPack);
+                                    var url = string.Format("/images/emoji/{0}/{1}.{2}",
+                                        emojiSubFolderName,
+                                        item.emojiCode,
+                                        emojiExtension
+                                    );
+
+                                    emojiHtml += string.Format("<img src='{0}' alt=':{1}:'>",
+                                        HttpUtility.HtmlEncode(url),
+                                        HttpUtility.HtmlEncode(reaction.emoji.name)
+                                    );
+                                }
+                            }
+                        }
+                        else
+                        {
+                            emojiHtml = HttpUtility.HtmlEncode(reaction.emoji.name);
+                        }
+
                         reactionHTMLs.Add(string.Format(
                             "<div class='emoji {1}'>{0}<span class='count'>{2}</span></div>",
-                            HttpUtility.HtmlEncode(reaction.emoji.name),
+                            emojiHtml,
                             (emojiShow == 1) ? "blur" : "",
                             reaction.count
                         ));

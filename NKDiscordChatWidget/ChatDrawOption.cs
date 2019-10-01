@@ -15,6 +15,6 @@ namespace NKDiscordChatWidget
         /// <summary>
         /// Какой пак эмодзи отображать
         /// </summary>
-        public EmojiPackType unicode_emoji_displaying = EmojiPackType.JoyPixels;
+        public EmojiPackType unicode_emoji_displaying = EmojiPackType.Twemoji;
     }
 }

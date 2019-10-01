@@ -133,7 +133,13 @@ namespace NKDiscordChatWidget.General
             return true;
         }
 
-        public static byte[] UnicodeCodeToUnicodeBytes(long code)
+        /// <summary>
+        /// Превращаем Unicode-символ (по коду символа) в UTF-16 строку
+        /// </summary>
+        /// <param name="code"></param>
+        /// <url>https://ru.wikipedia.org/wiki/UTF-16</url>
+        /// <returns></returns>
+        public static byte[] UnicodeCodeToUTF16Bytes(long code)
         {
             if (code <= 0xFFFF)
             {
@@ -159,7 +165,7 @@ namespace NKDiscordChatWidget.General
 
         public static string UnicodeCodeToString(long code)
         {
-            byte[] unicodeBytes = UnicodeCodeToUnicodeBytes(code);
+            byte[] unicodeBytes = UnicodeCodeToUTF16Bytes(code);
 
             var utf8Bytes = Encoding.Convert(Encoding.Unicode, Encoding.UTF8, unicodeBytes);
 
