@@ -224,7 +224,7 @@ namespace NKDiscordChatWidget.General
                 var wait = GetWaitString();
 
                 waitDictionary[wait] = string.Format("<span class='user mention' style='color: {1};'>@{0}</span>",
-                    HttpUtility.HtmlEncode(mention.username),
+                    HttpUtility.HtmlEncode(mention.member?.nick ??  mention.username),
                     nickColor
                 );
 
