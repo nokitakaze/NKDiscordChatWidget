@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using NKDiscordChatWidget.DiscordBot.Classes;
 using NKDiscordChatWidget.General;
+using NKDiscordChatWidget.WidgetServer;
 
 namespace NKDiscordChatWidget.DiscordBot
 {
@@ -271,6 +272,7 @@ namespace NKDiscordChatWidget.DiscordBot
 
                             messages[messageCreate.guild_id][messageCreate.channel_id][messageCreate.id] =
                                 messageCreate;
+                            WebsocketClientSide.UpdateMessage(messageCreate);
 
                             Console.WriteLine("channel_id {0} user {1} say: {2}",
                                 messageCreate.channel_id,
@@ -311,6 +313,7 @@ namespace NKDiscordChatWidget.DiscordBot
                             existedMessage.mention_everyone = messageUpdate.mention_everyone;
                             existedMessage.mentions = messageUpdate.mentions;
                             existedMessage.pinned = messageUpdate.pinned;
+                            WebsocketClientSide.UpdateMessage(existedMessage);
 
                             Console.WriteLine("channel_id {0} user {1} edited: {2}",
                                 messageUpdate.channel_id,
@@ -346,6 +349,7 @@ namespace NKDiscordChatWidget.DiscordBot
                             {
                                 var messageId = message.d.id.ToString() as string;
                                 messages[guild_id][channel_id].TryRemove(messageId, out _);
+                                WebsocketClientSide.RemoveMessage(guild_id, channel_id, messageId);
                             }
 
                             // Такого сообщения нет. Возможно, оно было создано раньше. Это не проблема 
@@ -366,6 +370,8 @@ namespace NKDiscordChatWidget.DiscordBot
 
                             messages[reaction.guild_id][reaction.channel_id][reaction.message_id]
                                 .AddReaction(reaction);
+                            WebsocketClientSide.UpdateMessage(
+                                messages[reaction.guild_id][reaction.channel_id][reaction.message_id]);
 
                             break;
                         }
@@ -384,6 +390,8 @@ namespace NKDiscordChatWidget.DiscordBot
 
                             messages[reaction.guild_id][reaction.channel_id][reaction.message_id]
                                 .RemoveReaction(reaction);
+                            WebsocketClientSide.UpdateMessage(
+                                messages[reaction.guild_id][reaction.channel_id][reaction.message_id]);
 
                             break;
                         }

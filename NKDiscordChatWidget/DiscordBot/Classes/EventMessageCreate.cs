@@ -104,6 +104,8 @@ namespace NKDiscordChatWidget.DiscordBot.Classes
             }
             else
             {
+                // Реакция не найдена, очевидно она была добавлена раньше начала чтения,
+                // поэтому просто уменьшаем начальный оффсет количества 
                 foundReaction.__count_offset--;
             }
 
