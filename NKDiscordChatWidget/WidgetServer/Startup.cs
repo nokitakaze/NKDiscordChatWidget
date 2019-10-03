@@ -85,6 +85,9 @@ namespace NKDiscordChatWidget.WidgetServer
 
             if (path == "/chat_ajax.cgi")
             {
+                // Этот код устарел и остаётся здесь только временно
+                // @todo удалить весь этот код
+
                 await GetMessages(httpContext);
                 return;
             }

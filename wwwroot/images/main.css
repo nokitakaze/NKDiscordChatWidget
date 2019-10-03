@@ -78,7 +78,7 @@ body {
     color: #f6f6f7;
 }
 
-#chat .message .content .content-header  {
+#chat .message .content .content-header {
     display: flex;
 }
 
@@ -144,6 +144,31 @@ body {
 }
 
 #chat .message .content .content-message .content-direct .without-mark {
+    /* @todo Моноширинный шрифт */
+    font-family: Monospaced;
+}
+
+#chat .message .content .content-message .content-direct .spoiler {
+    text-decoration: none;
+    background-color: #202225;
+    border-radius: 3px;
+}
+
+#chat .message .content .content-message .content-direct .spoiler .content {
+}
+
+#chat .message .content .content-message .content-direct .spoiler.spoiler-show {
+}
+
+#chat .message .content .content-message .content-direct .spoiler.spoiler-show .content {
+    color: #dcddde;
+}
+
+#chat .message .content .content-message .content-direct .spoiler:not(.spoiler-show) {
+}
+
+#chat .message .content .content-message .content-direct .spoiler:not(.spoiler-show) .content {
+    visibility: hidden;
 }
 
 #chat .message .content .content-message .content-direct .emoji {

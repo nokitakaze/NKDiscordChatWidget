@@ -37,11 +37,13 @@
 <body>
 <div class="chat_options">
     <div>
+        <!--
         <div>
             <input type="checkbox" data-option="merge_same_user_messages" id="option_merge_same_user_messages">
             <label for="option_merge_same_user_messages">Сжимать сообщения подряд одного пользователя в одно сообщение
                 (как в Discord)</label>
         </div>
+        -->
         <div>
             <label for="option_attachments">Аттачи в чате</label>
             <select id="option_attachments" data-option="attachments">
@@ -96,6 +98,13 @@
                 <option value="1">Twemoji (Discord)</option>
                 <option value="0">JoyPixels (EmojiOne)</option>
                 <option value="2">Стандартные эмодзи операционной системы</option>
+            </select>
+        </div>
+        <div>
+            <label for="option_text_spoiler">Показывать текстовые спойлеры</label>
+            <select id="option_text_spoiler" data-option="text_spoiler">
+                <option value="0">Скрывать</option>
+                <option value="1">Показывать</option>
             </select>
         </div>
     </div>

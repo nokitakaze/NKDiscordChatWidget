@@ -39,6 +39,11 @@ namespace NKDiscordChatWidget.General
             RegexOptions.Compiled
         );
 
+        private static readonly Regex rSpoilerMark = new Regex(
+            @"\\|\\|(.+?)\\|\\|",
+            RegexOptions.Compiled
+        );
+
         private static readonly Regex rEmojiWithinText = new Regex(
             @"<(a)?\:(.+?)\:([0-9]+)>",
             RegexOptions.Compiled
@@ -72,10 +77,28 @@ namespace NKDiscordChatWidget.General
         )
         {
             var waitDictionary = new Dictionary<string, string>();
+            // @todo Цитаты (в них тоже должна быть полная маркировка)
 
-            // Format
+            // Спойлеры
+            /*
+            text = rSpoilerMark.Replace(text, m1 =>
+            {
+                var wait = GetWaitString();
+                waitDictionary[wait] = string.Format(
+                    "<span class='spoiler {1}'><span class='content'>{0}</span></span>",
+                    HttpUtility.HtmlEncode(m1.Groups[1].Value), // @todo тут должна быть полная маркировка
+                    (chatOption.text_spoiler == 1) ? "spoiler-show" : ""
+                );
+
+                return wait;
+            });
+            */
+            // @todo <=================== Порезать тут на два метода ===================> 
+
+            // Format (no mark)
             text = rWithoutMark.Replace(text, m1 =>
             {
+                // @todo Тут есть ошибка, из-за которой код частично интерпретируется как код (или нет?)
                 var wait = GetWaitString();
                 waitDictionary[wait] = string.Format("<span class='without-mark'>{0}</span>",
                     HttpUtility.HtmlEncode(m1.Groups[1].Value)
@@ -165,6 +188,7 @@ namespace NKDiscordChatWidget.General
                 thisGuildEmojis.Add(emoji.id);
             }
 
+            // Эмодзи внутри текста
             text = rEmojiWithinText.Replace(text, m1 =>
             {
                 string emojiID = m1.Groups[3].Value;
@@ -189,6 +213,8 @@ namespace NKDiscordChatWidget.General
 
                 return wait;
             });
+
+            // Упоминание человека
             text = rMentionNick.Replace(text, m1 =>
             {
                 string mentionID = m1.Groups[1].Value;
@@ -206,6 +232,7 @@ namespace NKDiscordChatWidget.General
                     return string.Format("<Пользователь Unknown #{0}>", mentionID);
                 }
 
+                // @todo здесь где-то есть ошибка с выбором самой главной роли
                 var nickColor = "inherit";
                 if ((guild.roles != null) && (mention.member?.roles != null))
                 {
@@ -224,18 +251,21 @@ namespace NKDiscordChatWidget.General
                 var wait = GetWaitString();
 
                 waitDictionary[wait] = string.Format("<span class='user mention' style='color: {1};'>@{0}</span>",
-                    HttpUtility.HtmlEncode(mention.member?.nick ??  mention.username),
+                    HttpUtility.HtmlEncode(mention.member?.nick ?? mention.username),
                     nickColor
                 );
 
                 return wait;
             });
+
+            // Упоминание роли
             text = rMentionRole.Replace(text, m1 =>
             {
                 string roleID = m1.Groups[1].Value;
 
                 //
 
+                // @todo здесь где-то есть ошибка с выбором самой главной роли
                 Role role = guild.roles.FirstOrDefault(t => t.id == roleID);
                 if (role == null)
                 {
@@ -263,7 +293,7 @@ namespace NKDiscordChatWidget.General
             html = rEm.Replace(html,
                 m1 => string.Format("<em>{0}</em>", m1.Groups[1].Value));
 
-            // wait
+            // Меняем все wait'ы внутри текста на значения из словаря
             foreach (var (wait, replace) in waitDictionary)
             {
                 html = html.Replace(wait, replace);
