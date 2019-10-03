@@ -14,9 +14,24 @@
         body {
             overflow-y: hidden;
         }
+
+        #error_block {
+            display: none;
+            position: fixed;
+            bottom: 5px;
+            border: 1px solid red;
+            background-color: red;
+            color: white;
+            font-weight: bold;
+            padding: 5px;
+            width: 98%;
+
+            z-index: 2;
+        }
     </style>
 </head>
 <body>
 <div id="chat"></div>
+<div id="error_block"></div>
 </body>
 </html>

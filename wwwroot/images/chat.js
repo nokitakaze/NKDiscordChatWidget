@@ -197,18 +197,37 @@ function startSignalRClient(queryData) {
     connection.start()
         .then(function () {
             console.debug("signalR::onStart", queryData);
+            $('#error_block').hide();
             connection
                 .invoke("ChangeDrawOptionAndGetAllMessages", JSON.stringify(queryData))
                 .catch(function (err) {
-                    // @todo Что делать? Вывести ошибку на экран и перезагрузить страницу
+                    // Выводим ошибку на экран и пытаемся зайти в чат ещё раз
+                    $('#error_block').text('Error on ChangeDrawOptionAndGetAllMessages: ' + err.toString()).show();
+                    setTimeout(function () {
+                        startSignalRClient(queryData);
+                    }, 5000);
+
                     console.debug("signalR::ChangeDrawOptionAndGetAllMessages::catch", user, message, err);
                     return console.error(err.toString());
                 });
         })
         .catch(function (err) {
-            // @todo Что делать? Вывести ошибку на экран и перезагрузить страницу
+            // Выводим ошибку на экран и пытаемся зайти в чат ещё раз
+            $('#error_block').text('Error connection: ' + err.toString()).show();
+            setTimeout(function () {
+                startSignalRClient(queryData);
+            }, 5000);
 
             return console.error(err.toString());
         });
+
+    connection.onclose(function () {
+        console.warn('Chat connection has been closed');
+        $('#error_block').text('chat has been disconnected').show();
+        setTimeout(function () {
+            startSignalRClient(queryData);
+        }, 5000);
+    });
+
     // @todo обрабатывать дисконнект, писать о нём в console.warn
 }

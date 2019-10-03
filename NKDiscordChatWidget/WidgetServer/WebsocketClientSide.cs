@@ -13,7 +13,7 @@ namespace NKDiscordChatWidget.WidgetServer
     /// На этот end point приходит фактически один запрос: смена настроек отображения чата
     /// </summary>
     // ReSharper disable once ClassNeverInstantiated.Global
-    public class WebsocketClientSide : Hub, IDisposable
+    public class WebsocketClientSide : Hub
     {
         private static IHubContext<WebsocketClientSide> _hubContext;
 
@@ -119,15 +119,10 @@ namespace NKDiscordChatWidget.WidgetServer
             }
         }
 
-        protected IClientProxy GetThisProxy()
+        ~WebsocketClientSide()
         {
-            return this.Clients.Client(this.Context.ConnectionId);
-        }
-
-        public new void Dispose()
-        {
-            _clients.TryRemove(this.Context.ConnectionId, out _);
-            // base.Dispose();
+            // @todo fix
+            // _clients.TryRemove(this.Context.ConnectionId, out _);
         }
 
         #region ClientSideSignals
