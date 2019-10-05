@@ -21,13 +21,11 @@ namespace NKDiscordChatWidget
             globalCancellationToken = new CancellationTokenSource();
             Global.globalCancellationToken = globalCancellationToken.Token;
 
-            var tasks = new List<Task>
-            {
-                Task.Run(() => { NKDiscordChatWidget.General.ClearChatTimer.StartTask(); }),
-            };
-
+            var tasks = new List<Task>();
             try
             {
+                tasks.Add(Task.Run(() => { NKDiscordChatWidget.General.ClearChatTimer.StartTask(); }));
+
                 Parser.Default.ParseArguments<Options>(args)
                     .WithParsed(RunOptionsAndReturnExitCode);
                 tasks.Add(Task.Factory.StartNew(DiscordBot.Bot.StartTask, TaskCreationOptions.LongRunning));
