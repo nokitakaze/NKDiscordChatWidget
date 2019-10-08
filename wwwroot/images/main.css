@@ -76,6 +76,7 @@ body {
     float: left;
     padding-left: 20px;
     color: #f6f6f7;
+    width: 100%;
 }
 
 #chat .message .content .content-header {
@@ -216,7 +217,8 @@ body {
 #chat .message .content .content-message .embed-block .embed {
     margin: 0 20px 10px 0;
     width: 90%;
-    max-width: 500px;
+    max-width: 95%;
+    /* max-width: 500px; */
     display: flex;
 }
 
@@ -231,8 +233,9 @@ body {
 #chat .message .content .content-message .embed-block .embed .embed-content {
     display: inline-block;
     padding: 10px;
-    border-radius: 0 3px 3px 0;
+    max-width: 100%;
 
+    border-radius: 0 3px 3px 0;
     border: 1px solid rgba(46, 48, 54, .6);
     background-color: rgba(46, 48, 54, .3);
 }
@@ -254,6 +257,7 @@ body {
 
 #chat .message .content .content-message .embed-block .embed .embed-content .preview img {
     max-height: 200px;
+    max-width: 100%;
 }
 
 #chat .message .content .content-message .embed-block .embed.blur .embed-content .preview img {
