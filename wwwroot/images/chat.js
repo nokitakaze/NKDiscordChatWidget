@@ -41,10 +41,13 @@ function windowScrollToBottom() {
 }
 
 function setLoadHandlersToMessage(message) {
+    const maxErrorNumber = 100;
+
     message
         .find('img')
         .each(function () {
             const obj = this;
+            let errorNumber = 0;
             console.debug('img load start', this);
 
             const interval = setInterval(function () {
@@ -53,11 +56,26 @@ function setLoadHandlersToMessage(message) {
 
             $(obj).on('load', function () {
                 // Доскроливаем чат до последнего пикселя
-                console.debug('event load', this);
+                console.debug('event load', this, errorNumber);
                 clearInterval(interval);
 
                 windowScrollToBottom();
-            })
+            });
+
+            $(obj).on('error', function (a, b, c) {
+                // Перезагружаем картинку
+                console.debug('event error', a, 'error number ', errorNumber, ' for', obj);
+                errorNumber++;
+                if (errorNumber >= maxErrorNumber) {
+                    console.warn('event load error', this, errorNumber, a);
+                    clearInterval(interval);
+                    return;
+                }
+
+                const realSrc = obj.src;
+                obj.src = '';
+                obj.src = realSrc;
+            });
         });
 
     message
