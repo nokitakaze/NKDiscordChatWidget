@@ -43,9 +43,21 @@ function windowScrollToBottom() {
 function setLoadHandlersToMessage(message) {
     message
         .find('img')
-        .on('load', function () {
-            // Доскроливаем чат до последнего пикселя
-            windowScrollToBottom();
+        .each(function () {
+            const obj = this;
+            console.debug('img load start', this);
+
+            const interval = setInterval(function () {
+                windowScrollToBottom();
+            }, 50);
+
+            $(obj).on('load', function () {
+                // Доскроливаем чат до последнего пикселя
+                console.debug('event load', this);
+                clearInterval(interval);
+
+                windowScrollToBottom();
+            })
         });
 
     message
