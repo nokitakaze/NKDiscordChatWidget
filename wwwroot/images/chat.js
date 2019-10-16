@@ -1,4 +1,5 @@
 'use strict';
+let timeServerStart = 0;
 
 $(document).ready(function () {
     let query = {};
@@ -92,9 +93,25 @@ function startSignalRClient(queryData) {
     let chatBlock = $('#chat');
     let receiveFullMessageListGot = false;
     let receiveMessageQueue = [];
+    let resourceChangedTriggered = false;
 
     let processReceiveMessageQueue = function () {
         for (let answer of receiveMessageQueue) {
+            if (timeServerStart == 0) {
+                timeServerStart = answer.time_server_start;
+            } else {
+                if ((answer.time_server_start !== timeServerStart) && !resourceChangedTriggered) {
+                    resourceChangedTriggered = true;
+                    $('#error_block').text('Server has been restarted').show();
+                    setTimeout(function () {
+                        $('#error_block').removeClass('warn');// hint: Вдруг не перезагрузится
+                        window.location.href = window.location.href;
+                    }, 5000);
+
+                    break;
+                }
+            }
+
             for (let message of answer.messages) {
                 {
                     let existed = chatBlock.find('> [data-id="' + message.id + '"]');
@@ -152,6 +169,19 @@ function startSignalRClient(queryData) {
     connection.on("ReceiveFullMessageList", function (answer) {
         // Обновление всего чата
         console.debug("signalR::ReceiveFullMessageList", answer);
+
+        if (timeServerStart == 0) {
+            timeServerStart = answer.time_server_start;
+        } else {
+            if ((answer.time_server_start !== timeServerStart) && !resourceChangedTriggered) {
+                resourceChangedTriggered = true;
+                $('#error_block').text('Server has been restarted').show();
+                setTimeout(function () {
+                    $('#error_block').removeClass('warn');// hint: Вдруг не перезагрузится
+                    window.location.href = window.location.href;
+                }, 5000);
+            }
+        }
 
         document.title = answer.channel_title;
 
@@ -220,6 +250,24 @@ function startSignalRClient(queryData) {
         chatBlock.find('> .message[data-id="' + messageId + '"]').remove();
     });
 
+    let ChangeResourceHasBeenTriggered = false;
+
+    connection.on("ChangeResource", function (filename) {
+        // Изменился один из ключевых ресурсов
+        console.warn("signalR::ChangeResource", filename);
+        if (ChangeResourceHasBeenTriggered) {
+            return;
+        }
+        ChangeResourceHasBeenTriggered = true;
+
+        //
+        $('#error_block').addClass('warn').text('Resources have been changed').show();
+        setTimeout(function () {
+            $('#error_block').removeClass('warn');// hint: Вдруг не перезагрузится
+            window.location.href = window.location.href;
+        }, 5000);
+    });
+
     connection.start()
         .then(function () {
             console.debug("signalR::onStart", queryData);
@@ -254,6 +302,4 @@ function startSignalRClient(queryData) {
             startSignalRClient(queryData);
         }, 5000);
     });
-
-    // @todo обрабатывать дисконнект, писать о нём в console.warn
 }

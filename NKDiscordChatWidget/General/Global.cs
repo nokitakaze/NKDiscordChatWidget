@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 
 namespace NKDiscordChatWidget.General
@@ -6,5 +7,11 @@ namespace NKDiscordChatWidget.General
     {
         public static CancellationToken globalCancellationToken;
         public static Options options;
+        public static readonly long TimeStart;
+
+        static Global()
+        {
+            TimeStart = ((DateTimeOffset) (DateTime.Now)).ToUnixTimeSeconds();
+        }
     }
 }

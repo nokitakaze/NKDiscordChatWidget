@@ -25,6 +25,7 @@ namespace NKDiscordChatWidget
             try
             {
                 tasks.Add(Task.Run(() => { NKDiscordChatWidget.General.ClearChatTimer.StartTask(); }));
+                tasks.Add(Task.Run(() => { NKDiscordChatWidget.General.ResourceFileWatch.StartTask(); }));
 
                 Parser.Default.ParseArguments<Options>(args)
                     .WithParsed(RunOptionsAndReturnExitCode);

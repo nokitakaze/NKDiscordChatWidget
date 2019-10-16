@@ -119,6 +119,21 @@ namespace NKDiscordChatWidget.WidgetServer
             }
         }
 
+        /// <summary>
+        /// Поменялся один из основных ресурсов, надо перезагрузить страницу
+        /// </summary>
+        /// <param name="filename">Название изменённого файла</param>
+        public static void ChangeResource(string filename)
+        {
+            foreach (var connectionId in _clients.Keys)
+            {
+                hubContext.Clients.Client(connectionId).SendCoreAsync("ChangeResource", new[]
+                {
+                    filename
+                });
+            }
+        }
+
         ~WebsocketClientSide()
         {
             // @todo fix

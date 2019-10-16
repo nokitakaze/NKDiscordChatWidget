@@ -326,11 +326,17 @@ namespace NKDiscordChatWidget.General
         public readonly List<AnswerMessage> messages = new List<AnswerMessage>();
         public double time_answer;
         public readonly HashSet<string> existedID = new HashSet<string>();
+        public long time_server_start;
 
         /// <summary>
         /// Заголовок для окна виджета (нужно только для дебага этого виджета)
         /// </summary>
         public string channel_title;
+
+        public AnswerFull()
+        {
+            this.time_server_start = Global.TimeStart;
+        }
     }
     // ReSharper restore NotAccessedField.Global
 }
