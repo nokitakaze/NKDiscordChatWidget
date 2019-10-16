@@ -13,8 +13,16 @@ namespace NKDiscordChatWidget.DiscordBot.Classes
     [SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
     public class EventMessageCreate
     {
+        /// <summary>
+        /// https://discordapp.com/developers/docs/resources/channel#message-object-message-types
+        /// </summary>
         public int type;
+
+        /// <summary>
+        /// Text-to-speech. Встроенная в Discord говорилка прочитает текст
+        /// </summary>
         public bool tts;
+
         public string timestamp;
         public string edited_timestamp;
         public bool pinned;

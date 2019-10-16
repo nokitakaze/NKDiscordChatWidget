@@ -258,6 +258,11 @@ namespace NKDiscordChatWidget.DiscordBot
                             // https://discordapp.com/developers/docs/resources/channel#message-object
                             var messageCreate = JsonConvert.DeserializeObject<EventMessageCreate>(message.dAsString);
                             messageCreate.FixUp();
+                            if (messageCreate.type != 0)
+                            {
+                                break;
+                            }
+
                             if (!messages.ContainsKey(messageCreate.guild_id))
                             {
                                 messages[messageCreate.guild_id] = new ConcurrentDictionary<string,
@@ -400,6 +405,38 @@ namespace NKDiscordChatWidget.DiscordBot
                             // https://discordapp.com/developers/docs/topics/gateway#guild-member-add
                             break;
                         }
+                        case "GUILD_BAN_ADD":
+                        {
+                            // https://discordapp.com/developers/docs/topics/gateway#guild-ban-add
+                            var banAdd = JsonConvert.DeserializeObject<EventGuildBanAdd>(message.dAsString);
+                            if (!messages.ContainsKey(banAdd.guild_id))
+                            {
+                                break;
+                            }
+
+                            var userId = banAdd.user.id;
+
+                            foreach (var (channelId, channelsMessages) in messages[banAdd.guild_id])
+                            {
+                                var forDeletions = new List<string>();
+                                foreach (var (messageId, messageItem) in channelsMessages)
+                                {
+                                    if (messageItem.author.id == userId)
+                                    {
+                                        forDeletions.Add(messageId);
+                                    }
+                                }
+
+                                foreach (var messageId in forDeletions)
+                                {
+                                    channelsMessages.TryRemove(messageId, out _);
+                                    WebsocketClientSide.RemoveMessage(banAdd.guild_id, channelId, messageId);
+                                }
+                            }
+
+                            break;
+                        }
+                        // 
                         // @todo GUILD_EMOJIS_UPDATE
                     }
 
