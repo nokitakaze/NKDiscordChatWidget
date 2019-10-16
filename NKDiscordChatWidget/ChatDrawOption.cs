@@ -22,6 +22,11 @@ namespace NKDiscordChatWidget
         public int message_mentions_style;
 
         /// <summary>
+        /// Временное смещение в минутах относительно Гринвича. I.e. Москва = + 180
+        /// </summary>
+        public int timezone;
+
+        /// <summary>
         /// Какой пак эмодзи отображать
         /// </summary>
         public EmojiPackType unicode_emoji_displaying = EmojiPackType.Twemoji;

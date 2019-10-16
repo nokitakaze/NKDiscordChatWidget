@@ -64,10 +64,12 @@ namespace NKDiscordChatWidget.General
                 sha1hash = data.Aggregate("", (current, c) => current + c.ToString("x2"));
             }
 
+            var drawDateTime = message.timestampAsDT.AddMinutes(chatDrawOption.timezone);
+
             var html = string.Format(
                 "<div class='user'><img src='{0}' alt='{1}'></div>" +
                 "<div class='content'>" +
-                "<div class='content-header'><span class='content-user' style='color: {4};'>{1}</span><span class='content-time'>{3:hh:mm:ss dd.MM.yyyy}</span></div>" +
+                "<div class='content-header'><span class='content-user' style='color: {4};'>{1}</span><span class='content-time'>{3:HH:mm:ss dd.MM.yyyy}</span></div>" +
                 "{2}" +
                 "</div><div style='clear: both;'></div><hr>",
                 HttpUtility.HtmlEncode(message.author.avatarURL),
@@ -77,7 +79,7 @@ namespace NKDiscordChatWidget.General
                         : message.author.username
                 ),
                 htmlContent,
-                message.timestampAsDT,
+                drawDateTime,
                 nickColor
             );
 

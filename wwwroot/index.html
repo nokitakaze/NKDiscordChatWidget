@@ -12,6 +12,52 @@
         let link_postfix = '';
 
         $(document).ready(function () {
+            {
+                const timezoneSelect = $('#option_timezone');
+                // hint: Iles Marquises, Iran, Afghanistan, India, Nepal, Burma, Australia, Tonga, Line Islands
+                let minuteDiffList = [-9.5 * 60, 3.5 * 60, 4.5 * 60, 5.5 * 60, 5.75 * 60, 6.5 * 60,
+                    8.75 * 60, 9.5 * 60, 10.5 * 60, 12.75 * 60, 13 * 60, 14 * 60];
+                for (let hour = -12; hour <= 12; hour++) {
+                    minuteDiffList.push(hour * 60);
+                }
+                minuteDiffList.sort(function (a, b) {
+                    return a - b;
+                });
+                console.debug(minuteDiffList);
+
+                // Создаём выпадающий список
+                for (let offset of minuteDiffList) {
+                    const offsetAbs = Math.abs(offset);
+                    let label = ((offset < 0) ? "-" : "+") + Math.floor(offsetAbs / 60) + ":";
+                    let min = Math.floor(offsetAbs % 60).toString();
+                    if (min.length === 1) {
+                        min = '0' + min;
+                    }
+                    label += min + " UTC";
+
+                    const option = document.createElement('option');
+                    $(option).val(offset).text(label);
+
+                    timezoneSelect[0].appendChild(option);
+                }
+                const browserTimezone = -new Date().getTimezoneOffset();
+                let selectedTimezone;
+                if (minuteDiffList.indexOf(browserTimezone) !== -1) {
+                    selectedTimezone = browserTimezone;
+                } else {
+                    selectedTimezone = 0;
+                }
+
+                timezoneSelect.val(selectedTimezone);
+                // Единоразово меняем все ссылки
+                $('.item-sub a').each(function () {
+                    let url = '/chat.cgi?guild=' + $(this).attr('data-guild-id') +
+                        '&channel=' + $(this).attr('data-channel-id') + link_postfix +
+                        '&option_timezone=' + selectedTimezone.toString();
+                    $(this).attr('href', url);
+                });
+            }
+
             let options = $('.chat_options [data-option]');
             options.on('change', function () {
                 link_postfix = '';
@@ -45,74 +91,78 @@
         </div>
         -->
         <div>
-            <label for="option_attachments">Аттачи в чате</label>
             <select id="option_attachments" data-option="attachments">
                 <option value="0">Показывать</option>
                 <option value="1">Размазывать</option>
                 <option value="2">Не показывать</option>
             </select>
+            <label for="option_attachments">Аттачи в чате</label>
         </div>
         <div>
-            <label for="option_link_preview">Превью для ссылок</label>
             <select id="option_link_preview" data-option="link_preview">
                 <option value="0">Показывать</option>
                 <option value="1">Размазывать</option>
                 <option value="2">Не подгружать</option>
             </select>
+            <label for="option_link_preview">Превью для ссылок</label>
         </div>
         <div>
-            <label for="option_message_relative_reaction">Реакции с этого сервера для сообщений</label>
             <select id="option_message_relative_reaction" data-option="message_relative_reaction">
                 <option value="0">Показывать</option>
                 <option value="1">Размазывать</option>
                 <option value="2">Не подгружать</option>
             </select>
+            <label for="option_message_relative_reaction">Реакции с этого сервера для сообщений</label>
         </div>
         <div>
-            <label for="option_message_stranger_reaction">Реакции с чужого сервера для сообщений</label>
             <select id="option_message_stranger_reaction" data-option="message_stranger_reaction">
                 <option value="0">Показывать</option>
                 <option value="1">Размазывать</option>
                 <option value="2">Не подгружать</option>
             </select>
+            <label for="option_message_stranger_reaction">Реакции с чужого сервера для сообщений</label>
         </div>
         <div>
-            <label for="option_emoji_relative">Emoji с этого сервера внутри текста</label>
             <select id="option_emoji_relative" data-option="emoji_relative">
                 <option value="0">Показывать</option>
                 <option value="1">Размазывать</option>
                 <option value="2">Не подгружать</option>
             </select>
+            <label for="option_emoji_relative">Emoji с этого сервера внутри текста</label>
         </div>
         <div>
-            <label for="option_emoji_stranger">Emoji с чужого сервера внутри текста</label>
             <select id="option_emoji_stranger" data-option="emoji_stranger">
                 <option value="0">Показывать</option>
                 <option value="1">Размазывать</option>
                 <option value="2">Не подгружать</option>
             </select>
+            <label for="option_emoji_stranger">Emoji с чужого сервера внутри текста</label>
         </div>
         <div>
-            <label for="option_unicode_emoji_displaying">Unicode Emoji. Вариант пака</label>
             <select id="option_unicode_emoji_displaying" data-option="unicode_emoji_displaying">
                 <option value="1">Twemoji (Discord)</option>
                 <option value="0">JoyPixels (EmojiOne)</option>
                 <option value="2">Стандартные эмодзи операционной системы</option>
             </select>
+            <label for="option_unicode_emoji_displaying">Unicode Emoji. Вариант пака</label>
         </div>
         <!-- <div>
-            <label for="option_text_spoiler">Показывать текстовые спойлеры</label>
             <select id="option_text_spoiler" data-option="text_spoiler">
                 <option value="0">Скрывать</option>
                 <option value="1">Показывать</option>
             </select>
+            <label for="option_text_spoiler">Показывать текстовые спойлеры</label>
         </div> -->
         <div>
-            <label for="option_message_mentions_style">Цвет ников в упоминаниях в сообщениях</label>
             <select id="option_message_mentions_style" data-option="message_mentions_style">
                 <option value="0">Всегда синий (как в Discord)</option>
                 <option value="1">Разноцветный (по цвету роли)</option>
             </select>
+            <label for="option_message_mentions_style">Цвет ников в упоминаниях в сообщениях</label>
+        </div>
+        <div>
+            <select id="option_timezone" data-option="timezone"></select>
+            <label for="option_timezone">Временная зона</label>
         </div>
     </div>
 </div>

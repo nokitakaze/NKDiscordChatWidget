@@ -9,17 +9,13 @@ $(document).ready(function () {
     }
 
     let chatBlock = $('#chat');
-    let queryData = {
-        guild: query.guild,
-        channel: query.channel,
-    };
     let queryDataWebsocket = {
         guild: query.guild,
         channel: query.channel,
+        timezone: (-new Date().getTimezoneOffset()).toString(),
     };
     for (let key in query) {
         if (key.substr(0, 7) == 'option_') {
-            queryData[key] = query[key];
             queryDataWebsocket[key.substr(7)] = query[key];
         }
     }
