@@ -83,15 +83,6 @@ namespace NKDiscordChatWidget.WidgetServer
                 return;
             }
 
-            if (path == "/chat_ajax.cgi")
-            {
-                // Этот код устарел и остаётся здесь только временно
-                // @todo удалить весь этот код
-
-                await GetMessages(httpContext);
-                return;
-            }
-
             httpContext.Response.StatusCode = 404;
             await httpContext.Response.WriteAsync("Not found");
         }
@@ -186,119 +177,6 @@ namespace NKDiscordChatWidget.WidgetServer
             httpContext.Response.ContentType = "text/html; charset=utf-8";
 
             await httpContext.Response.WriteAsync(html);
-        }
-
-        private static async Task GetMessages(Microsoft.AspNetCore.Http.HttpContext httpContext)
-        {
-            string guildID, channelID;
-            {
-                if (!httpContext.Request.Query.TryGetValue("guild", out var a1))
-                {
-                    httpContext.Response.StatusCode = 400;
-                    await httpContext.Response.WriteAsync("Bad request");
-                    return;
-                }
-
-                guildID = a1.ToString();
-
-                if (!httpContext.Request.Query.TryGetValue("channel", out var a2))
-                {
-                    httpContext.Response.StatusCode = 400;
-                    await httpContext.Response.WriteAsync("Bad request");
-                    return;
-                }
-
-                channelID = a2.ToString();
-            }
-            var chatOption = new ChatDrawOption();
-            {
-                // @todo перевести на Reflections
-                if (httpContext.Request.Query.TryGetValue("option_merge_same_user_messages", out var s))
-                {
-                    chatOption.merge_same_user_messages = (int.Parse(s.ToString()) == 1);
-                }
-
-                if (httpContext.Request.Query.TryGetValue("option_attachments", out s))
-                {
-                    chatOption.attachments = int.Parse(s.ToString());
-                }
-
-                if (httpContext.Request.Query.TryGetValue("option_link_preview", out s))
-                {
-                    chatOption.link_preview = int.Parse(s.ToString());
-                }
-
-                if (httpContext.Request.Query.TryGetValue("option_message_relative_reaction", out s))
-                {
-                    chatOption.message_relative_reaction = int.Parse(s.ToString());
-                }
-
-                if (httpContext.Request.Query.TryGetValue("option_message_stranger_reaction", out s))
-                {
-                    chatOption.message_stranger_reaction = int.Parse(s.ToString());
-                }
-
-                if (httpContext.Request.Query.TryGetValue("option_emoji_relative", out s))
-                {
-                    chatOption.emoji_relative = int.Parse(s.ToString());
-                }
-
-                if (httpContext.Request.Query.TryGetValue("option_emoji_stranger", out s))
-                {
-                    chatOption.emoji_stranger = int.Parse(s.ToString());
-                }
-
-                if (httpContext.Request.Query.TryGetValue("option_message_mentions_style", out s))
-                {
-                    chatOption.message_mentions_style = int.Parse(s.ToString());
-                }
-
-                if (httpContext.Request.Query.TryGetValue("option_text_spoiler", out s))
-                {
-                    chatOption.text_spoiler = int.Parse(s.ToString());
-                }
-
-                if (httpContext.Request.Query.TryGetValue("option_unicode_emoji_displaying", out s))
-                {
-                    chatOption.unicode_emoji_displaying = (EmojiPackType) int.Parse(s.ToString());
-                }
-            }
-
-            httpContext.Response.ContentType = "application/javascript; charset=utf-8";
-            var answer = new AnswerFull
-            {
-                channel_title = string.Format("Discord Widget Chat: {0}-{1} [nkt]", guildID, channelID),
-            };
-            if (!NKDiscordChatWidget.DiscordBot.Bot.messages.ContainsKey(guildID))
-            {
-                await httpContext.Response.WriteAsync(JsonConvert.SerializeObject(answer));
-                return;
-            }
-
-            if (!NKDiscordChatWidget.DiscordBot.Bot.messages[guildID].ContainsKey(channelID))
-            {
-                await httpContext.Response.WriteAsync(JsonConvert.SerializeObject(answer));
-                return;
-            }
-
-            var messages = NKDiscordChatWidget.DiscordBot.Bot.messages[guildID][channelID].Values.ToList();
-            messages.Sort((a, b) => a.timestampAsDT.CompareTo(b.timestampAsDT));
-            for (var i = Math.Max(messages.Count - 1000, 0); i < messages.Count; i++)
-            {
-                answer.existedID.Add(messages[i].id);
-            }
-
-            // ReSharper disable once ForCanBeConvertedToForeach
-            for (var i = 0; i < messages.Count; i++)
-            {
-                // @todo не работает мердж сообщений от одного пользователя
-                var message = messages[i];
-                var localAnswerMessage = MessageArtist.DrawMessage(message, chatOption);
-                answer.messages.Add(localAnswerMessage);
-            }
-
-            answer.time_answer = ((DateTimeOffset) DateTime.Now).ToUnixTimeMilliseconds() * 0.001d;
-            await httpContext.Response.WriteAsync(JsonConvert.SerializeObject(answer));
         }
 
         private static readonly Regex rHTMLIncludeLink =
