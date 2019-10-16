@@ -12,6 +12,7 @@ namespace NKDiscordChatWidget
         public int emoji_stranger;
         public int emoji_relative;
         public int text_spoiler;
+        public int message_mentions_style;
 
         /// <summary>
         /// Какой пак эмодзи отображать

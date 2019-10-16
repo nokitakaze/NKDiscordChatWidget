@@ -105,8 +105,13 @@ body {
     color: #dcddde;
 }
 
+/* Текст сообщения с разметкой внутри */
 #chat .message .content .content-message .content-direct a {
     color: #0096cf;
+}
+
+#chat .message .content .content-message .content-direct .user.mention {
+    color: #7289da;
 }
 
 .chat_options label {

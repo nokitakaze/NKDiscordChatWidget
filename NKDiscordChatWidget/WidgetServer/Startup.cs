@@ -212,6 +212,7 @@ namespace NKDiscordChatWidget.WidgetServer
             }
             var chatOption = new ChatDrawOption();
             {
+                // @todo перевести на Reflections
                 if (httpContext.Request.Query.TryGetValue("option_merge_same_user_messages", out var s))
                 {
                     chatOption.merge_same_user_messages = (int.Parse(s.ToString()) == 1);
@@ -245,6 +246,16 @@ namespace NKDiscordChatWidget.WidgetServer
                 if (httpContext.Request.Query.TryGetValue("option_emoji_stranger", out s))
                 {
                     chatOption.emoji_stranger = int.Parse(s.ToString());
+                }
+
+                if (httpContext.Request.Query.TryGetValue("option_message_mentions_style", out s))
+                {
+                    chatOption.message_mentions_style = int.Parse(s.ToString());
+                }
+
+                if (httpContext.Request.Query.TryGetValue("option_text_spoiler", out s))
+                {
+                    chatOption.text_spoiler = int.Parse(s.ToString());
                 }
 
                 if (httpContext.Request.Query.TryGetValue("option_unicode_emoji_displaying", out s))

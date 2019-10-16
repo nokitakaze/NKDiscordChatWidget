@@ -69,6 +69,14 @@ namespace NKDiscordChatWidget.General
             RegexOptions.Compiled
         );
 
+        /// <summary>
+        /// Обработка разметки текста ВСЕГО сообщения
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="chatOption"></param>
+        /// <param name="mentions"></param>
+        /// <param name="guildID"></param>
+        /// <returns></returns>
         private static string RenderLineAsHTML(
             string text,
             ChatDrawOption chatOption,
@@ -76,7 +84,7 @@ namespace NKDiscordChatWidget.General
             string guildID
         )
         {
-            var waitDictionary = new Dictionary<string, string>();
+            // var waitDictionary = new Dictionary<string, string>();
             // @todo Цитаты (в них тоже должна быть полная маркировка)
 
             // Спойлеры
@@ -93,7 +101,26 @@ namespace NKDiscordChatWidget.General
                 return wait;
             });
             */
-            // @todo <=================== Порезать тут на два метода ===================> 
+
+            return RenderLineAsHTMLInnerBlock(text, chatOption, mentions, guildID);
+        }
+
+        /// <summary>
+        /// Обработка разметки сообщения внутри логического блока сообщения (root-сообщение, цитата, спойлер)
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="chatOption"></param>
+        /// <param name="mentions"></param>
+        /// <param name="guildID"></param>
+        /// <returns></returns>
+        private static string RenderLineAsHTMLInnerBlock(
+            string text,
+            ChatDrawOption chatOption,
+            List<EventMessageCreate.EventMessageCreate_Mention> mentions,
+            string guildID
+        )
+        {
+            var waitDictionary = new Dictionary<string, string>();
 
             // Format (no mark)
             text = rWithoutMark.Replace(text, m1 =>
@@ -232,13 +259,14 @@ namespace NKDiscordChatWidget.General
                     return string.Format("<Пользователь Unknown #{0}>", mentionID);
                 }
 
-                // @todo здесь где-то есть ошибка с выбором самой главной роли
+                // Выбираем наиболее приоритетную роль
                 var nickColor = "inherit";
-                if ((guild.roles != null) && (mention.member?.roles != null))
+                if ((guild.roles != null) && (mention.member?.roles != null) &&
+                    (chatOption.message_mentions_style == 1))
                 {
                     var mention_roles_local =
                         guild.roles.Where(t => mention.member.roles.Contains(t.id)).ToList();
-                    mention_roles_local.Sort((a, b) => a.position.CompareTo(b.position));
+                    mention_roles_local.Sort((a, b) => b.position.CompareTo(a.position));
                     var role = mention_roles_local.Any() ? mention_roles_local.First() : null;
                     if (role != null)
                     {
@@ -250,9 +278,9 @@ namespace NKDiscordChatWidget.General
 
                 var wait = GetWaitString();
 
-                waitDictionary[wait] = string.Format("<span class='user mention' style='color: {1};'>@{0}</span>",
+                waitDictionary[wait] = string.Format("<span class='user mention' {1}>@{0}</span>",
                     HttpUtility.HtmlEncode(mention.member?.nick ?? mention.username),
-                    nickColor
+                    (chatOption.message_mentions_style == 1) ? string.Format(" style='color: {0};'", nickColor) : ""
                 );
 
                 return wait;
@@ -264,8 +292,6 @@ namespace NKDiscordChatWidget.General
                 string roleID = m1.Groups[1].Value;
 
                 //
-
-                // @todo здесь где-то есть ошибка с выбором самой главной роли
                 Role role = guild.roles.FirstOrDefault(t => t.id == roleID);
                 if (role == null)
                 {

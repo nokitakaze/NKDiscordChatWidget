@@ -47,10 +47,9 @@ namespace NKDiscordChatWidget.General
             string nickColor = "inherit";
             if (message.member.roles.Any())
             {
-                var roleID = message.member.roles.First();
                 var roles = NKDiscordChatWidget.DiscordBot.Bot.guilds[message.guild_id].roles.ToList();
-                roles.Sort((a, b) => a.position.CompareTo(b.position));
-                Role role = roles.FirstOrDefault(t => t.id == roleID);
+                roles.Sort((a, b) => b.position.CompareTo(a.position));
+                Role role = roles.FirstOrDefault(t => message.member.roles.Contains(t.id));
                 if (role != null)
                 {
                     nickColor = role.color.ToString("X");
