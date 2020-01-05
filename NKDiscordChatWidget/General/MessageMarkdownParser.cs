@@ -111,12 +111,17 @@ namespace NKDiscordChatWidget.General
         );
 
         private static readonly Regex rBold = new Regex(
-            @"\*\*(.+)\*\*",
+            @"\*\*(.+?)\*\*",
             RegexOptions.Compiled
         );
 
-        private static readonly Regex rEm = new Regex(
-            @"\*(.+)\*",
+        private static readonly Regex rItalic = new Regex(
+            @"\*(.+?)\*",
+            RegexOptions.Compiled
+        );
+
+        private static readonly Regex rBoldItalic = new Regex(
+            @"\*\*\*(.+?)\*\*\*",
             RegexOptions.Compiled
         );
 
@@ -210,6 +215,7 @@ namespace NKDiscordChatWidget.General
 
             // simple mark
 
+            text = MarkBoldItalic(text, chatOption, waitDictionary, guild, mentions);
             text = MarkBold(text, chatOption, waitDictionary, guild, mentions);
             text = MarkItalic(text, chatOption, waitDictionary, guild, mentions);
             text = MarkDelete(text, chatOption, waitDictionary, guild, mentions);
@@ -320,7 +326,7 @@ namespace NKDiscordChatWidget.General
                     // Этот символ НЕ является unicode emoji
                     if (activeEmoji.Any())
                     {
-                        // У нас не пустой буффер emoji символов, надо их записать в строку
+                        // У нас непустой буффер emoji символов, надо их записать в строку
                         var localEmojiList = UnicodeEmojiEngine.RenderEmojiAsStringList(
                             chatOption.unicode_emoji_displaying, activeEmoji);
                         textAfter += RenderEmojiStringListAsHtml(
@@ -417,7 +423,7 @@ namespace NKDiscordChatWidget.General
         }
 
         /// <summary>
-        /// 
+        /// Упоминание в сообщении конкретного человека
         /// </summary>
         /// <param name="text">Текст с сырым Markdown</param>
         /// <param name="chatOption">Опции чата, заданные стримером для виджета</param>
@@ -478,12 +484,11 @@ namespace NKDiscordChatWidget.General
                 return wait;
             });
 
-
             return text;
         }
 
         /// <summary>
-        /// Упоминание роли в тексте
+        /// Упоминание в тексте целой роли с сервера
         /// </summary>
         /// <param name="text">Текст с сырым Markdown</param>
         /// <param name="chatOption">Опции чата, заданные стримером для виджета</param>
@@ -617,7 +622,7 @@ namespace NKDiscordChatWidget.General
             List<EventMessageCreate.EventMessageCreate_Mention> mentions
         )
         {
-            text = rEm.Replace(text, m1 =>
+            text = rItalic.Replace(text, m1 =>
             {
                 var subBlock = RenderMarkdownBlockAsHTMLInnerBlock(
                     m1.Groups[1].Value,
@@ -629,6 +634,41 @@ namespace NKDiscordChatWidget.General
 
                 var wait = GetWaitString();
                 waitDictionary[wait] = string.Format("<em>{0}</em>", subBlock);
+                return wait;
+            });
+
+            return text;
+        }
+
+        /// <summary>
+        /// Жирный наклонный текст
+        /// </summary>
+        /// <param name="text">Текст с сырым Markdown</param>
+        /// <param name="chatOption">Опции чата, заданные стримером для виджета</param>
+        /// <param name="waitDictionary">Dictionary для саб-блоков</param>
+        /// <param name="guild">Гильдия (сервер), внутри которого написано сообщение</param>
+        /// <param name="mentions">Список упоминаний, сделанных в сообщении</param>
+        /// <returns></returns>
+        public static string MarkBoldItalic(
+            string text,
+            ChatDrawOption chatOption,
+            Dictionary<string, string> waitDictionary,
+            EventGuildCreate guild,
+            List<EventMessageCreate.EventMessageCreate_Mention> mentions
+        )
+        {
+            text = rBoldItalic.Replace(text, m1 =>
+            {
+                var subBlock = RenderMarkdownBlockAsHTMLInnerBlock(
+                    m1.Groups[1].Value,
+                    chatOption,
+                    waitDictionary,
+                    guild,
+                    mentions
+                );
+
+                var wait = GetWaitString();
+                waitDictionary[wait] = string.Format("<strong><em>{0}</em></strong>", subBlock);
                 return wait;
             });
 
