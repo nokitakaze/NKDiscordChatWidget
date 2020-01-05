@@ -130,7 +130,6 @@ namespace MarkdownTest
                     },
                 },
             };
-            // TODO заполнить EventGuildCreate
         }
 
         private static string GetRandomWord()
@@ -150,15 +149,13 @@ namespace MarkdownTest
             // bold, em, ~~, spoiler (on/off)
             // quote, no-formatting
             // emoji, mention user, mention role
-            /* TODO: Вернуть
             {
                 var simpleTest = GenerateSimpleTests();
                 result.AddRange(simpleTest.Select(singleCase =>
                     new[] {singleCase[0], "<div class='line'>" + singleCase[1] + "</div>", null, null, null}));
             }
-            */
             result.AddRange(GetThreeAsteriskTests());
-            // result.AddRange(GetSpaceCharacterTests()); TODO: Вернуть
+            result.AddRange(GetSpaceCharacterTests());
             {
                 var inputs = new List<string[]>()
                 {
@@ -356,6 +353,8 @@ namespace MarkdownTest
                 "<em>{0}</em>",
                 "<del>{0}</del>",
                 "<span class='spoiler '><span class='spoiler-content'>{0}</span></span>",
+                "<u>{0}</u>",
+                "<em>{0}</em>",
             };
             var markdownTemplate = new List<string>()
             {
@@ -363,13 +362,30 @@ namespace MarkdownTest
                 "*{0}*",
                 "~~{0}~~",
                 "||{0}||",
+                "__{0}__",
+                "_{0}_",
             };
 
             for (int i = 0; i < htmlTemplate.Count; i++)
             {
+                if (i == 1)
+                {
+                    // Пробелы внутри это сразу на хер
+
+                    continue;
+                }
+
                 for (int j = 0; j < htmlTemplate.Count; j++)
                 {
-                    if ((i == j) || ((j == 1) && (i == 0)))
+                    if (
+                        (i == j) ||
+                        ((i == 0) && (j == 1)) ||
+                        ((i == 4) && (j == 5)) ||
+                        ((i == 1) && (j == 5)) ||
+                        ((i == 5) && (j == 1)) ||
+                        ((i == 0) && (j == 5)) ||
+                        ((i == 5) && (j == 0))
+                    )
                     {
                         continue;
                     }
@@ -472,7 +488,7 @@ namespace MarkdownTest
                     new object[] {"*not italic *", "*not italic *"},
                     new object[] {"! _italic_ !", "! <em>italic</em> !"},
                     new object[] {"! _ italic _ !", "! <em> italic </em> !"},
-                    
+
                     // Underscore tests
                     new object[] {"__underscore__", "<u>underscore</u>"},
                     new object[] {"__ underscore __", "<u> underscore </u>"},
@@ -541,11 +557,17 @@ namespace MarkdownTest
 
             var realExpectedHtml = "";
             {
-                var r = new Regex("<em><strong>(.*?)</strong></em>",
+                var r1 = new Regex("<em><strong>(.*?)</strong></em>",
                     RegexOptions.Compiled);
-                expectedHtml = r.Replace(expectedHtml,
+                expectedHtml = r1.Replace(expectedHtml,
                     (m) => m.Groups[1].Value.IndexOf("<", StringComparison.Ordinal) == -1
                         ? string.Format("<strong><em>{0}</em></strong>", m.Groups[1].Value)
+                        : m.Groups[0].Value);
+                var r2 = new Regex("<u><em>(.*?)</em></u>",
+                    RegexOptions.Compiled);
+                expectedHtml = r2.Replace(expectedHtml,
+                    (m) => m.Groups[1].Value.IndexOf("<", StringComparison.Ordinal) == -1
+                        ? string.Format("<em><u>{0}</u></em>", m.Groups[1].Value)
                         : m.Groups[0].Value);
 
                 var configuration = Configuration.Default;

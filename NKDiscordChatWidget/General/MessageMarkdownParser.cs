@@ -129,8 +129,8 @@ namespace NKDiscordChatWidget.General
             RegexOptions.Compiled
         );
 
-        private static readonly Regex rItalicAsterisk = new Regex(
-            @"\*(.+?)\*",
+        private static readonly Regex rSingleAsterisk = new Regex(
+            @"\*(.+)\*",
             RegexOptions.Compiled
         );
 
@@ -223,27 +223,127 @@ namespace NKDiscordChatWidget.General
             List<EventMessageCreate.EventMessageCreate_Mention> mentions
         )
         {
-            text = MarkNoFormatting(text, chatOption, waitDictionary);
-            text = MarkLinks(text, chatOption, waitDictionary);
+            while (true)
+            {
+                var highlights = new List<dynamic>();
+                foreach (var pair in new List<dynamic>()
+                {
+                    new
+                    {
+                        regexp = rWithoutMark,
+                        deleg = (Func<string>) (() => MarkNoFormatting(text, chatOption, waitDictionary))
+                    },
+                    new {regexp = rLink, deleg = (Func<string>) (() => MarkLinks(text, chatOption, waitDictionary))},
+                    new
+                    {
+                        regexp = rEmojiWithinText,
+                        deleg = (Func<string>) (() => MarkEmojiImages(text, chatOption, waitDictionary, guild))
+                    },
+                    // mentions
+                    new
+                    {
+                        regexp = rMentionNick,
+                        deleg = (Func<string>) (() =>
+                            MarkMentionsPeople(text, chatOption, waitDictionary, guild, mentions))
+                    },
+                    new
+                    {
+                        regexp = rMentionRole,
+                        deleg = (Func<string>) (() => MarkMentionsRole(text, chatOption, waitDictionary, guild))
+                    },
+
+                    // simple mark
+                    new
+                    {
+                        regexp = rSpoilerMark,
+                        deleg = (Func<string>) (() => MarkSpoilers(text, chatOption, waitDictionary, guild, mentions))
+                    },
+                    new
+                    {
+                        regexp = rBoldItalic,
+                        deleg = (Func<string>) (() => MarkBoldItalic(text, chatOption, waitDictionary, guild, mentions))
+                    },
+                    new
+                    {
+                        regexp = rBold,
+                        deleg = (Func<string>) (() => MarkBold(text, chatOption, waitDictionary, guild, mentions))
+                    },
+
+
+                    new
+                    {
+                        regexp = rTripleUnderscore,
+                        deleg = (Func<string>) (() =>
+                            MarkUnderscoreItalic(text, chatOption, waitDictionary, guild, mentions))
+                    },
+                    new
+                    {
+                        regexp = rDoubleUnderscore,
+                        deleg = (Func<string>) (() => MarkUnderscore(text, chatOption, waitDictionary, guild, mentions))
+                    },
+                    new
+                    {
+                        regexp = rSingleAsterisk,
+                        deleg = (Func<string>) (() =>
+                            MarkItalicViaAsterisk(text, chatOption, waitDictionary, guild, mentions))
+                    },
+                    new
+                    {
+                        regexp = rItalicUnderscore,
+                        deleg = (Func<string>) (() =>
+                            MarkItalicViaUnderscore(text, chatOption, waitDictionary, guild, mentions))
+                    },
+                    new
+                    {
+                        regexp = rDelete,
+                        deleg = (Func<string>) (() => MarkDelete(text, chatOption, waitDictionary, guild, mentions))
+                    },
+                })
+                {
+                    Regex regex = pair.regexp;
+                    var m = regex.Match(text);
+                    if (!m.Success)
+                    {
+                        continue;
+                    }
+
+                    highlights.Add(new {index = m.Index, pair.deleg});
+                    if (m.Index == 0)
+                    {
+                        break;
+                    }
+                }
+
+                if (!highlights.Any())
+                {
+                    // Не осталось маркировки, выходим
+
+                    break;
+                }
+
+                highlights.Sort((a, b) => a.index.CompareTo(b.index));
+
+                var u = false;
+                foreach (var highlight in highlights)
+                {
+                    Func<string> deleg = highlight.deleg;
+                    var result = deleg.Invoke();
+                    if (result != text)
+                    {
+                        text = result;
+                        u = true;
+                        break;
+                    }
+                }
+
+                if (!u)
+                {
+                    // hint: Это warning однозначный
+                    break;
+                }
+            }
+
             text = MarkEmojiUnicode(text, chatOption, waitDictionary);
-            text = MarkEmojiImages(text, chatOption, waitDictionary, guild);
-            text = MarkMentionsPeople(text, chatOption, waitDictionary, guild, mentions);
-            text = MarkMentionsRole(text, chatOption, waitDictionary, guild);
-
-            text = MarkSpoilers(text, chatOption, waitDictionary, guild, mentions);
-
-            // TODO: underscore
-
-            // simple mark
-
-            text = MarkBoldItalic(text, chatOption, waitDictionary, guild, mentions);
-            text = MarkBold(text, chatOption, waitDictionary, guild, mentions);
-
-            text = MarkUnderscoreItalic(text, chatOption, waitDictionary, guild, mentions);
-            text = MarkUnderscore(text, chatOption, waitDictionary, guild, mentions);
-            text = MarkItalicViaAsterisk(text, chatOption, waitDictionary, guild, mentions);
-            text = MarkItalicViaUnderscore(text, chatOption, waitDictionary, guild, mentions);
-            text = MarkDelete(text, chatOption, waitDictionary, guild, mentions);
 
             return text;
         }
@@ -703,7 +803,7 @@ namespace NKDiscordChatWidget.General
             List<EventMessageCreate.EventMessageCreate_Mention> mentions
         )
         {
-            text = rItalicAsterisk.Replace(text, m1 =>
+            text = rSingleAsterisk.Replace(text, m1 =>
             {
                 var firstChar = m1.Groups[1].Value.Substring(0, 1);
                 if (firstChar == " ")
