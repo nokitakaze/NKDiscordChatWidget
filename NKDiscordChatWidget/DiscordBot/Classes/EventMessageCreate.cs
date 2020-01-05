@@ -5,10 +5,10 @@ using System.Linq;
 
 namespace NKDiscordChatWidget.DiscordBot.Classes
 {
+    // ReSharper disable ClassNeverInstantiated.Global
     /// <summary>
     /// https://discordapp.com/developers/docs/resources/channel#message-object
     /// </summary>
-    // ReSharper disable once ClassNeverInstantiated.Global
     [SuppressMessage("ReSharper", "UnassignedField.Global")]
     [SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
     public class EventMessageCreate
@@ -123,7 +123,6 @@ namespace NKDiscordChatWidget.DiscordBot.Classes
             }
         }
 
-        // ReSharper disable once ClassNeverInstantiated.Global
         public class EventMessageCreate_Mention : User
         {
             public GuildMember member;
@@ -132,12 +131,19 @@ namespace NKDiscordChatWidget.DiscordBot.Classes
         /// <summary>
         /// https://discordapp.com/developers/docs/resources/user#user-object
         /// </summary>
-        // ReSharper disable once ClassNeverInstantiated.Global
         public class EventMessageCreate_Author
         {
             public string username;
             public string id;
             public string discriminator;
+
+            /// <summary>
+            /// Avatar hash
+            /// </summary>
+            /// <description>
+            /// In the case of endpoints that support GIFs, the hash will begin with a_
+            /// if it is available in GIF format. (example: a_1269e74af4df7417b13759eae50c83dc)
+            /// </description>
             public string avatar;
 
             public string avatarURL
@@ -150,9 +156,16 @@ namespace NKDiscordChatWidget.DiscordBot.Classes
                         return "https://discordapp.com/assets/322c936a8c8be1b803cd94861bdfa868.png";
                     }
 
-                    return string.Format("https://cdn.discordapp.com/avatars/{0}/{1}.png",
+                    string extension = "png";
+                    if (this.avatar.Substring(0, 2) == "a_")
+                    {
+                        extension = "gif";
+                    }
+
+                    return string.Format("https://cdn.discordapp.com/avatars/{0}/{1}.{2}",
                         this.id,
-                        this.avatar
+                        this.avatar,
+                        extension
                     );
                 }
             }
@@ -161,7 +174,6 @@ namespace NKDiscordChatWidget.DiscordBot.Classes
         /// <summary>
         /// https://discordapp.com/developers/docs/resources/channel#attachment-object
         /// </summary>
-        // ReSharper disable once ClassNeverInstantiated.Global
         public class EventMessageCreate_Attachment
         {
             public int width;
@@ -191,7 +203,6 @@ namespace NKDiscordChatWidget.DiscordBot.Classes
         /// <summary>
         /// https://discordapp.com/developers/docs/resources/guild#guild-member-object
         /// </summary>
-        // ReSharper disable once ClassNeverInstantiated.Global
         public class EventMessageCreate_Member
         {
             public dynamic user;
@@ -210,7 +221,6 @@ namespace NKDiscordChatWidget.DiscordBot.Classes
         /// <summary>
         /// https://discordapp.com/developers/docs/resources/channel#embed-object-embed-structure
         /// </summary>
-        // ReSharper disable once ClassNeverInstantiated.Global
         public class EventMessageCreate_Embed
         {
             public string url;
@@ -232,7 +242,6 @@ namespace NKDiscordChatWidget.DiscordBot.Classes
         /// <summary>
         /// https://discordapp.com/developers/docs/resources/channel#embed-object-embed-video-structure
         /// </summary>
-        // ReSharper disable once ClassNeverInstantiated.Global
         public class Embed_Video
         {
             public string url;
@@ -249,7 +258,6 @@ namespace NKDiscordChatWidget.DiscordBot.Classes
         /// <summary>
         /// https://discordapp.com/developers/docs/resources/channel#embed-object-embed-thumbnail-structure
         /// </summary>
-        // ReSharper disable once ClassNeverInstantiated.Global
         public class Embed_Thumbnail
         {
             public string url;
@@ -266,7 +274,6 @@ namespace NKDiscordChatWidget.DiscordBot.Classes
         /// <summary>
         /// https://discordapp.com/developers/docs/resources/channel#embed-object-embed-provider-structure
         /// </summary>
-        // ReSharper disable once ClassNeverInstantiated.Global
         public class Embed_Provider
         {
             public string url;
@@ -281,7 +288,6 @@ namespace NKDiscordChatWidget.DiscordBot.Classes
         /// <summary>
         /// https://discordapp.com/developers/docs/resources/channel#embed-object-embed-author-structure
         /// </summary>
-        // ReSharper disable once ClassNeverInstantiated.Global
         public class Embed_Author
         {
             public string url;
@@ -313,4 +319,5 @@ namespace NKDiscordChatWidget.DiscordBot.Classes
             }
         }
     }
+    // ReSharper restore ClassNeverInstantiated.Global
 }

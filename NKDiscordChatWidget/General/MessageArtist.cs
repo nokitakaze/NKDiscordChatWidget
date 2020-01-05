@@ -100,7 +100,7 @@ namespace NKDiscordChatWidget.General
             var thisGuildEmojis = new HashSet<string>(guild.emojis.Select(emoji => emoji.id).ToList());
 
             // Основной текст
-            string directContentHTML = NKDiscordChatWidget.General.MessageMark.RenderAsHTML(
+            string directContentHTML = NKDiscordChatWidget.General.MessageMarkdownParser.RenderMarkdownAsHTML(
                 message.content, chatOption, message.mentions, guildID);
             bool containOnlyUnicodeAndSpace;
             {
@@ -129,6 +129,7 @@ namespace NKDiscordChatWidget.General
                     {
                         case "mp4":
                         case "webm":
+                            // TODO: Отображать размер видео
                             attachmentHTML += string.Format(
                                 "<div class='attachment {1}'><video><source src='{0}'></video></div>",
                                 HttpUtility.HtmlEncode(attachment.proxy_url),

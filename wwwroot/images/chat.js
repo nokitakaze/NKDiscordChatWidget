@@ -102,7 +102,7 @@ function startSignalRClient(queryData) {
             } else {
                 if ((answer.time_server_start !== timeServerStart) && !resourceChangedTriggered) {
                     resourceChangedTriggered = true;
-                    $('#error_block').text('Server has been restarted').show();
+                    $('#error_block').text('Server was restarted').show();
                     setTimeout(function () {
                         $('#error_block').removeClass('warn');// hint: Вдруг не перезагрузится
                         window.location.href = window.location.href;
@@ -175,7 +175,7 @@ function startSignalRClient(queryData) {
         } else {
             if ((answer.time_server_start !== timeServerStart) && !resourceChangedTriggered) {
                 resourceChangedTriggered = true;
-                $('#error_block').text('Server has been restarted').show();
+                $('#error_block').text('Server was restarted').show();
                 setTimeout(function () {
                     $('#error_block').removeClass('warn');// hint: Вдруг не перезагрузится
                     window.location.href = window.location.href;
@@ -261,11 +261,13 @@ function startSignalRClient(queryData) {
         ChangeResourceHasBeenTriggered = true;
 
         //
+        /* @todo верни меня
         $('#error_block').addClass('warn').text('Resources have been changed').show();
         setTimeout(function () {
             $('#error_block').removeClass('warn');// hint: Вдруг не перезагрузится
             window.location.href = window.location.href;
         }, 5000);
+        */
     });
 
     connection.start()
@@ -296,8 +298,8 @@ function startSignalRClient(queryData) {
         });
 
     connection.onclose(function () {
-        console.warn('Chat connection has been closed');
-        $('#error_block').text('chat has been disconnected').show();
+        console.warn('Chat connection was closed');
+        $('#error_block').text('chat was disconnected').show();
         setTimeout(function () {
             startSignalRClient(queryData);
         }, 5000);

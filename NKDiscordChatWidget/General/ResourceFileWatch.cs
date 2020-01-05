@@ -93,5 +93,23 @@ namespace NKDiscordChatWidget.General
             Console.WriteLine($"File: {e.OldFullPath} renamed to {e.FullPath}");
             WebsocketClientSide.ChangeResource(e.Name);
         }
+
+        public struct S1
+        {
+            public int f1;
+            public string s1;
+
+            public int property1 => f1 + 1;
+
+            public void HelloWorld()
+            {
+                
+            }
+
+            public override string ToString()
+            {
+                return "I am a struct";
+            }
+        }
     }
 }

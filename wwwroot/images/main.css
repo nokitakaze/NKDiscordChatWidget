@@ -156,7 +156,7 @@ body {
 
 #chat .message .content .content-message .content-direct .spoiler {
     text-decoration: none;
-    background-color: #202225;
+    background-color: #4e5259;
     border-radius: 3px;
 }
 
@@ -166,15 +166,30 @@ body {
 #chat .message .content .content-message .content-direct .spoiler.spoiler-show {
 }
 
-#chat .message .content .content-message .content-direct .spoiler.spoiler-show .content {
+#chat .message .content .content-message .content-direct .spoiler.spoiler-show .spoiler-content {
     color: #dcddde;
 }
 
 #chat .message .content .content-message .content-direct .spoiler:not(.spoiler-show) {
 }
 
-#chat .message .content .content-message .content-direct .spoiler:not(.spoiler-show) .content {
+#chat .message .content .content-message .content-direct .spoiler:not(.spoiler-show) .spoiler-content {
     visibility: hidden;
+}
+
+#chat .message .content .content-message .content-direct .quote-block {
+    display: flex;
+}
+
+#chat .message .content .content-message .content-direct .quote-block .quote-border {
+    margin: 1px 0;
+    width: 4px;
+    border-radius: 4px;
+    background-color: #4f545c;
+}
+
+#chat .message .content .content-message .content-direct .quote-block .quote-content {
+    padding: 0 8px 0 12px;
 }
 
 #chat .message .content .content-message .content-direct .emoji {
