@@ -147,26 +147,18 @@ namespace MarkdownTest
             var result = new List<object[]>();
             var emptyMentions = new List<EventMessageCreate.EventMessageCreate_Mention>();
 
-            {
-                result.Add(new object[]
-                {
-                    "Нян",
-                    "<div class='line'>Нян</div>",
-                    new ChatDrawOption(),
-                    emptyMentions,
-                    new List<CheckRule>() {new CheckRule() {path = "", expectedValue = "Нян"}}
-                });
-            }
             // bold, em, ~~, spoiler (on/off)
             // quote, no-formatting
             // emoji, mention user, mention role
+            /* TODO: Вернуть
             {
                 var simpleTest = GenerateSimpleTests();
                 result.AddRange(simpleTest.Select(singleCase =>
                     new[] {singleCase[0], "<div class='line'>" + singleCase[1] + "</div>", null, null, null}));
             }
+            */
             result.AddRange(GetThreeAsteriskTests());
-            result.AddRange(GetSpaceCharacterTests());
+            // result.AddRange(GetSpaceCharacterTests()); TODO: Вернуть
             {
                 var inputs = new List<string[]>()
                 {
@@ -202,12 +194,12 @@ namespace MarkdownTest
                         id = member.user.id,
                     });
                 }
-                
+
                 var chatOption = new ChatDrawOption()
                 {
                     message_mentions_style = 1,
                 };
-                
+
                 foreach (var input in inputs)
                 {
                     foreach (var u1 in new[] {false, true})
@@ -437,6 +429,67 @@ namespace MarkdownTest
                 null,
                 null
             });
+
+            // Чекаем работает ли порядок появления форматирования
+
+            // ** `nyan**` pasu **
+            result.Add(new object[]
+            {
+                string.Format("** `{0}**` {1} **", word1, word2),
+                string.Format(
+                    "<div class='line'><strong> `{0}</strong>` {1} **</div>",
+                    word1, word2),
+                null,
+                null,
+                null
+            });
+            // `** nyan` ** pasu **
+            result.Add(new object[]
+            {
+                string.Format("`** {0}` ** {1} **", word1, word2),
+                string.Format(
+                    "<div class='line'><span class='without-mark'>** {0}</span> <strong> {1} </strong></div>",
+                    word1, word2),
+                null,
+                null,
+                null
+            });
+
+            {
+                // ReSharper disable once LoopCanBeConvertedToQuery
+                foreach (var pair in new[]
+                {
+                    new object[] {"im*italic*within", "im<em>italic</em>within"},
+
+                    new object[] {"! **bold** !", "! <strong>bold</strong> !"},
+                    new object[] {"! ** bold ** !", "! <strong> bold </strong> !"},
+
+                    // Discord идёт на встречу пользователям, поэтому парсер не такой как по спеке
+                    new object[] {"! *italic* !", "! <em>italic</em> !"},
+                    new object[] {"! * not italic * !", "! * not italic * !"},
+                    new object[] {"!* not italic *!", "!* not italic *!"},
+                    new object[] {"* not italic*", "* not italic*"},
+                    new object[] {"*not italic *", "*not italic *"},
+                    new object[] {"! _italic_ !", "! <em>italic</em> !"},
+                    new object[] {"! _ italic _ !", "! <em> italic </em> !"},
+                    
+                    // Underscore tests
+                    new object[] {"__underscore__", "<u>underscore</u>"},
+                    new object[] {"__ underscore __", "<u> underscore </u>"},
+                    new object[] {"___underscore italic___", "<em><u>underscore italic</u></em>"},
+                    new object[] {"___ underscore italic ___", "<em><u> underscore italic </u></em>"},
+                })
+                {
+                    result.Add(new[]
+                    {
+                        pair[0],
+                        string.Format("<div class='line'>{0}</div>", pair[1]),
+                        null,
+                        null,
+                        null
+                    });
+                }
+            }
 
             return result;
         }

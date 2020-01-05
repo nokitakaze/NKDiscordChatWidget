@@ -10,6 +10,10 @@ namespace NKDiscordChatWidget.General
     /// <summary>
     /// Парсер markdown
     /// </summary>
+    /// <description>
+    /// Дискорд меняет правила, поэтому парсер не такой как по спеке
+    /// https://daringfireball.net/projects/markdown/syntax
+    /// </description>
     public static class MessageMarkdownParser
     {
         /// <summary>
@@ -110,13 +114,28 @@ namespace NKDiscordChatWidget.General
             RegexOptions.Compiled
         );
 
+        private static readonly Regex rDoubleUnderscore = new Regex(
+            @"__(.+?)__",
+            RegexOptions.Compiled
+        );
+
+        private static readonly Regex rTripleUnderscore = new Regex(
+            @"___(.+?)___",
+            RegexOptions.Compiled
+        );
+
         private static readonly Regex rBold = new Regex(
             @"\*\*(.+?)\*\*",
             RegexOptions.Compiled
         );
 
-        private static readonly Regex rItalic = new Regex(
+        private static readonly Regex rItalicAsterisk = new Regex(
             @"\*(.+?)\*",
+            RegexOptions.Compiled
+        );
+
+        private static readonly Regex rItalicUnderscore = new Regex(
+            @"_(.+?)_",
             RegexOptions.Compiled
         );
 
@@ -204,7 +223,7 @@ namespace NKDiscordChatWidget.General
             List<EventMessageCreate.EventMessageCreate_Mention> mentions
         )
         {
-            text = MarkNoFormatting(text, chatOption, waitDictionary, guild);
+            text = MarkNoFormatting(text, chatOption, waitDictionary);
             text = MarkLinks(text, chatOption, waitDictionary);
             text = MarkEmojiUnicode(text, chatOption, waitDictionary);
             text = MarkEmojiImages(text, chatOption, waitDictionary, guild);
@@ -213,11 +232,17 @@ namespace NKDiscordChatWidget.General
 
             text = MarkSpoilers(text, chatOption, waitDictionary, guild, mentions);
 
+            // TODO: underscore
+
             // simple mark
 
             text = MarkBoldItalic(text, chatOption, waitDictionary, guild, mentions);
             text = MarkBold(text, chatOption, waitDictionary, guild, mentions);
-            text = MarkItalic(text, chatOption, waitDictionary, guild, mentions);
+
+            text = MarkUnderscoreItalic(text, chatOption, waitDictionary, guild, mentions);
+            text = MarkUnderscore(text, chatOption, waitDictionary, guild, mentions);
+            text = MarkItalicViaAsterisk(text, chatOption, waitDictionary, guild, mentions);
+            text = MarkItalicViaUnderscore(text, chatOption, waitDictionary, guild, mentions);
             text = MarkDelete(text, chatOption, waitDictionary, guild, mentions);
 
             return text;
@@ -231,16 +256,15 @@ namespace NKDiscordChatWidget.General
         /// <param name="text">Текст с сырым Markdown</param>
         /// <param name="chatOption">Опции чата, заданные стримером для виджета</param>
         /// <param name="waitDictionary">Dictionary для саб-блоков</param>
-        /// <param name="guild">Гильдия (сервер), внутри которого написано сообщение</param>
         /// <returns></returns>
         public static string MarkNoFormatting(
             string text,
             ChatDrawOption chatOption,
-            Dictionary<string, string> waitDictionary,
-            EventGuildCreate guild
+            Dictionary<string, string> waitDictionary
         )
         {
-            if (guild == null) throw new ArgumentNullException(nameof(guild));
+            // TODO: double backtick
+
             text = rWithoutMark.Replace(text, m1 =>
             {
                 var wait = GetWaitString();
@@ -593,7 +617,7 @@ namespace NKDiscordChatWidget.General
         }
 
         /// <summary>
-        /// Наклонный (курсивный) текст
+        ///
         /// </summary>
         /// <param name="text">Текст с сырым Markdown</param>
         /// <param name="chatOption">Опции чата, заданные стримером для виджета</param>
@@ -601,7 +625,7 @@ namespace NKDiscordChatWidget.General
         /// <param name="guild">Гильдия (сервер), внутри которого написано сообщение</param>
         /// <param name="mentions">Список упоминаний, сделанных в сообщении</param>
         /// <returns></returns>
-        public static string MarkItalic(
+        public static string MarkUnderscoreItalic(
             string text,
             ChatDrawOption chatOption,
             Dictionary<string, string> waitDictionary,
@@ -609,7 +633,124 @@ namespace NKDiscordChatWidget.General
             List<EventMessageCreate.EventMessageCreate_Mention> mentions
         )
         {
-            text = rItalic.Replace(text, m1 =>
+            text = rTripleUnderscore.Replace(text, m1 =>
+            {
+                var subBlock = RenderMarkdownBlockAsHTMLInnerBlock(
+                    m1.Groups[1].Value,
+                    chatOption,
+                    waitDictionary,
+                    guild,
+                    mentions
+                );
+
+                var wait = GetWaitString();
+                waitDictionary[wait] = string.Format("<em><u>{0}</u></em>", subBlock);
+                return wait;
+            });
+
+            return text;
+        }
+
+        /// <summary>
+        /// Наклонный (курсивный) текст через звёздочки
+        /// </summary>
+        /// <param name="text">Текст с сырым Markdown</param>
+        /// <param name="chatOption">Опции чата, заданные стримером для виджета</param>
+        /// <param name="waitDictionary">Dictionary для саб-блоков</param>
+        /// <param name="guild">Гильдия (сервер), внутри которого написано сообщение</param>
+        /// <param name="mentions">Список упоминаний, сделанных в сообщении</param>
+        /// <returns></returns>
+        public static string MarkUnderscore(
+            string text,
+            ChatDrawOption chatOption,
+            Dictionary<string, string> waitDictionary,
+            EventGuildCreate guild,
+            List<EventMessageCreate.EventMessageCreate_Mention> mentions
+        )
+        {
+            text = rDoubleUnderscore.Replace(text, m1 =>
+            {
+                var subBlock = RenderMarkdownBlockAsHTMLInnerBlock(
+                    m1.Groups[1].Value,
+                    chatOption,
+                    waitDictionary,
+                    guild,
+                    mentions
+                );
+
+                var wait = GetWaitString();
+                waitDictionary[wait] = string.Format("<u>{0}</u>", subBlock);
+                return wait;
+            });
+
+            return text;
+        }
+
+        /// <summary>
+        /// Наклонный (курсивный) текст через звёздочки
+        /// </summary>
+        /// <param name="text">Текст с сырым Markdown</param>
+        /// <param name="chatOption">Опции чата, заданные стримером для виджета</param>
+        /// <param name="waitDictionary">Dictionary для саб-блоков</param>
+        /// <param name="guild">Гильдия (сервер), внутри которого написано сообщение</param>
+        /// <param name="mentions">Список упоминаний, сделанных в сообщении</param>
+        /// <returns></returns>
+        public static string MarkItalicViaAsterisk(
+            string text,
+            ChatDrawOption chatOption,
+            Dictionary<string, string> waitDictionary,
+            EventGuildCreate guild,
+            List<EventMessageCreate.EventMessageCreate_Mention> mentions
+        )
+        {
+            text = rItalicAsterisk.Replace(text, m1 =>
+            {
+                var firstChar = m1.Groups[1].Value.Substring(0, 1);
+                if (firstChar == " ")
+                {
+                    return m1.Groups[0].Value;
+                }
+
+                var lastChar = m1.Groups[1].Value.Substring(m1.Groups[1].Value.Length - 1);
+                if (lastChar == " ")
+                {
+                    return m1.Groups[0].Value;
+                }
+
+                var subBlock = RenderMarkdownBlockAsHTMLInnerBlock(
+                    m1.Groups[1].Value,
+                    chatOption,
+                    waitDictionary,
+                    guild,
+                    mentions
+                );
+
+                var wait = GetWaitString();
+                waitDictionary[wait] = string.Format("<em>{0}</em>", subBlock);
+                return wait;
+            });
+
+            return text;
+        }
+
+        /// <summary>
+        /// Наклонный (курсивный) текст через одиночное подчёркивание
+        /// </summary>
+        /// <param name="text">Текст с сырым Markdown</param>
+        /// <param name="chatOption">Опции чата, заданные стримером для виджета</param>
+        /// <param name="waitDictionary">Dictionary для саб-блоков</param>
+        /// <param name="guild">Гильдия (сервер), внутри которого написано сообщение</param>
+        /// <param name="mentions">Список упоминаний, сделанных в сообщении</param>
+        /// <returns></returns>
+        public static string MarkItalicViaUnderscore(
+            string text,
+            ChatDrawOption chatOption,
+            Dictionary<string, string> waitDictionary,
+            EventGuildCreate guild,
+            List<EventMessageCreate.EventMessageCreate_Mention> mentions
+        )
+        {
+            text = rItalicUnderscore.Replace(text, m1 =>
             {
                 var subBlock = RenderMarkdownBlockAsHTMLInnerBlock(
                     m1.Groups[1].Value,
@@ -689,7 +830,6 @@ namespace NKDiscordChatWidget.General
                     mentions
                 );
 
-                // TODO: check if correct
                 var wait = GetWaitString();
                 waitDictionary[wait] = string.Format("<del>{0}</del>", subBlock);
                 return wait;
