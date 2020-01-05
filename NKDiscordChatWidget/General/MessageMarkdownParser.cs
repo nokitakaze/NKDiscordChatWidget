@@ -204,12 +204,12 @@ namespace NKDiscordChatWidget.General
             List<EventMessageCreate.EventMessageCreate_Mention> mentions
         )
         {
-            text = MarkNoFormatting(text, chatOption, waitDictionary, guild, mentions);
-            text = MarkLinks(text, chatOption, waitDictionary, guild, mentions);
-            text = MarkEmojiUnicode(text, chatOption, waitDictionary, guild, mentions);
-            text = MarkEmojiImages(text, chatOption, waitDictionary, guild, mentions);
+            text = MarkNoFormatting(text, chatOption, waitDictionary, guild);
+            text = MarkLinks(text, chatOption, waitDictionary);
+            text = MarkEmojiUnicode(text, chatOption, waitDictionary);
+            text = MarkEmojiImages(text, chatOption, waitDictionary, guild);
             text = MarkMentionsPeople(text, chatOption, waitDictionary, guild, mentions);
-            text = MarkMentionsRole(text, chatOption, waitDictionary, guild, mentions);
+            text = MarkMentionsRole(text, chatOption, waitDictionary, guild);
 
             text = MarkSpoilers(text, chatOption, waitDictionary, guild, mentions);
 
@@ -232,16 +232,15 @@ namespace NKDiscordChatWidget.General
         /// <param name="chatOption">Опции чата, заданные стримером для виджета</param>
         /// <param name="waitDictionary">Dictionary для саб-блоков</param>
         /// <param name="guild">Гильдия (сервер), внутри которого написано сообщение</param>
-        /// <param name="mentions">Список упоминаний, сделанных в сообщении</param>
         /// <returns></returns>
         public static string MarkNoFormatting(
             string text,
             ChatDrawOption chatOption,
             Dictionary<string, string> waitDictionary,
-            EventGuildCreate guild,
-            List<EventMessageCreate.EventMessageCreate_Mention> mentions
+            EventGuildCreate guild
         )
         {
+            if (guild == null) throw new ArgumentNullException(nameof(guild));
             text = rWithoutMark.Replace(text, m1 =>
             {
                 var wait = GetWaitString();
@@ -260,15 +259,11 @@ namespace NKDiscordChatWidget.General
         /// <param name="text">Текст с сырым Markdown</param>
         /// <param name="chatOption">Опции чата, заданные стримером для виджета</param>
         /// <param name="waitDictionary">Dictionary для саб-блоков</param>
-        /// <param name="guild">Гильдия (сервер), внутри которого написано сообщение</param>
-        /// <param name="mentions">Список упоминаний, сделанных в сообщении</param>
         /// <returns></returns>
         public static string MarkLinks(
             string text,
             ChatDrawOption chatOption,
-            Dictionary<string, string> waitDictionary,
-            EventGuildCreate guild,
-            List<EventMessageCreate.EventMessageCreate_Mention> mentions
+            Dictionary<string, string> waitDictionary
         )
         {
             text = rLink.Replace(text, m1 =>
@@ -298,15 +293,11 @@ namespace NKDiscordChatWidget.General
         /// <param name="text">Текст с сырым Markdown</param>
         /// <param name="chatOption">Опции чата, заданные стримером для виджета</param>
         /// <param name="waitDictionary">Dictionary для саб-блоков</param>
-        /// <param name="guild">Гильдия (сервер), внутри которого написано сообщение</param>
-        /// <param name="mentions">Список упоминаний, сделанных в сообщении</param>
         /// <returns></returns>
         public static string MarkEmojiUnicode(
             string text,
             ChatDrawOption chatOption,
-            Dictionary<string, string> waitDictionary,
-            EventGuildCreate guild,
-            List<EventMessageCreate.EventMessageCreate_Mention> mentions
+            Dictionary<string, string> waitDictionary
         )
         {
             if (!UnicodeEmojiEngine.emojiList[chatOption.unicode_emoji_displaying].Any())
@@ -376,14 +367,12 @@ namespace NKDiscordChatWidget.General
         /// <param name="chatOption">Опции чата, заданные стримером для виджета</param>
         /// <param name="waitDictionary">Dictionary для саб-блоков</param>
         /// <param name="guild">Гильдия (сервер), внутри которого написано сообщение</param>
-        /// <param name="mentions">Список упоминаний, сделанных в сообщении</param>
         /// <returns></returns>
         public static string MarkEmojiImages(
             string text,
             ChatDrawOption chatOption,
             Dictionary<string, string> waitDictionary,
-            EventGuildCreate guild,
-            List<EventMessageCreate.EventMessageCreate_Mention> mentions
+            EventGuildCreate guild
         )
         {
             var thisGuildEmojis = new HashSet<string>();
@@ -494,14 +483,12 @@ namespace NKDiscordChatWidget.General
         /// <param name="chatOption">Опции чата, заданные стримером для виджета</param>
         /// <param name="waitDictionary">Dictionary для саб-блоков</param>
         /// <param name="guild">Гильдия (сервер), внутри которого написано сообщение</param>
-        /// <param name="mentions">Список упоминаний, сделанных в сообщении</param>
         /// <returns></returns>
         public static string MarkMentionsRole(
             string text,
             ChatDrawOption chatOption,
             Dictionary<string, string> waitDictionary,
-            EventGuildCreate guild,
-            List<EventMessageCreate.EventMessageCreate_Mention> mentions
+            EventGuildCreate guild
         )
         {
             text = rMentionRole.Replace(text, m1 =>

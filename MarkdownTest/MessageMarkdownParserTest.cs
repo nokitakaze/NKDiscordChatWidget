@@ -13,7 +13,9 @@ namespace MarkdownTest
 {
     public class MessageMarkdownParserTest
     {
-        private const string guildID = "1";
+        #region Init
+
+        private const string guildID = "568216611366895631";
         private static readonly Random _rnd = new Random();
         private static readonly List<string> randomWords;
 
@@ -33,10 +35,100 @@ namespace MarkdownTest
 
             NKDiscordChatWidget.DiscordBot.Bot.guilds[guildID] = new EventGuildCreate()
             {
-                emojis = new List<Emoji>(),
+                id = guildID,
+                icon = "82000cc0465ffdf3d03bb09a6a79bc08",
+                emojis = new List<Emoji>()
+                {
+                    new Emoji()
+                    {
+                        id = "568685036979748865",
+                        name = "st2",
+                        require_colons = true,
+                    },
+                    new Emoji()
+                    {
+                        id = "568685037868810269",
+                        name = "st1",
+                        require_colons = true,
+                    },
+                    new Emoji()
+                    {
+                        id = "663446227550994452",
+                        name = "box1",
+                        animated = true,
+                        require_colons = true,
+                    },
+                    new Emoji()
+                    {
+                        id = "663446228616478720",
+                        name = "box2",
+                        animated = true,
+                        require_colons = true,
+                    },
+                },
                 channels = new List<EventGuildCreate.EventGuildCreate_Channel>(),
-                roles = new List<Role>(),
-                members = new List<GuildMember>(),
+                roles = new List<Role>()
+                {
+                    new Role()
+                    {
+                        color = 0,
+                        id = "568216611366895631",
+                        name = "@everyone",
+                        permissions = 104324673,
+                        position = 0,
+                    },
+                    new Role()
+                    {
+                        color = 1752220,
+                        id = "568217115031502868",
+                        name = "NKDiscordChatWidget",
+                        permissions = 1024,
+                        position = 0,
+                    },
+                    new Role()
+                    {
+                        color = 15844367,
+                        id = "568376310133424152",
+                        name = "admins",
+                        permissions = 104324705,
+                        position = 3,
+                    },
+                    new Role()
+                    {
+                        color = 10181046,
+                        id = "633965723764523028",
+                        name = "Фиолетовый",
+                        permissions = 104324673,
+                        position = 2,
+                    },
+                },
+                members = new List<GuildMember>()
+                {
+                    new GuildMember()
+                    {
+                        nick = "北風",
+                        roles = new List<string> {"568376310133424152",},
+                        user = new User()
+                        {
+                            avatar = "8a33053d4a3ef74577fdd4b21431ed2e",
+                            discriminator = "2064",
+                            id = "428567095563780107",
+                            username = "nokitakaze",
+                        },
+                    },
+                    new GuildMember()
+                    {
+                        nick = null,
+                        roles = new List<string> {"568217115031502868", "633965723764523028",},
+                        user = new User()
+                        {
+                            avatar = null,
+                            discriminator = "0355",
+                            id = "568138249986375682",
+                            username = "NKDiscordChatWidget",
+                        },
+                    },
+                },
             };
             // TODO заполнить EventGuildCreate
         }
@@ -46,11 +138,25 @@ namespace MarkdownTest
             return randomWords[_rnd.Next(0, randomWords.Count - 1)];
         }
 
+        #endregion
+
+        #region GenerateTestData
+
         public static IEnumerable<object[]> MainTestData()
         {
             var result = new List<object[]>();
             var emptyMentions = new List<EventMessageCreate.EventMessageCreate_Mention>();
 
+            {
+                result.Add(new object[]
+                {
+                    "Нян",
+                    "<div class='line'>Нян</div>",
+                    new ChatDrawOption(),
+                    emptyMentions,
+                    new List<CheckRule>() {new CheckRule() {path = "", expectedValue = "Нян"}}
+                });
+            }
             // bold, em, ~~, spoiler (on/off)
             // quote, no-formatting
             // emoji, mention user, mention role
@@ -59,76 +165,82 @@ namespace MarkdownTest
                 result.AddRange(simpleTest.Select(singleCase =>
                     new[] {singleCase[0], "<div class='line'>" + singleCase[1] + "</div>", null, null, null}));
             }
+            result.AddRange(GetThreeAsteriskTests());
+            result.AddRange(GetSpaceCharacterTests());
             {
-                var word1 = GetRandomWord();
-                var word2 = GetRandomWord();
-                var word3 = GetRandomWord();
-
-                result.Add(new object[]
+                var inputs = new List<string[]>()
                 {
-                    string.Format("**{0}** {1} **{2}**", word1, word2, word3),
-                    string.Format("<div class='line'><strong>{0}</strong> {1} <strong>{2}</strong></div>",
-                        word1, word2, word3),
-                    null,
-                    null,
-                    null
-                });
-                result.Add(new object[]
-                {
-                    string.Format("***{0}*** {1} ***{2}***", word1, word2, word3),
-                    string.Format(
-                        "<div class='line'><strong><em>{0}</em></strong> {1} <strong><em>{2}</em></strong></div>",
-                        word1, word2, word3),
-                    null,
-                    null,
-                    null
-                });
-            }
-            {
-                var htmlTemplate = new List<string>()
-                {
-                    "<strong>{0}</strong>",
-                    "<em>{0}</em>",
-                    "<del>{0}</del>",
-                    "<span class='spoiler '><span class='spoiler-content'>{0}</span></span>",
-                };
-                var markdownTemplate = new List<string>()
-                {
-                    "**{0}**",
-                    "*{0}*",
-                    "~~{0}~~",
-                    "||{0}||",
-                };
-
-                for (int i = 0; i < htmlTemplate.Count; i++)
-                {
-                    for (int j = 0; j < htmlTemplate.Count; j++)
+                    new[]
                     {
-                        if ((i == j) || ((j == 1) && (i == 0)))
+                        "<:st1:568685037868810269> <a:box1:663446227550994452> 😏",
+                        "<span class='emoji '><img src='https://cdn.discordapp.com/emojis/568685037868810269.png' alt=':st1:'></span> <span class='emoji '><img src='https://cdn.discordapp.com/emojis/663446227550994452.gif' alt=':box1:'></span> <span class='emoji unicode-emoji '><img src='/images/emoji/twemoji/1f60f.svg' alt=':1f60f:'></span>",
+                    },
+                    new[]
+                    {
+                        "😏 😼",
+                        "<span class='emoji unicode-emoji '><img src='/images/emoji/twemoji/1f60f.svg' alt=':1f60f:'></span> <span class='emoji unicode-emoji '><img src='/images/emoji/twemoji/1f63c.svg' alt=':1f63c:'></span>",
+                    },
+                    new[]
+                    {
+                        "<@!428567095563780107>",
+                        "<span class='user mention' style='color: #F1C40F;'>@北風</span>",
+                    },
+                    new[]
+                    {
+                        "<@&633965723764523028>",
+                        "<span class='role mention' style='color: #9B59B6;'>@Фиолетовый</span>",
+                    },
+                };
+
+                var mentions = new List<EventMessageCreate.EventMessageCreate_Mention>();
+                foreach (var member in NKDiscordChatWidget.DiscordBot.Bot.guilds[guildID].members)
+                {
+                    mentions.Add(new EventMessageCreate.EventMessageCreate_Mention()
+                    {
+                        member = member,
+                        username = member.nick,
+                        id = member.user.id,
+                    });
+                }
+                
+                var chatOption = new ChatDrawOption()
+                {
+                    message_mentions_style = 1,
+                };
+                
+                foreach (var input in inputs)
+                {
+                    foreach (var u1 in new[] {false, true})
+                    {
+                        var prefix = u1 ? GetRandomWord() + " " : "";
+
+                        for (var i1 = 0; i1 < 3; i1++)
                         {
-                            continue;
-                        }
+                            string postfix = "";
+                            switch (i1)
+                            {
+                                case 0:
+                                    postfix = "";
+                                    break;
+                                case 1:
+                                    postfix = " ";
+                                    break;
+                                case 2:
+                                    postfix = " " + GetRandomWord();
+                                    break;
+                                default:
+                                    throw new Exception();
+                            }
 
-                        for (int n = 1; n < 4; n++)
-                        {
-                            var prefixSpace = (n & 1) == 1 ? " " : "";
-                            var postfixSpace = (n & 2) == 2 ? " " : "";
-
-                            var word = GetRandomWord();
-                            var fullText = string.Format("{0}{1}{2}", prefixSpace, word, postfixSpace);
-
-                            var inputMarkdown = string.Format(markdownTemplate[i], fullText);
-                            inputMarkdown = string.Format(markdownTemplate[j], inputMarkdown);
-
-                            var outputHTML = string.Format(htmlTemplate[i], fullText);
-                            outputHTML = string.Format(htmlTemplate[j], outputHTML);
+                            var markdown = prefix + input[0] + postfix;
+                            var html = prefix + input[1] + postfix;
 
                             result.Add(new object[]
                             {
-                                inputMarkdown,
-                                string.Format("<div class='line'>{0}</div>", outputHTML),
-                                null,
-                                emptyMentions,
+                                markdown,
+                                "<div class='line'>" + html + "</div>",
+                                chatOption,
+                                mentions,
                                 null
                             });
                         }
@@ -238,6 +350,101 @@ namespace MarkdownTest
             return result;
         }
 
+        /// <summary>
+        /// Тестирование влияния пробелов на форматирование
+        /// </summary>
+        /// <returns></returns>
+        private static IEnumerable<object[]> GetSpaceCharacterTests()
+        {
+            var result = new List<object[]>();
+
+            var htmlTemplate = new List<string>()
+            {
+                "<strong>{0}</strong>",
+                "<em>{0}</em>",
+                "<del>{0}</del>",
+                "<span class='spoiler '><span class='spoiler-content'>{0}</span></span>",
+            };
+            var markdownTemplate = new List<string>()
+            {
+                "**{0}**",
+                "*{0}*",
+                "~~{0}~~",
+                "||{0}||",
+            };
+
+            for (int i = 0; i < htmlTemplate.Count; i++)
+            {
+                for (int j = 0; j < htmlTemplate.Count; j++)
+                {
+                    if ((i == j) || ((j == 1) && (i == 0)))
+                    {
+                        continue;
+                    }
+
+                    for (int n = 1; n < 4; n++)
+                    {
+                        var prefixSpace = (n & 1) == 1 ? " " : "";
+                        var postfixSpace = (n & 2) == 2 ? " " : "";
+
+                        var word = GetRandomWord();
+                        var fullText = string.Format("{0}{1}{2}", prefixSpace, word, postfixSpace);
+
+                        var inputMarkdown = string.Format(markdownTemplate[i], fullText);
+                        inputMarkdown = string.Format(markdownTemplate[j], inputMarkdown);
+
+                        var outputHTML = string.Format(htmlTemplate[i], fullText);
+                        outputHTML = string.Format(htmlTemplate[j], outputHTML);
+
+                        result.Add(new object[]
+                        {
+                            inputMarkdown,
+                            string.Format("<div class='line'>{0}</div>", outputHTML),
+                            null,
+                            null,
+                            null
+                        });
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        private static IEnumerable<object[]> GetThreeAsteriskTests()
+        {
+            var result = new List<object[]>();
+            var word1 = GetRandomWord();
+            var word2 = GetRandomWord();
+            var word3 = GetRandomWord();
+
+            result.Add(new object[]
+            {
+                string.Format("**{0}** {1} **{2}**", word1, word2, word3),
+                string.Format("<div class='line'><strong>{0}</strong> {1} <strong>{2}</strong></div>",
+                    word1, word2, word3),
+                null,
+                null,
+                null
+            });
+            result.Add(new object[]
+            {
+                string.Format("***{0}*** {1} ***{2}***", word1, word2, word3),
+                string.Format(
+                    "<div class='line'><strong><em>{0}</em></strong> {1} <strong><em>{2}</em></strong></div>",
+                    word1, word2, word3),
+                null,
+                null,
+                null
+            });
+
+            return result;
+        }
+
+        #endregion
+
+        #region Test
+
         [Theory]
         [MemberData(nameof(MainTestData))]
         public void MainTest(
@@ -315,5 +522,7 @@ namespace MarkdownTest
             public string expectedNodeType = null;
             public IEnumerable<string> expectedClassList = null;
         }
+
+        #endregion
     }
 }

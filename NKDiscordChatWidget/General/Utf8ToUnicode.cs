@@ -109,28 +109,10 @@ namespace NKDiscordChatWidget.General
 
         public static bool ContainOnlyUnicodeAndSpace(IEnumerable<long> bytes)
         {
-            foreach (var b in bytes)
-            {
-                if ((b == 32) || (b == 0xFE0F) || (b == 0x200D))
-                {
-                    continue;
-                }
-
-                // 0x1F300
-                if ((b >= 0x1F000) && (b <= 0x1FA9F))
-                {
-                    continue;
-                }
-
-                if (b == 0x2630A)
-                {
-                    continue;
-                }
-
-                return false;
-            }
-
-            return true;
+            return bytes
+                .Where(b => (b != 32) && (b != 0xFE0F) && (b != 0x200D))
+                .Where(b => (b < 0x1F000) || (b > 0x1FA9F))
+                .All(b => b == 0x2630A);
         }
 
         /// <summary>
