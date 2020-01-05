@@ -269,7 +269,6 @@ namespace NKDiscordChatWidget.General
                         deleg = (Func<string>) (() => MarkBold(text, chatOption, waitDictionary, guild, mentions))
                     },
 
-
                     new
                     {
                         regexp = rTripleUnderscore,
@@ -324,10 +323,11 @@ namespace NKDiscordChatWidget.General
                 highlights.Sort((a, b) => a.index.CompareTo(b.index));
 
                 var u = false;
+                // ReSharper disable once ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
                 foreach (var highlight in highlights)
                 {
-                    Func<string> deleg = highlight.deleg;
-                    var result = deleg.Invoke();
+                    Func<string> delegateLocal = highlight.deleg;
+                    var result = delegateLocal.Invoke();
                     if (result != text)
                     {
                         text = result;

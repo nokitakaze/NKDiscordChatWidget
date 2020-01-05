@@ -156,86 +156,8 @@ namespace MarkdownTest
             }
             result.AddRange(GetThreeAsteriskTests());
             result.AddRange(GetSpaceCharacterTests());
-            {
-                var inputs = new List<string[]>()
-                {
-                    new[]
-                    {
-                        "<:st1:568685037868810269> <a:box1:663446227550994452> 😏",
-                        "<span class='emoji '><img src='https://cdn.discordapp.com/emojis/568685037868810269.png' alt=':st1:'></span> <span class='emoji '><img src='https://cdn.discordapp.com/emojis/663446227550994452.gif' alt=':box1:'></span> <span class='emoji unicode-emoji '><img src='/images/emoji/twemoji/1f60f.svg' alt=':1f60f:'></span>",
-                    },
-                    new[]
-                    {
-                        "😏 😼",
-                        "<span class='emoji unicode-emoji '><img src='/images/emoji/twemoji/1f60f.svg' alt=':1f60f:'></span> <span class='emoji unicode-emoji '><img src='/images/emoji/twemoji/1f63c.svg' alt=':1f63c:'></span>",
-                    },
-                    new[]
-                    {
-                        "<@!428567095563780107>",
-                        "<span class='user mention' style='color: #F1C40F;'>@北風</span>",
-                    },
-                    new[]
-                    {
-                        "<@&633965723764523028>",
-                        "<span class='role mention' style='color: #9B59B6;'>@Фиолетовый</span>",
-                    },
-                };
-
-                var mentions = new List<EventMessageCreate.EventMessageCreate_Mention>();
-                foreach (var member in NKDiscordChatWidget.DiscordBot.Bot.guilds[guildID].members)
-                {
-                    mentions.Add(new EventMessageCreate.EventMessageCreate_Mention()
-                    {
-                        member = member,
-                        username = member.nick,
-                        id = member.user.id,
-                    });
-                }
-
-                var chatOption = new ChatDrawOption()
-                {
-                    message_mentions_style = 1,
-                };
-
-                foreach (var input in inputs)
-                {
-                    foreach (var u1 in new[] {false, true})
-                    {
-                        var prefix = u1 ? GetRandomWord() + " " : "";
-
-                        for (var i1 = 0; i1 < 3; i1++)
-                        {
-                            string postfix = "";
-                            switch (i1)
-                            {
-                                case 0:
-                                    postfix = "";
-                                    break;
-                                case 1:
-                                    postfix = " ";
-                                    break;
-                                case 2:
-                                    postfix = " " + GetRandomWord();
-                                    break;
-                                default:
-                                    throw new Exception();
-                            }
-
-                            var markdown = prefix + input[0] + postfix;
-                            var html = prefix + input[1] + postfix;
-
-                            result.Add(new object[]
-                            {
-                                markdown,
-                                "<div class='line'>" + html + "</div>",
-                                chatOption,
-                                mentions,
-                                null
-                            });
-                        }
-                    }
-                }
-            }
+            result.AddRange(GetInputs());
+            result.AddRange(GetQuoteCheck());
 
             return result;
         }
@@ -421,90 +343,322 @@ namespace MarkdownTest
 
         private static IEnumerable<object[]> GetThreeAsteriskTests()
         {
-            var result = new List<object[]>();
+            var result = GetThreeAsteriskTestsRaw()
+                .Select(pair => new[]
+                    {pair[0], string.Format("<div class='line'>{0}</div>", pair[1]), null, null, null})
+                .Cast<object[]>()
+                .ToList();
+
+            // ReSharper disable once LoopCanBeConvertedToQuery
+            foreach (var local in new[]
+            {
+                new[]
+                {
+                    "~~ > ~~",
+                    "<div class='line'><del> &gt; </del></div>"
+                },
+                new[]
+                {
+                    "|| > ||",
+                    "<div class='line'><span class='spoiler '><span class='spoiler-content'> &gt; </span></span></div>"
+                },
+            })
+            {
+                result.Add(new[] {local[0], local[1], null, null, null});
+            }
+
+            return result;
+        }
+
+        private static IEnumerable<string[]> GetThreeAsteriskTestsRaw()
+        {
             var word1 = GetRandomWord();
             var word2 = GetRandomWord();
             var word3 = GetRandomWord();
 
-            result.Add(new object[]
+            // ReSharper disable once LoopCanBeConvertedToQuery
+            return new[]
             {
-                string.Format("**{0}** {1} **{2}**", word1, word2, word3),
-                string.Format("<div class='line'><strong>{0}</strong> {1} <strong>{2}</strong></div>",
-                    word1, word2, word3),
-                null,
-                null,
-                null
-            });
-            result.Add(new object[]
-            {
-                string.Format("***{0}*** {1} ***{2}***", word1, word2, word3),
-                string.Format(
-                    "<div class='line'><strong><em>{0}</em></strong> {1} <strong><em>{2}</em></strong></div>",
-                    word1, word2, word3),
-                null,
-                null,
-                null
-            });
-
-            // Чекаем работает ли порядок появления форматирования
-
-            // ** `nyan**` pasu **
-            result.Add(new object[]
-            {
-                string.Format("** `{0}**` {1} **", word1, word2),
-                string.Format(
-                    "<div class='line'><strong> `{0}</strong>` {1} **</div>",
-                    word1, word2),
-                null,
-                null,
-                null
-            });
-            // `** nyan` ** pasu **
-            result.Add(new object[]
-            {
-                string.Format("`** {0}` ** {1} **", word1, word2),
-                string.Format(
-                    "<div class='line'><span class='without-mark'>** {0}</span> <strong> {1} </strong></div>",
-                    word1, word2),
-                null,
-                null,
-                null
-            });
-
-            {
-                // ReSharper disable once LoopCanBeConvertedToQuery
-                foreach (var pair in new[]
+                new[]
                 {
-                    new object[] {"im*italic*within", "im<em>italic</em>within"},
-
-                    new object[] {"! **bold** !", "! <strong>bold</strong> !"},
-                    new object[] {"! ** bold ** !", "! <strong> bold </strong> !"},
-
-                    // Discord идёт на встречу пользователям, поэтому парсер не такой как по спеке
-                    new object[] {"! *italic* !", "! <em>italic</em> !"},
-                    new object[] {"! * not italic * !", "! * not italic * !"},
-                    new object[] {"!* not italic *!", "!* not italic *!"},
-                    new object[] {"* not italic*", "* not italic*"},
-                    new object[] {"*not italic *", "*not italic *"},
-                    new object[] {"! _italic_ !", "! <em>italic</em> !"},
-                    new object[] {"! _ italic _ !", "! <em> italic </em> !"},
-
-                    // Underscore tests
-                    new object[] {"__underscore__", "<u>underscore</u>"},
-                    new object[] {"__ underscore __", "<u> underscore </u>"},
-                    new object[] {"___underscore italic___", "<em><u>underscore italic</u></em>"},
-                    new object[] {"___ underscore italic ___", "<em><u> underscore italic </u></em>"},
-                })
+                    string.Format("**{0}** {1} **{2}**", word1, word2, word3), string.Format(
+                        "<strong>{0}</strong> {1} <strong>{2}</strong>",
+                        word1, word2, word3)
+                },
+                new[]
                 {
-                    result.Add(new[]
+                    string.Format("***{0}*** {1} ***{2}***", word1, word2, word3),
+                    string.Format(
+                        "<strong><em>{0}</em></strong> {1} <strong><em>{2}</em></strong>",
+                        word1, word2, word3)
+                },
+
+                // Чекаем работает ли порядок появления форматирования
+                // ** `nyan**` pasu **
+                new[]
+                {
+                    string.Format("** `{0}**` {1} **", word1, word2),
+                    string.Format("<strong> `{0}</strong>` {1} **", word1, word2)
+                },
+                // `** nyan` ** pasu **
+                new[]
+                {
+                    string.Format("`** {0}` ** {1} **", word1, word2),
+                    string.Format(
+                        "<span class='without-mark'>** {0}</span> <strong> {1} </strong>",
+                        word1, word2)
+                },
+
+                //
+                new[] {"im*italic*within", "im<em>italic</em>within"},
+
+                new[] {"! **bold** !", "! <strong>bold</strong> !"},
+                new[] {"! ** bold ** !", "! <strong> bold </strong> !"},
+
+                // Discord идёт на встречу пользователям, поэтому парсер не такой как по спеке
+                new[] {"! *italic* !", "! <em>italic</em> !"},
+                new[] {"! * not italic * !", "! * not italic * !"},
+                new[] {"!* not italic *!", "!* not italic *!"},
+                new[] {"* not italic*", "* not italic*"},
+                new[] {"*not italic *", "*not italic *"},
+                new[] {"! _italic_ !", "! <em>italic</em> !"},
+                new[] {"! _ italic _ !", "! <em> italic </em> !"},
+
+                // Underscore tests
+                new[] {"__underscore__", "<u>underscore</u>"},
+                new[] {"__ underscore __", "<u> underscore </u>"},
+                new[] {"___underscore italic___", "<em><u>underscore italic</u></em>"},
+                new[] {"___ underscore italic ___", "<em><u> underscore italic </u></em>"},
+            };
+        }
+
+        private static IEnumerable<object[]> GetInputs()
+        {
+            var result = new List<object[]>();
+            var inputs = new List<string[]>()
+            {
+                new[]
+                {
+                    "<:st1:568685037868810269> <a:box1:663446227550994452> 😏",
+                    "<span class='emoji '><img src='https://cdn.discordapp.com/emojis/568685037868810269.png' alt=':st1:'></span> <span class='emoji '><img src='https://cdn.discordapp.com/emojis/663446227550994452.gif' alt=':box1:'></span> <span class='emoji unicode-emoji '><img src='/images/emoji/twemoji/1f60f.svg' alt=':1f60f:'></span>",
+                },
+                new[]
+                {
+                    "😏 😼",
+                    "<span class='emoji unicode-emoji '><img src='/images/emoji/twemoji/1f60f.svg' alt=':1f60f:'></span> <span class='emoji unicode-emoji '><img src='/images/emoji/twemoji/1f63c.svg' alt=':1f63c:'></span>",
+                },
+                new[]
+                {
+                    "<@!428567095563780107>",
+                    "<span class='user mention' style='color: #F1C40F;'>@北風</span>",
+                },
+                new[]
+                {
+                    "<@&633965723764523028>",
+                    "<span class='role mention' style='color: #9B59B6;'>@Фиолетовый</span>",
+                },
+                new[]
+                {
+                    "<@!400000000000000000>",
+                    "<Пользователь Unknown #400000000000000000>",
+                },
+                new[]
+                {
+                    "<@&600000000000000000>",
+                    "<Role Unknown #600000000000000000>",
+                },
+            };
+
+            var mentions = new List<EventMessageCreate.EventMessageCreate_Mention>();
+            // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
+            foreach (var member in NKDiscordChatWidget.DiscordBot.Bot.guilds[guildID].members)
+            {
+                mentions.Add(new EventMessageCreate.EventMessageCreate_Mention()
+                {
+                    member = member,
+                    username = member.nick,
+                    id = member.user.id,
+                });
+            }
+
+            var chatOption = new ChatDrawOption()
+            {
+                message_mentions_style = 1,
+            };
+
+            foreach (var input in inputs)
+            {
+                foreach (var u1 in new[] {false, true})
+                {
+                    var prefix = u1 ? GetRandomWord() + " " : "";
+
+                    for (var i1 = 0; i1 < 3; i1++)
                     {
-                        pair[0],
-                        string.Format("<div class='line'>{0}</div>", pair[1]),
-                        null,
-                        null,
-                        null
-                    });
+                        string postfix = "";
+                        switch (i1)
+                        {
+                            case 0:
+                                postfix = "";
+                                break;
+                            case 1:
+                                postfix = " ";
+                                break;
+                            case 2:
+                                postfix = " " + GetRandomWord();
+                                break;
+                            default:
+                                throw new Exception();
+                        }
+
+                        var markdown = prefix + input[0] + postfix;
+                        var html = prefix + input[1] + postfix;
+
+                        result.Add(new object[]
+                        {
+                            markdown,
+                            "<div class='line'>" + html + "</div>",
+                            chatOption,
+                            mentions,
+                            null
+                        });
+                    }
                 }
+            }
+
+            foreach (var t1 in inputs)
+            {
+                result.AddRange(inputs.Select(t2 => new object[]
+                {
+                    t1[0] + " " + t2[0],
+                    "<div class='line'>" + t1[1] + " " + t2[1] + "</div>",
+                    chatOption,
+                    mentions,
+                    null
+                }));
+            }
+
+            return result;
+        }
+
+        private static IEnumerable<object[]> GetQuoteCheck()
+        {
+            var result = new List<object[]>();
+            var inputs = new List<string[]>()
+            {
+                new[]
+                {
+                    "<:st1:568685037868810269> <a:box1:663446227550994452> 😏",
+                    "<span class='emoji '><img src='https://cdn.discordapp.com/emojis/568685037868810269.png' alt=':st1:'></span> <span class='emoji '><img src='https://cdn.discordapp.com/emojis/663446227550994452.gif' alt=':box1:'></span> <span class='emoji unicode-emoji '><img src='/images/emoji/twemoji/1f60f.svg' alt=':1f60f:'></span>",
+                },
+                new[]
+                {
+                    "😏 😼",
+                    "<span class='emoji unicode-emoji '><img src='/images/emoji/twemoji/1f60f.svg' alt=':1f60f:'></span> <span class='emoji unicode-emoji '><img src='/images/emoji/twemoji/1f63c.svg' alt=':1f63c:'></span>",
+                },
+                new[]
+                {
+                    "<@!428567095563780107>",
+                    "<span class='user mention' style='color: #F1C40F;'>@北風</span>",
+                },
+                new[]
+                {
+                    "<@&633965723764523028>",
+                    "<span class='role mention' style='color: #9B59B6;'>@Фиолетовый</span>",
+                },
+            };
+            inputs.AddRange(GetThreeAsteriskTestsRaw());
+
+            var mentions = new List<EventMessageCreate.EventMessageCreate_Mention>();
+            // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
+            foreach (var member in NKDiscordChatWidget.DiscordBot.Bot.guilds[guildID].members)
+            {
+                mentions.Add(new EventMessageCreate.EventMessageCreate_Mention()
+                {
+                    member = member,
+                    username = member.nick,
+                    id = member.user.id,
+                });
+            }
+
+            var chatOption = new ChatDrawOption() {message_mentions_style = 1};
+
+            for (int i = 0; i < Math.Pow(4, 4); i++)
+            {
+                var ars = new List<int>();
+                {
+                    int i1 = i;
+                    for (int j = 0; j < 4; j++)
+                    {
+                        int n = i1 % 4;
+                        ars.Add(n);
+                        i1 >>= 2;
+                    }
+                }
+
+                if (ars[0] == 0)
+                {
+                    continue;
+                }
+
+                var inputMarkdown = "";
+                var outputHTML = "";
+
+                bool isInQuote = false;
+                var outputHTMLQuote = "";
+                foreach (var ar in ars)
+                {
+                    string localInputMarkdown, localOutputHTML;
+                    if (ar % 2 == 0)
+                    {
+                        localInputMarkdown = "";
+                        localOutputHTML = "";
+                    }
+                    else
+                    {
+                        var input = inputs[_rnd.Next(0, inputs.Count - 1)];
+                        localInputMarkdown = input[0];
+                        localOutputHTML = input[1];
+                    }
+
+                    if ((ar == 2) || (ar == 3))
+                    {
+                        inputMarkdown += "\n> " + localInputMarkdown;
+                        outputHTMLQuote += "<div class='line'>" + localOutputHTML + "</div>";
+                        isInQuote = true;
+                    }
+                    else
+                    {
+                        inputMarkdown += "\n" + localInputMarkdown;
+                        if (isInQuote)
+                        {
+                            outputHTML += string.Format(
+                                "<div class='quote-block'><div class='quote-border'></div><div class='quote-content'>{0}</div></div>",
+                                outputHTMLQuote
+                            );
+                            isInQuote = false;
+                            outputHTMLQuote = "";
+                        }
+
+                        outputHTML += "<div class='line'>" + localOutputHTML + "</div>";
+                    }
+                }
+
+                if (isInQuote)
+                {
+                    outputHTML += string.Format(
+                        "<div class='quote-block'><div class='quote-border'></div><div class='quote-content'>{0}</div></div>",
+                        outputHTMLQuote
+                    );
+                }
+
+                result.Add(new object[]
+                {
+                    inputMarkdown.Substring(1),
+                    outputHTML,
+                    chatOption,
+                    mentions,
+                    null
+                });
             }
 
             return result;
@@ -581,6 +735,7 @@ namespace MarkdownTest
             Assert.Equal(realExpectedHtml, resultHTML);
             // var images = document.QuerySelectorAll<IHtmlImageElement>("img");
 
+            /*
             var usedPaths = new HashSet<string>();
             foreach (var rule in rules)
             {
@@ -588,6 +743,7 @@ namespace MarkdownTest
 
                 // TODO
             }
+            */
         }
 
         public class CheckRule
