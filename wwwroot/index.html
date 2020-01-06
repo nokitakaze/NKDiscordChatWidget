@@ -156,9 +156,23 @@
         <div>
             <select id="option_message_mentions_style" data-option="message_mentions_style">
                 <option value="0">Всегда синий (как в Discord)</option>
-                <option value="1">Разноцветный (по цвету роли)</option>
+                <option value="1" selected>Разноцветный (по цвету роли)</option>
             </select>
             <label for="option_message_mentions_style">Цвет ников в упоминаниях в сообщениях</label>
+        </div>
+        <div>
+            <select id="option_short_anchor" data-option="short_anchor">
+                <option value="0">Оставлять как есть</option>
+                <option value="1" selected>Сокращать</option>
+            </select>
+            <label for="option_short_anchor">Нужно ли сокращать анкор до 40 символов</label>
+        </div>
+        <div>
+            <select id="option_hide_used_embed_links" data-option="hide_used_embed_links">
+                <option value="0">Оставлять ссылки</option>
+                <option value="1" selected>Скрывать ссылки</option>
+            </select>
+            <label for="option_hide_used_embed_links">Скрывать ссылки, который были импортированы в контент</label>
         </div>
         <div>
             <select id="option_timezone" data-option="timezone"></select>

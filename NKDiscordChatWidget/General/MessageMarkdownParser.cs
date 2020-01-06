@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 using NKDiscordChatWidget.DiscordBot.Classes;
@@ -23,12 +24,14 @@ namespace NKDiscordChatWidget.General
         /// <param name="chatOption"></param>
         /// <param name="mentions"></param>
         /// <param name="guildID"></param>
+        /// <param name="usedEmbedsUrls"></param>
         /// <returns>HTML-код, который можно безопасно рендерить в чате</returns>
         public static string RenderMarkdownAsHTML(
             string text,
             ChatDrawOption chatOption,
             List<EventMessageCreate.EventMessageCreate_Mention> mentions,
-            string guildID
+            string guildID,
+            HashSet<string> usedEmbedsUrls
         )
         {
             // ReSharper disable once UseNullPropagation
@@ -48,7 +51,7 @@ namespace NKDiscordChatWidget.General
                 {
                     // Это кусок цитаты
                     currentQuoteHTML += string.Format("<div class='line'>{0}</div>",
-                        RenderLineAsHTML(trimmedLine.Substring(2), chatOption, mentions, guildID));
+                        RenderLineAsHTML(trimmedLine.Substring(2), chatOption, mentions, guildID, usedEmbedsUrls));
                     isInQuote = true;
                 }
                 else
@@ -66,7 +69,7 @@ namespace NKDiscordChatWidget.General
                     }
 
                     result += string.Format("<div class='line'>{0}</div>",
-                        RenderLineAsHTML(trimmedLine, chatOption, mentions, guildID));
+                        RenderLineAsHTML(trimmedLine, chatOption, mentions, guildID, usedEmbedsUrls));
                 }
             }
 
@@ -158,12 +161,14 @@ namespace NKDiscordChatWidget.General
         /// <param name="chatOption">Опции чата, заданные стримером для виджета</param>
         /// <param name="mentions">Список упоминаний, сделанных в сообщении</param>
         /// <param name="guildID">ID гильдии (сервера), в котором написано сообщение</param>
+        /// <param name="usedEmbedsUrls">Список использованных Url'ов в embed</param>
         /// <returns></returns>
         private static string RenderLineAsHTML(
             string text,
             ChatDrawOption chatOption,
             List<EventMessageCreate.EventMessageCreate_Mention> mentions,
-            string guildID
+            string guildID,
+            HashSet<string> usedEmbedsUrls
         )
         {
             // У нас есть блоки, порождающие саб-блоки:
@@ -175,7 +180,7 @@ namespace NKDiscordChatWidget.General
             var waitDictionary = new Dictionary<string, string>();
 
             var textWithWaiting =
-                RenderMarkdownBlockAsHTMLInnerBlock(text, chatOption, waitDictionary, guild, mentions);
+                RenderMarkdownBlockAsHTMLInnerBlock(text, chatOption, waitDictionary, guild, mentions, usedEmbedsUrls);
 
             // Меняем все wait'ы внутри текста на значения из словаря
             // hint: Мы делаем это в бесконечном цикле, потому что маркировки могут быть вложенными
@@ -214,13 +219,15 @@ namespace NKDiscordChatWidget.General
         /// <param name="waitDictionary">Dictionary для саб-блоков</param>
         /// <param name="guild">Гильдия (сервер), внутри которого написано сообщение</param>
         /// <param name="mentions">Список упоминаний, сделанных в сообщении</param>
+        /// <param name="usedEmbedsUrls">Список использованных Url'ов в embed</param>
         /// <returns></returns>
         private static string RenderMarkdownBlockAsHTMLInnerBlock(
             string text,
             ChatDrawOption chatOption,
             Dictionary<string, string> waitDictionary,
             EventGuildCreate guild,
-            List<EventMessageCreate.EventMessageCreate_Mention> mentions
+            List<EventMessageCreate.EventMessageCreate_Mention> mentions,
+            HashSet<string> usedEmbedsUrls
         )
         {
             while (true)
@@ -236,7 +243,7 @@ namespace NKDiscordChatWidget.General
                     new
                     {
                         regexp = rLink,
-                        deleg = (Func<string>) (() => MarkLinks(text, chatOption, waitDictionary))
+                        deleg = (Func<string>) (() => MarkLinks(text, chatOption, waitDictionary, usedEmbedsUrls))
                     },
                     new
                     {
@@ -260,46 +267,51 @@ namespace NKDiscordChatWidget.General
                     new
                     {
                         regexp = rSpoilerMark,
-                        deleg = (Func<string>) (() => MarkSpoilers(text, chatOption, waitDictionary, guild, mentions))
+                        deleg = (Func<string>) (() =>
+                            MarkSpoilers(text, chatOption, waitDictionary, guild, mentions, usedEmbedsUrls))
                     },
                     new
                     {
                         regexp = rBoldItalic,
-                        deleg = (Func<string>) (() => MarkBoldItalic(text, chatOption, waitDictionary, guild, mentions))
+                        deleg = (Func<string>) (() =>
+                            MarkBoldItalic(text, chatOption, waitDictionary, guild, mentions, usedEmbedsUrls))
                     },
                     new
                     {
                         regexp = rBold,
-                        deleg = (Func<string>) (() => MarkBold(text, chatOption, waitDictionary, guild, mentions))
+                        deleg = (Func<string>) (() =>
+                            MarkBold(text, chatOption, waitDictionary, guild, mentions, usedEmbedsUrls))
                     },
 
                     new
                     {
                         regexp = rTripleUnderscore,
                         deleg = (Func<string>) (() =>
-                            MarkUnderscoreItalic(text, chatOption, waitDictionary, guild, mentions))
+                            MarkUnderscoreItalic(text, chatOption, waitDictionary, guild, mentions, usedEmbedsUrls))
                     },
                     new
                     {
                         regexp = rDoubleUnderscore,
-                        deleg = (Func<string>) (() => MarkUnderscore(text, chatOption, waitDictionary, guild, mentions))
+                        deleg = (Func<string>) (() =>
+                            MarkUnderscore(text, chatOption, waitDictionary, guild, mentions, usedEmbedsUrls))
                     },
                     new
                     {
                         regexp = rSingleAsterisk,
                         deleg = (Func<string>) (() =>
-                            MarkItalicViaAsterisk(text, chatOption, waitDictionary, guild, mentions))
+                            MarkItalicViaAsterisk(text, chatOption, waitDictionary, guild, mentions, usedEmbedsUrls))
                     },
                     new
                     {
                         regexp = rItalicUnderscore,
                         deleg = (Func<string>) (() =>
-                            MarkItalicViaUnderscore(text, chatOption, waitDictionary, guild, mentions))
+                            MarkItalicViaUnderscore(text, chatOption, waitDictionary, guild, mentions, usedEmbedsUrls))
                     },
                     new
                     {
                         regexp = rDelete,
-                        deleg = (Func<string>) (() => MarkDelete(text, chatOption, waitDictionary, guild, mentions))
+                        deleg = (Func<string>) (() =>
+                            MarkDelete(text, chatOption, waitDictionary, guild, mentions, usedEmbedsUrls))
                     },
                 })
                 {
@@ -387,13 +399,17 @@ namespace NKDiscordChatWidget.General
         /// <param name="text">Текст с сырым Markdown</param>
         /// <param name="chatOption">Опции чата, заданные стримером для виджета</param>
         /// <param name="waitDictionary">Dictionary для саб-блоков</param>
+        /// <param name="usedEmbedsUrls">Список использованных Url'ов в embed</param>
         /// <returns></returns>
         public static string MarkLinks(
             string text,
             ChatDrawOption chatOption,
-            Dictionary<string, string> waitDictionary
+            Dictionary<string, string> waitDictionary,
+            HashSet<string> usedEmbedsUrls
         )
         {
+            var r = new Regex("(%[0-9a-f]{2,2})+", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
             text = rLink.Replace(text, m1 =>
             {
                 var wait = GetWaitString();
@@ -403,10 +419,55 @@ namespace NKDiscordChatWidget.General
                     m1.Groups[4].Value,
                     m1.Groups[5].Value
                 );
-                // TODO: Иногда стирать всю ссылку, потому что она просто для превью
-                // TODO: Править %D0%D... в нормальный текст
-                waitDictionary[wait] = string.Format("<a href='{0}' target='_blank'>{0}</a>",
-                    HttpUtility.HtmlEncode(url)
+
+                if ((chatOption.hide_used_embed_links == 1) && (usedEmbedsUrls.Contains(url)))
+                {
+                    return m1.Groups[1].Value;
+                }
+
+                var rawPath = m1.Groups[4].Value;
+                while (true)
+                {
+                    var m = r.Match(rawPath);
+                    if (!m.Success)
+                    {
+                        break;
+                    }
+
+                    var s = m.Groups[0].Value;
+                    var bytes = new List<byte>();
+                    while (s != "")
+                    {
+                        var hex = s.Substring(1, 2);
+                        s = s.Substring(3);
+
+                        var b = byte.Parse(hex, System.Globalization.NumberStyles.HexNumber);
+                        bytes.Add(b);
+                    }
+
+                    var s1 = rawPath.Substring(0, m.Index);
+                    var s2 = Encoding.UTF8.GetString(bytes.ToArray());
+                    var s3 = rawPath.Substring(m.Index + m.Length);
+                    rawPath = s1 + s2 + s3;
+                }
+
+                var anchor = HttpUtility.HtmlEncode(string.Format("{0}://{1}{2}{3}",
+                    m1.Groups[2].Value,
+                    m1.Groups[3].Value,
+                    rawPath,
+                    m1.Groups[5].Value
+                ));
+
+                if ((chatOption.short_anchor == 1) && (anchor.Length > 40))
+                {
+                    anchor = anchor.Substring(0, 37) + "...";
+                }
+
+                // TODO: Иногда стирать всю ссылку, потому что она просто для превью картинки/видео
+                waitDictionary[wait] = string.Format(
+                    "<a href='{0}' target='_blank'>{1}</a>",
+                    HttpUtility.HtmlEncode(url),
+                    HttpUtility.HtmlEncode(anchor)
                 );
 
                 return m1.Groups[1].Value + wait;
@@ -652,13 +713,15 @@ namespace NKDiscordChatWidget.General
         /// <param name="waitDictionary">Dictionary для саб-блоков</param>
         /// <param name="guild">Гильдия (сервер), внутри которого написано сообщение</param>
         /// <param name="mentions">Список упоминаний, сделанных в сообщении</param>
+        /// <param name="usedEmbedsUrls">Список использованных Url'ов в embed</param>
         /// <returns></returns>
         public static string MarkSpoilers(
             string text,
             ChatDrawOption chatOption,
             Dictionary<string, string> waitDictionary,
             EventGuildCreate guild,
-            List<EventMessageCreate.EventMessageCreate_Mention> mentions
+            List<EventMessageCreate.EventMessageCreate_Mention> mentions,
+            HashSet<string> usedEmbedsUrls
         )
         {
             text = rSpoilerMark.Replace(text, m1 =>
@@ -668,7 +731,8 @@ namespace NKDiscordChatWidget.General
                     chatOption,
                     waitDictionary,
                     guild,
-                    mentions
+                    mentions,
+                    usedEmbedsUrls
                 );
 
                 var wait = GetWaitString();
@@ -692,13 +756,15 @@ namespace NKDiscordChatWidget.General
         /// <param name="waitDictionary">Dictionary для саб-блоков</param>
         /// <param name="guild">Гильдия (сервер), внутри которого написано сообщение</param>
         /// <param name="mentions">Список упоминаний, сделанных в сообщении</param>
+        /// <param name="usedEmbedsUrls">Список использованных Url'ов в embed</param>
         /// <returns></returns>
         public static string MarkBold(
             string text,
             ChatDrawOption chatOption,
             Dictionary<string, string> waitDictionary,
             EventGuildCreate guild,
-            List<EventMessageCreate.EventMessageCreate_Mention> mentions
+            List<EventMessageCreate.EventMessageCreate_Mention> mentions,
+            HashSet<string> usedEmbedsUrls
         )
         {
             text = rBold.Replace(text, m1 =>
@@ -708,7 +774,8 @@ namespace NKDiscordChatWidget.General
                     chatOption,
                     waitDictionary,
                     guild,
-                    mentions
+                    mentions,
+                    usedEmbedsUrls
                 );
 
                 var wait = GetWaitString();
@@ -727,13 +794,15 @@ namespace NKDiscordChatWidget.General
         /// <param name="waitDictionary">Dictionary для саб-блоков</param>
         /// <param name="guild">Гильдия (сервер), внутри которого написано сообщение</param>
         /// <param name="mentions">Список упоминаний, сделанных в сообщении</param>
+        /// <param name="usedEmbedsUrls">Список использованных Url'ов в embed</param>
         /// <returns></returns>
         public static string MarkUnderscoreItalic(
             string text,
             ChatDrawOption chatOption,
             Dictionary<string, string> waitDictionary,
             EventGuildCreate guild,
-            List<EventMessageCreate.EventMessageCreate_Mention> mentions
+            List<EventMessageCreate.EventMessageCreate_Mention> mentions,
+            HashSet<string> usedEmbedsUrls
         )
         {
             text = rTripleUnderscore.Replace(text, m1 =>
@@ -743,7 +812,8 @@ namespace NKDiscordChatWidget.General
                     chatOption,
                     waitDictionary,
                     guild,
-                    mentions
+                    mentions,
+                    usedEmbedsUrls
                 );
 
                 var wait = GetWaitString();
@@ -762,13 +832,15 @@ namespace NKDiscordChatWidget.General
         /// <param name="waitDictionary">Dictionary для саб-блоков</param>
         /// <param name="guild">Гильдия (сервер), внутри которого написано сообщение</param>
         /// <param name="mentions">Список упоминаний, сделанных в сообщении</param>
+        /// <param name="usedEmbedsUrls">Список использованных Url'ов в embed</param>
         /// <returns></returns>
         public static string MarkUnderscore(
             string text,
             ChatDrawOption chatOption,
             Dictionary<string, string> waitDictionary,
             EventGuildCreate guild,
-            List<EventMessageCreate.EventMessageCreate_Mention> mentions
+            List<EventMessageCreate.EventMessageCreate_Mention> mentions,
+            HashSet<string> usedEmbedsUrls
         )
         {
             text = rDoubleUnderscore.Replace(text, m1 =>
@@ -778,7 +850,8 @@ namespace NKDiscordChatWidget.General
                     chatOption,
                     waitDictionary,
                     guild,
-                    mentions
+                    mentions,
+                    usedEmbedsUrls
                 );
 
                 var wait = GetWaitString();
@@ -797,13 +870,15 @@ namespace NKDiscordChatWidget.General
         /// <param name="waitDictionary">Dictionary для саб-блоков</param>
         /// <param name="guild">Гильдия (сервер), внутри которого написано сообщение</param>
         /// <param name="mentions">Список упоминаний, сделанных в сообщении</param>
+        /// <param name="usedEmbedsUrls">Список использованных Url'ов в embed</param>
         /// <returns></returns>
         public static string MarkItalicViaAsterisk(
             string text,
             ChatDrawOption chatOption,
             Dictionary<string, string> waitDictionary,
             EventGuildCreate guild,
-            List<EventMessageCreate.EventMessageCreate_Mention> mentions
+            List<EventMessageCreate.EventMessageCreate_Mention> mentions,
+            HashSet<string> usedEmbedsUrls
         )
         {
             text = rSingleAsterisk.Replace(text, m1 =>
@@ -825,7 +900,8 @@ namespace NKDiscordChatWidget.General
                     chatOption,
                     waitDictionary,
                     guild,
-                    mentions
+                    mentions,
+                    usedEmbedsUrls
                 );
 
                 var wait = GetWaitString();
@@ -844,13 +920,15 @@ namespace NKDiscordChatWidget.General
         /// <param name="waitDictionary">Dictionary для саб-блоков</param>
         /// <param name="guild">Гильдия (сервер), внутри которого написано сообщение</param>
         /// <param name="mentions">Список упоминаний, сделанных в сообщении</param>
+        /// <param name="usedEmbedsUrls">Список использованных Url'ов в embed</param>
         /// <returns></returns>
         public static string MarkItalicViaUnderscore(
             string text,
             ChatDrawOption chatOption,
             Dictionary<string, string> waitDictionary,
             EventGuildCreate guild,
-            List<EventMessageCreate.EventMessageCreate_Mention> mentions
+            List<EventMessageCreate.EventMessageCreate_Mention> mentions,
+            HashSet<string> usedEmbedsUrls
         )
         {
             text = rItalicUnderscore.Replace(text, m1 =>
@@ -860,7 +938,8 @@ namespace NKDiscordChatWidget.General
                     chatOption,
                     waitDictionary,
                     guild,
-                    mentions
+                    mentions,
+                    usedEmbedsUrls
                 );
 
                 var wait = GetWaitString();
@@ -879,13 +958,15 @@ namespace NKDiscordChatWidget.General
         /// <param name="waitDictionary">Dictionary для саб-блоков</param>
         /// <param name="guild">Гильдия (сервер), внутри которого написано сообщение</param>
         /// <param name="mentions">Список упоминаний, сделанных в сообщении</param>
+        /// <param name="usedEmbedsUrls">Список использованных Url'ов в embed</param>
         /// <returns></returns>
         public static string MarkBoldItalic(
             string text,
             ChatDrawOption chatOption,
             Dictionary<string, string> waitDictionary,
             EventGuildCreate guild,
-            List<EventMessageCreate.EventMessageCreate_Mention> mentions
+            List<EventMessageCreate.EventMessageCreate_Mention> mentions,
+            HashSet<string> usedEmbedsUrls
         )
         {
             text = rBoldItalic.Replace(text, m1 =>
@@ -895,7 +976,8 @@ namespace NKDiscordChatWidget.General
                     chatOption,
                     waitDictionary,
                     guild,
-                    mentions
+                    mentions,
+                    usedEmbedsUrls
                 );
 
                 var wait = GetWaitString();
@@ -914,13 +996,15 @@ namespace NKDiscordChatWidget.General
         /// <param name="waitDictionary">Dictionary для саб-блоков</param>
         /// <param name="guild">Гильдия (сервер), внутри которого написано сообщение</param>
         /// <param name="mentions">Список упоминаний, сделанных в сообщении</param>
+        /// <param name="usedEmbedsUrls">Список использованных Url'ов в embed</param>
         /// <returns></returns>
         public static string MarkDelete(
             string text,
             ChatDrawOption chatOption,
             Dictionary<string, string> waitDictionary,
             EventGuildCreate guild,
-            List<EventMessageCreate.EventMessageCreate_Mention> mentions
+            List<EventMessageCreate.EventMessageCreate_Mention> mentions,
+            HashSet<string> usedEmbedsUrls
         )
         {
             text = rDelete.Replace(text, m1 =>
@@ -930,7 +1014,8 @@ namespace NKDiscordChatWidget.General
                     chatOption,
                     waitDictionary,
                     guild,
-                    mentions
+                    mentions,
+                    usedEmbedsUrls
                 );
 
                 var wait = GetWaitString();

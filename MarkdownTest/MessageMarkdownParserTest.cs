@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Web;
 using AngleSharp;
 using AngleSharp.Html.Dom;
 using NKDiscordChatWidget;
@@ -166,6 +167,7 @@ namespace MarkdownTest
             result.AddRange(GetInputs());
             result.AddRange(GetQuoteCheck());
             result.AddRange(GetEdgeCases());
+            result.AddRange(GetLinksCases());
 
             return result;
         }
@@ -909,6 +911,207 @@ namespace MarkdownTest
             return result;
         }
 
+        private static IEnumerable<object[]> GetLinksCases()
+        {
+            var result = new List<object[]>();
+
+            var chatOptionNotShort = new ChatDrawOption
+            {
+                short_anchor = 0,
+            };
+            var chatOptionShort = new ChatDrawOption
+            {
+                short_anchor = 1,
+            };
+
+            // ReSharper disable once LoopCanBeConvertedToQuery
+            foreach (var input in new[]
+            {
+                new[] {"http://example.com/", "http://example.com/", "http://example.com/"},
+                new[]
+                {
+                    "https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5",
+                    "https://ru.wikipedia.org/wiki/Википедия:Введение",
+                    "https://ru.wikipedia.org/wiki/Википед...",
+                },
+            })
+            {
+                var markdown = input[0];
+                var html = string.Format("<a href='{0}' target='_blank'>{1}</a>",
+                    HttpUtility.HtmlEncode(input[0]),
+                    HttpUtility.HtmlEncode(input[1])
+                );
+                var htmlShortAnchor = string.Format("<a href='{0}' target='_blank'>{1}</a>",
+                    HttpUtility.HtmlEncode(input[0]),
+                    HttpUtility.HtmlEncode(input[2])
+                );
+
+                result.Add(new object[]
+                {
+                    markdown,
+                    string.Format("<div class='line'>{0}</div>", html),
+                    chatOptionNotShort,
+                    null,
+                    null
+                });
+                result.Add(new object[]
+                {
+                    markdown,
+                    string.Format("<div class='line'>{0}</div>", htmlShortAnchor),
+                    chatOptionShort,
+                    null,
+                    null
+                });
+            }
+
+            //
+            // ReSharper disable once LoopCanBeConvertedToQuery
+            foreach (var input in new[]
+            {
+                new dynamic[]
+                {
+                    "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg",
+                    new List<string>() {"https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg"},
+                    "",
+                    chatOptionShort
+                },
+                new dynamic[]
+                {
+                    "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg",
+                    new List<string>() {"https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg"},
+                    "",
+                    chatOptionNotShort
+                },
+                new dynamic[]
+                {
+                    "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg",
+                    new List<string>(),
+                    "<a href='https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg' target='_blank'>https://cs7.pikabu.ru/post_img/big/20...</a>",
+                    chatOptionShort
+                },
+                new dynamic[]
+                {
+                    "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg",
+                    new List<string>(),
+                    "<a href='https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg' target='_blank'>https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg</a>",
+                    chatOptionNotShort
+                },
+
+                new dynamic[]
+                {
+                    "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5",
+                    new List<string>() {"https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg"},
+                    " <a href='https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5' target='_blank'>https://ru.wikipedia.org/wiki/Википед...</a>",
+                    chatOptionShort
+                },
+                new dynamic[]
+                {
+                    "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5",
+                    new List<string>() {"https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg"},
+                    " <a href='https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5' target='_blank'>https://ru.wikipedia.org/wiki/Википедия:Введение</a>",
+                    chatOptionNotShort
+                },
+                new dynamic[]
+                {
+                    "https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5",
+                    new List<string>() {"https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg"},
+                    "<a href='https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5' target='_blank'>https://ru.wikipedia.org/wiki/Википед...</a>",
+                    chatOptionShort
+                },
+                new dynamic[]
+                {
+                    "https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5",
+                    new List<string>() {"https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg"},
+                    "<a href='https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5' target='_blank'>https://ru.wikipedia.org/wiki/Википедия:Введение</a>",
+                    chatOptionNotShort
+                },
+                new dynamic[]
+                {
+                    "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5",
+                    new List<string>()
+                    {
+                        "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg",
+                        "https://media.discordapp.net/attachments/421392740970921996/599311410807439390/terminator-thumbs-up.gif"
+                    },
+                    " <a href='https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5' target='_blank'>https://ru.wikipedia.org/wiki/Википед...</a>",
+                    chatOptionShort
+                },
+                new dynamic[]
+                {
+                    "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5",
+                    new List<string>()
+                    {
+                        "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg",
+                        "https://media.discordapp.net/attachments/421392740970921996/599311410807439390/terminator-thumbs-up.gif"
+                    },
+                    " <a href='https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5' target='_blank'>https://ru.wikipedia.org/wiki/Википедия:Введение</a>",
+                    chatOptionNotShort
+                },
+                new dynamic[]
+                {
+                    "https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5",
+                    new List<string>()
+                    {
+                        "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg",
+                        "https://media.discordapp.net/attachments/421392740970921996/599311410807439390/terminator-thumbs-up.gif"
+                    },
+                    "<a href='https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5' target='_blank'>https://ru.wikipedia.org/wiki/Википед...</a>",
+                    chatOptionShort
+                },
+                new dynamic[]
+                {
+                    "https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5",
+                    new List<string>()
+                    {
+                        "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg",
+                        "https://media.discordapp.net/attachments/421392740970921996/599311410807439390/terminator-thumbs-up.gif"
+                    },
+                    "<a href='https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5' target='_blank'>https://ru.wikipedia.org/wiki/Википедия:Введение</a>",
+                    chatOptionNotShort
+                },
+                //
+                new dynamic[]
+                {
+                    "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg https://media.discordapp.net/attachments/421392740970921996/599311410807439390/terminator-thumbs-up.gif",
+                    new List<string>()
+                    {
+                        "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg",
+                        "https://media.discordapp.net/attachments/421392740970921996/599311410807439390/terminator-thumbs-up.gif"
+                    },
+                    " ",
+                    chatOptionShort
+                },
+                new dynamic[]
+                {
+                    "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg https://media.discordapp.net/attachments/421392740970921996/599311410807439390/terminator-thumbs-up.gif",
+                    new List<string>()
+                    {
+                        "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg",
+                        "https://media.discordapp.net/attachments/421392740970921996/599311410807439390/terminator-thumbs-up.gif"
+                    },
+                    " ",
+                    chatOptionNotShort
+                },
+            })
+            {
+                string markdown = input[0];
+                List<string> list = input[1];
+                string expectedHTML = input[2];
+                ChatDrawOption chatOption = input[3];
+
+                result.Add(new object[]
+                {
+                    markdown,
+                    string.Format("<div class='line'>{0}</div>", expectedHTML),
+                    chatOption,
+                    null,
+                    list
+                });
+            }
+
+            return result;
+        }
+
         #endregion
 
         #region Test
@@ -920,7 +1123,7 @@ namespace MarkdownTest
             string expectedHtml,
             ChatDrawOption chatOption,
             List<EventMessageCreate.EventMessageCreate_Mention> mentions,
-            List<CheckRule> rules
+            IEnumerable<string> usedEmbedUrl
         )
         {
             if (chatOption == null)
@@ -928,16 +1131,14 @@ namespace MarkdownTest
                 chatOption = new ChatDrawOption();
             }
 
-            if (rules == null)
-            {
-                rules = new List<CheckRule>();
-            }
+            var usedEmbedUrlHash = (usedEmbedUrl != null) ? usedEmbedUrl.ToHashSet() : new HashSet<string>();
 
             var renderedText = MessageMarkdownParser.RenderMarkdownAsHTML(
                 rawMarkdown,
                 chatOption,
                 mentions,
-                guildID
+                guildID,
+                usedEmbedUrlHash
             );
 
             IHtmlDocument document;
@@ -973,25 +1174,6 @@ namespace MarkdownTest
             }
             var resultHTML = document.Body.InnerHtml;
             Assert.Equal(realExpectedHtml, resultHTML);
-            // var images = document.QuerySelectorAll<IHtmlImageElement>("img");
-
-            /*
-            var usedPaths = new HashSet<string>();
-            foreach (var rule in rules)
-            {
-                usedPaths.Add(rule.path);
-
-                // TODO
-            }
-            */
-        }
-
-        public class CheckRule
-        {
-            public string path;
-            public string expectedValue = "";
-            public string expectedNodeType = null;
-            public IEnumerable<string> expectedClassList = null;
         }
 
         #endregion

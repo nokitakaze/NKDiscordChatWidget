@@ -95,13 +95,19 @@ namespace NKDiscordChatWidget.General
 
         private static string DrawMessageContent(EventMessageCreate message, ChatDrawOption chatOption)
         {
+            var usedEmbedsUrls = new HashSet<string>();
+            foreach (var embed in message.embeds)
+            {
+                usedEmbedsUrls.Add(embed.url);
+            }
+
             var guildID = message.guild_id;
             var guild = NKDiscordChatWidget.DiscordBot.Bot.guilds[guildID];
             var thisGuildEmojis = new HashSet<string>(guild.emojis.Select(emoji => emoji.id).ToList());
 
             // Основной текст
             string directContentHTML = NKDiscordChatWidget.General.MessageMarkdownParser.RenderMarkdownAsHTML(
-                message.content, chatOption, message.mentions, guildID);
+                message.content, chatOption, message.mentions, guildID, usedEmbedsUrls);
             bool containOnlyUnicodeAndSpace;
             {
                 var rEmojiWithinText = new Regex(@"<\:(.+?)\:([0-9]+)>", RegexOptions.Compiled);
@@ -191,10 +197,11 @@ namespace NKDiscordChatWidget.General
 
                     previewHTML += string.Format(
                         "<div class='embed {2}'><div class='embed-pill' style='background-color: {1};'></div>" +
-                        "<div class='embed-content'>{0}</div></div>",
+                        "<div class='embed-content {3}'>{0}</div></div>",
                         subHTML,
                         nickColor,
-                        (chatOption.link_preview == 1) ? "blur" : ""
+                        (chatOption.link_preview == 1) ? "blur" : "",
+                        string.IsNullOrEmpty(embed.title) ? "embed-content_no-title" : ""
                     );
                 }
 

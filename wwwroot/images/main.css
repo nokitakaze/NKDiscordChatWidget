@@ -260,6 +260,10 @@ body {
     background-color: rgba(46, 48, 54, .3);
 }
 
+#chat .message .content .content-message .embed-block .embed .embed-content.embed-content_no-title {
+    padding: 1px;
+}
+
 #chat .message .content .content-message .embed-block .embed .embed-content .provider {
     color: #87909c;
 }

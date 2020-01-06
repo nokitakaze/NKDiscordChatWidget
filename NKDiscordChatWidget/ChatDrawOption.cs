@@ -12,7 +12,7 @@ namespace NKDiscordChatWidget
         // ReSharper disable ConvertToConstant.Global
         // ReSharper disable FieldCanBeMadeReadOnly.Global
         public bool merge_same_user_messages; // @todo Временно игнорируется
-        
+
         /// <summary>
         /// Аттачи в чате
         /// </summary>
@@ -47,16 +47,26 @@ namespace NKDiscordChatWidget
         /// Показывать текстовые спойлеры
         /// </summary>
         public int text_spoiler;
-        
+
         /// <summary>
         /// Цвет ников в упоминаниях в сообщениях
         /// </summary>
-        public int message_mentions_style;
+        public int message_mentions_style = 1;
 
         /// <summary>
         /// Временное смещение в минутах относительно Гринвича. I.e. Москва = + 180
         /// </summary>
         public int timezone;
+
+        /// <summary>
+        /// Нужно ли сокращать анкор до 40 символов
+        /// </summary>
+        public int short_anchor = 1;
+
+        /// <summary>
+        /// Удалять ссылки на контент, который был вставлен (embed)
+        /// </summary>
+        public int hide_used_embed_links = 1;
 
         /// <summary>
         /// Какой пак эмодзи отображать
