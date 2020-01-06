@@ -83,7 +83,7 @@ namespace MarkdownTest
                         id = "568217115031502868",
                         name = "NKDiscordChatWidget",
                         permissions = 1024,
-                        position = 0,
+                        position = 1,
                     },
                     new Role()
                     {
@@ -91,7 +91,7 @@ namespace MarkdownTest
                         id = "568376310133424152",
                         name = "admins",
                         permissions = 104324705,
-                        position = 3,
+                        position = 4,
                     },
                     new Role()
                     {
@@ -101,13 +101,21 @@ namespace MarkdownTest
                         permissions = 104324673,
                         position = 2,
                     },
+                    new Role()
+                    {
+                        color = 15158332,
+                        id = "633954441485221898",
+                        name = "Orange men",
+                        permissions = 104324673,
+                        position = 3,
+                    },
                 },
                 members = new List<GuildMember>()
                 {
                     new GuildMember()
                     {
                         nick = "北風",
-                        roles = new List<string> {"568376310133424152",},
+                        roles = new List<string> {"568376310133424152", "633954441485221898"},
                         user = new User()
                         {
                             avatar = "8a33053d4a3ef74577fdd4b21431ed2e",
@@ -119,7 +127,7 @@ namespace MarkdownTest
                     new GuildMember()
                     {
                         nick = null,
-                        roles = new List<string> {"568217115031502868", "633965723764523028",},
+                        roles = new List<string> {"568217115031502868", "633965723764523028", "633954441485221898"},
                         user = new User()
                         {
                             avatar = null,
@@ -144,7 +152,6 @@ namespace MarkdownTest
         public static IEnumerable<object[]> MainTestData()
         {
             var result = new List<object[]>();
-            var emptyMentions = new List<EventMessageCreate.EventMessageCreate_Mention>();
 
             // bold, em, ~~, spoiler (on/off)
             // quote, no-formatting
@@ -158,6 +165,7 @@ namespace MarkdownTest
             result.AddRange(GetSpaceCharacterTests());
             result.AddRange(GetInputs());
             result.AddRange(GetQuoteCheck());
+            result.AddRange(GetEdgeCases());
 
             return result;
         }
@@ -364,7 +372,7 @@ namespace MarkdownTest
                 },
             })
             {
-                result.Add(new[] {local[0], local[1], null, null, null});
+                result.Add(new object[] {local[0], local[1], null, null, null});
             }
 
             return result;
@@ -476,7 +484,7 @@ namespace MarkdownTest
                 mentions.Add(new EventMessageCreate.EventMessageCreate_Mention()
                 {
                     member = member,
-                    username = member.nick,
+                    username = member.user.username,
                     id = member.user.id,
                 });
             }
@@ -494,7 +502,7 @@ namespace MarkdownTest
 
                     for (var i1 = 0; i1 < 3; i1++)
                     {
-                        string postfix = "";
+                        string postfix;
                         switch (i1)
                         {
                             case 0:
@@ -575,7 +583,7 @@ namespace MarkdownTest
                 mentions.Add(new EventMessageCreate.EventMessageCreate_Mention()
                 {
                     member = member,
-                    username = member.nick,
+                    username = member.user.username,
                     id = member.user.id,
                 });
             }
@@ -664,6 +672,243 @@ namespace MarkdownTest
             return result;
         }
 
+        private static IEnumerable<object[]> GetEdgeCases()
+        {
+            var result = new List<object[]>();
+
+            // Тестируем Эмодзи: chatOption.emoji_relative & chatOption.emoji_stranger
+            const string ourServerEmoji = "<a:box1:663446227550994452> <:st1:568685037868810269>";
+            const string otherServerEmoji = "<a:unk1:600000000000000000> <:unk2:500000000000000000>";
+            const string ourServerEmojiHTML =
+                "<span class='emoji {0}'><img src='https://cdn.discordapp.com/emojis/663446227550994452.gif' alt=':box1:'></span> " +
+                "<span class='emoji {0}'><img src='https://cdn.discordapp.com/emojis/568685037868810269.png' alt=':st1:'></span>";
+            const string otherServerEmojiHTML =
+                "<span class='emoji {0}'><img src='https://cdn.discordapp.com/emojis/600000000000000000.gif' alt=':unk1:'></span> " +
+                "<span class='emoji {0}'><img src='https://cdn.discordapp.com/emojis/500000000000000000.png' alt=':unk2:'></span>";
+            const string ourServerEmojiPlain = ":box1: :st1:";
+            const string otherServerEmojiPlain = ":unk1: :unk2:";
+
+            var mentions = new List<EventMessageCreate.EventMessageCreate_Mention>();
+            // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
+            foreach (var member in NKDiscordChatWidget.DiscordBot.Bot.guilds[guildID].members)
+            {
+                mentions.Add(new EventMessageCreate.EventMessageCreate_Mention()
+                {
+                    member = member,
+                    username = member.user.username,
+                    id = member.user.id,
+                });
+            }
+
+            for (int i1 = 1; i1 < 4; i1++)
+            {
+                var markdown = ((i1 % 2 == 1) ? ourServerEmoji : "") + ((i1 >> 1 == 1) ? otherServerEmoji : "");
+
+                for (int i2 = 0; i2 < 8; i2++)
+                {
+                    var chatOption = new ChatDrawOption
+                    {
+                        emoji_relative = i2 % 4,
+                        emoji_stranger = (i2 >> 2) % 4,
+                    };
+                    if ((chatOption.emoji_relative == 3) || (chatOption.emoji_stranger == 3))
+                    {
+                        continue;
+                    }
+
+                    var expectedHTML = "";
+                    if (i1 % 2 == 1)
+                    {
+                        switch (chatOption.emoji_relative)
+                        {
+                            case 0:
+                                expectedHTML += string.Format(ourServerEmojiHTML, "");
+                                break;
+                            case 1:
+                                expectedHTML += string.Format(ourServerEmojiHTML, "blur");
+                                break;
+                            case 2:
+                                expectedHTML += ourServerEmojiPlain;
+                                break;
+                        }
+                    }
+
+                    if (i1 >> 1 == 1)
+                    {
+                        switch (chatOption.emoji_stranger)
+                        {
+                            case 0:
+                                expectedHTML += string.Format(otherServerEmojiHTML, "");
+                                break;
+                            case 1:
+                                expectedHTML += string.Format(otherServerEmojiHTML, "blur");
+                                break;
+                            case 2:
+                                expectedHTML += otherServerEmojiPlain;
+                                break;
+                        }
+                    }
+
+                    result.Add(new object[]
+                    {
+                        markdown,
+                        "<div class='line'>" + expectedHTML + "</div>",
+                        chatOption,
+                        null,
+                        null
+                    });
+                }
+            }
+
+            {
+                var inputs = new dynamic[]
+                {
+                    new
+                    {
+                        codes = new[] {0x1F346},
+                        expected =
+                            "<span class='emoji unicode-emoji '><img src='/images/emoji/twemoji/1f346.svg' alt=':1f346:'></span>"
+                    },
+                    new
+                    {
+                        codes = new[] {0x1F47A},
+                        expected =
+                            "<span class='emoji unicode-emoji '><img src='/images/emoji/twemoji/1f47a.svg' alt=':1f47a:'></span>"
+                    },
+                    new
+                    {
+                        codes = new[] {0x1F346, 0x1F47A},
+                        expected =
+                            "<span class='emoji unicode-emoji '><img src='/images/emoji/twemoji/1f346.svg' alt=':1f346:'></span>" +
+                            "<span class='emoji unicode-emoji '><img src='/images/emoji/twemoji/1f47a.svg' alt=':1f47a:'></span>"
+                    },
+                    new
+                    {
+                        codes = new[] {0x1F1F7, 0x1F1FA},
+                        expected =
+                            "<span class='emoji unicode-emoji '><img src='/images/emoji/twemoji/1f1f7-1f1fa.svg' alt=':1f1f7-1f1fa:'></span>"
+                    },
+                    new
+                    {
+                        codes = new[] {0x31, 0xfe0f, 0x20e3},
+                        expected = (string) null,
+                    },
+                };
+
+                foreach (var input in inputs)
+                {
+                    int[] codes = input.codes;
+                    string expectedTwemoji = input.expected;
+
+                    foreach (var emojiPack in new[] {EmojiPackType.Twemoji, EmojiPackType.StandardOS})
+                    {
+                        var chatOption = new ChatDrawOption {unicode_emoji_displaying = emojiPack};
+                        var emoji = codes.Aggregate("",
+                            (current, code) => current + Utf8ToUnicode.UnicodeCodeToString(code));
+
+                        var expectedHTML = "";
+                        // ReSharper disable once SwitchStatementHandlesSomeKnownEnumValuesWithDefault
+                        switch (emojiPack)
+                        {
+                            case EmojiPackType.Twemoji:
+                                expectedHTML = expectedTwemoji ?? emoji;
+                                break;
+                            case EmojiPackType.StandardOS:
+                                expectedHTML = emoji;
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException();
+                        }
+
+                        result.Add(new object[]
+                        {
+                            emoji,
+                            "<div class='line'>" + expectedHTML + "</div>",
+                            chatOption,
+                            null,
+                            null
+                        });
+                    }
+                }
+            }
+
+            // text_spoiler
+            {
+                var word = GetRandomWord();
+                string markdown = string.Format("||{0}||", word);
+                for (int i = 0; i < 2; i++)
+                {
+                    var chatOption = new ChatDrawOption {text_spoiler = i};
+                    var html = string.Format(
+                        "<div class='line'><span class='spoiler {0}'><span class='spoiler-content'>{1}</span></span></div>",
+                        (i == 1) ? "spoiler-show" : "",
+                        word
+                    );
+
+                    result.Add(new object[]
+                    {
+                        markdown,
+                        html,
+                        chatOption,
+                        null,
+                        null
+                    });
+                }
+            }
+
+            // message_mentions_style
+            {
+                var inputs = new[]
+                {
+                    new[]
+                    {
+                        "428567095563780107",
+                        "北風",
+                        "F1C40F",
+                    },
+                    new[]
+                    {
+                        "568138249986375682",
+                        "NKDiscordChatWidget",
+                        "E74C3C",
+                    },
+                };
+
+                foreach (var input in inputs)
+                {
+                    for (int i = 0; i < 2; i++)
+                    {
+                        string markdown = string.Format("<@!{0}>", input[0]);
+                        var chatOption = new ChatDrawOption {message_mentions_style = i};
+                        var html = string.Format(
+                            "<div class='line'><span class='user mention'{0}>@{1}</span></div>",
+                            (i == 1) ? string.Format(" style='color: #{0};'", input[2]) : "",
+                            input[1]
+                        );
+
+                        result.Add(new object[]
+                        {
+                            markdown,
+                            html,
+                            chatOption,
+                            mentions,
+                            null
+                        });
+                        result.Add(new object[]
+                        {
+                            markdown,
+                            string.Format("<div class='line'><Пользователь Unknown #{0}></div>", input[0]),
+                            chatOption,
+                            null,
+                            null
+                        });
+                    }
+                }
+            }
+
+            return result;
+        }
+
         #endregion
 
         #region Test
@@ -681,11 +926,6 @@ namespace MarkdownTest
             if (chatOption == null)
             {
                 chatOption = new ChatDrawOption();
-            }
-
-            if (mentions == null)
-            {
-                mentions = new List<EventMessageCreate.EventMessageCreate_Mention>();
             }
 
             if (rules == null)

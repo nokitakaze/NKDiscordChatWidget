@@ -8,9 +8,10 @@ namespace NKDiscordChatWidget.General
 {
     public static class UnicodeEmojiEngine
     {
-        public static Dictionary<EmojiPackType, string[]> emojiList = new Dictionary<EmojiPackType, string[]>();
+        public static readonly Dictionary<EmojiPackType, string[]> emojiList =
+            new Dictionary<EmojiPackType, string[]>();
 
-        public static Dictionary<EmojiPackType, HashSet<long>> emojiCodesList =
+        public static readonly Dictionary<EmojiPackType, HashSet<long>> emojiCodesList =
             new Dictionary<EmojiPackType, HashSet<long>>();
 
         public static string GetImageExtension(EmojiPackType pack)

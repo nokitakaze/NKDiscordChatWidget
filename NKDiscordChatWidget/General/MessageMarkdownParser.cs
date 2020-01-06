@@ -233,7 +233,11 @@ namespace NKDiscordChatWidget.General
                         regexp = rWithoutMark,
                         deleg = (Func<string>) (() => MarkNoFormatting(text, chatOption, waitDictionary))
                     },
-                    new {regexp = rLink, deleg = (Func<string>) (() => MarkLinks(text, chatOption, waitDictionary))},
+                    new
+                    {
+                        regexp = rLink,
+                        deleg = (Func<string>) (() => MarkLinks(text, chatOption, waitDictionary))
+                    },
                     new
                     {
                         regexp = rEmojiWithinText,
@@ -508,13 +512,12 @@ namespace NKDiscordChatWidget.General
             // Эмодзи внутри текста
             text = rEmojiWithinText.Replace(text, m1 =>
             {
-                // TODO: вычитать
                 string emojiID = m1.Groups[3].Value;
                 bool isRelative = thisGuildEmojis.Contains(emojiID);
                 int emojiShow = isRelative ? chatOption.emoji_relative : chatOption.emoji_stranger;
                 if (emojiShow == 2)
                 {
-                    return " ";
+                    return ":" + m1.Groups[2].Value + ":";
                 }
 
                 var wait = GetWaitString();

@@ -12,13 +12,45 @@ namespace NKDiscordChatWidget
         // ReSharper disable ConvertToConstant.Global
         // ReSharper disable FieldCanBeMadeReadOnly.Global
         public bool merge_same_user_messages; // @todo Временно игнорируется
+        
+        /// <summary>
+        /// Аттачи в чате
+        /// </summary>
         public int attachments;
+
+        /// <summary>
+        /// Превью для ссылок
+        /// </summary>
         public int link_preview;
+
+        /// <summary>
+        /// Реакции с этого сервера для сообщений
+        /// </summary>
         public int message_relative_reaction;
+
+        /// <summary>
+        /// Реакции с чужого сервера для сообщений
+        /// </summary>
         public int message_stranger_reaction;
+
+        /// <summary>
+        /// Emoji с чужого сервера внутри текста
+        /// </summary>
         public int emoji_stranger;
+
+        /// <summary>
+        /// Emoji с этого сервера внутри текста
+        /// </summary>
         public int emoji_relative;
+
+        /// <summary>
+        /// Показывать текстовые спойлеры
+        /// </summary>
         public int text_spoiler;
+        
+        /// <summary>
+        /// Цвет ников в упоминаниях в сообщениях
+        /// </summary>
         public int message_mentions_style;
 
         /// <summary>
