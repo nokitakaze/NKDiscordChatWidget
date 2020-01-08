@@ -706,7 +706,7 @@ namespace MarkdownTest
             {
                 var markdown = ((i1 % 2 == 1) ? ourServerEmoji : "") + ((i1 >> 1 == 1) ? otherServerEmoji : "");
 
-                for (int i2 = 0; i2 < 8; i2++)
+                for (int i2 = 0; i2 < (1 << 4); i2++)
                 {
                     var chatOption = new ChatDrawOption
                     {

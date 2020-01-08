@@ -242,6 +242,8 @@ namespace NKDiscordChatWidget.General
             return html;
         }
 
+        #region Reactions
+
         private static void AddMessageReactionHTML(
             ICollection<string> reactionHTMLs,
             NKDiscordChatWidget.DiscordBot.Classes.EventMessageCreate.EventMessageCreate_Reaction reaction,
@@ -265,40 +267,10 @@ namespace NKDiscordChatWidget.General
                 // Стандартные Unicode-эмодзи
                 string emojiHtml;
                 var emojiPack = chatOption.unicode_emoji_displaying;
+                // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
                 if (emojiPack != EmojiPackType.StandardOS)
                 {
-                    var longs = Utf8ToUnicode.ToUnicodeCode(reaction.emoji.name);
-                    var u = longs.Any(code => !UnicodeEmojiEngine.IsInIntervalEmoji(code, emojiPack));
-
-                    if (u)
-                    {
-                        // Реакция без ID, но при этом не является эмодзи, рисуем как есть
-                        emojiHtml = HttpUtility.HtmlEncode(reaction.emoji.name);
-                    }
-                    else
-                    {
-                        // Реакция без ID и является эмодзи, поэтому рисуем как картинку
-                        var localEmojiList = UnicodeEmojiEngine.RenderEmojiAsStringList(
-                            emojiPack, longs);
-                        emojiHtml = "";
-                        // ReSharper disable once LoopCanBeConvertedToQuery
-                        foreach (var item in localEmojiList)
-                        {
-                            // hint: вообще-то localEmojiList.Count==1 ВСЕГДА, но на всякий случай...
-                            var emojiSubFolderName = UnicodeEmojiEngine.GetImageSubFolder(emojiPack);
-                            var emojiExtension = UnicodeEmojiEngine.GetImageExtension(emojiPack);
-                            var url = string.Format("/images/emoji/{0}/{1}.{2}",
-                                emojiSubFolderName,
-                                item.emojiCode,
-                                emojiExtension
-                            );
-
-                            emojiHtml += string.Format("<img src='{0}' alt=':{1}:'>",
-                                HttpUtility.HtmlEncode(url),
-                                HttpUtility.HtmlEncode(reaction.emoji.name)
-                            );
-                        }
-                    }
+                    emojiHtml = AddMessageReactionHTMLWithEmojiPack(reaction, emojiPack);
                 }
                 else
                 {
@@ -313,6 +285,54 @@ namespace NKDiscordChatWidget.General
                 ));
             }
         }
+
+        private static string AddMessageReactionHTMLWithEmojiPack(
+            NKDiscordChatWidget.DiscordBot.Classes.EventMessageCreate.EventMessageCreate_Reaction reaction,
+            EmojiPackType emojiPack
+        )
+        {
+            var longs = Utf8ToUnicode.ToUnicodeCode(reaction.emoji.name);
+            var u = longs.Any(code => !UnicodeEmojiEngine.IsInIntervalEmoji(code, emojiPack));
+
+            if (u)
+            {
+                // Реакция без ID, но при этом не является эмодзи, рисуем как есть
+                return HttpUtility.HtmlEncode(reaction.emoji.name);
+            }
+
+            // Реакция без ID и является эмодзи, поэтому рисуем как картинку
+            var localEmojiList = UnicodeEmojiEngine.RenderEmojiAsStringList(
+                emojiPack, longs);
+            var emojiHtml = "";
+            // ReSharper disable once LoopCanBeConvertedToQuery
+            foreach (var item in localEmojiList)
+            {
+                if (!item.isSuccess)
+                {
+                    // Этого символа нет в паке, выводим как есть. Куда деваться
+                    emojiHtml += HttpUtility.HtmlEncode(item.rawText);
+                    continue;
+                }
+
+                // hint: localEmojiList.Count может быть больше 1 в случае сложных эмодзи типа :one:
+                var emojiSubFolderName = UnicodeEmojiEngine.GetImageSubFolder(emojiPack);
+                var emojiExtension = UnicodeEmojiEngine.GetImageExtension(emojiPack);
+                var url = string.Format("/images/emoji/{0}/{1}.{2}",
+                    emojiSubFolderName,
+                    item.emojiCode,
+                    emojiExtension
+                );
+
+                emojiHtml += string.Format("<img src='{0}' alt=':{1}:'>",
+                    HttpUtility.HtmlEncode(url),
+                    HttpUtility.HtmlEncode(reaction.emoji.name)
+                );
+            }
+
+            return emojiHtml;
+        }
+
+        #endregion
     }
 
     // ReSharper disable NotAccessedField.Global
