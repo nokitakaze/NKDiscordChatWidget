@@ -194,6 +194,8 @@ namespace NKDiscordChatWidget.DiscordBot.Classes
                 );
             */
 
+            public bool IsSpoiler => this.url.Split('/').Last().StartsWith("SPOILER_");
+
             public override string ToString()
             {
                 return this.id + " / " + this.url;

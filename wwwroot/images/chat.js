@@ -44,6 +44,7 @@ function setLoadHandlersToMessage(message) {
         .find('img')
         .each(function () {
             const obj = this;
+            const objJ = $(obj);
             let errorNumber = 0;
             console.debug('img load start', this);
 
@@ -51,7 +52,40 @@ function setLoadHandlersToMessage(message) {
                 windowScrollToBottom();
             }, 50);
 
-            $(obj).on('load', function () {
+            const intervalFixSizes = setInterval(function () {
+                const attachmentElement = objJ.parents('.attachment').first();
+                if (attachmentElement.length == 0) {
+                    clearInterval(intervalFixSizes);
+                    return;
+                }
+
+                const width = objJ.width();
+                const height = objJ.height();
+
+                if ((width > 0) && (height > 0)) {
+                    clearInterval(intervalFixSizes);
+
+                    const wrapperElement = attachmentElement.find('.attachment-wrapper');
+
+                    const width = objJ.width();
+                    const height = objJ.height();
+
+                    wrapperElement.css({
+                        width: width + 'px',
+                        height: height + 'px',
+                        position: 'relative',
+                        overflow: 'hidden',
+                    });
+                    objJ.css({
+                        width: width + 'px',
+                        height: height + 'px',
+                        'max-height': 'none',
+                        'max-width': 'none',
+                    });
+                }
+            }, 50);
+
+            objJ.on('load', function () {
                 // Доскроливаем чат до последнего пикселя
                 console.debug('event load', this, errorNumber);
                 clearInterval(interval);
@@ -59,7 +93,7 @@ function setLoadHandlersToMessage(message) {
                 windowScrollToBottom();
             });
 
-            $(obj).on('error', function (a, b, c) {
+            objJ.on('error', function (a, b, c) {
                 // Перезагружаем картинку
                 console.debug('event error', a, 'error number ', errorNumber, ' for', obj);
                 errorNumber++;

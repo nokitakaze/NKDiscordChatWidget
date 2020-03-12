@@ -137,9 +137,9 @@ namespace NKDiscordChatWidget.General
                         case "webm":
                             // TODO: Отображать размер видео
                             attachmentHTML += string.Format(
-                                "<div class='attachment {1}'><video><source src='{0}'></video></div>",
+                                "<div class='attachment {1}'><div class='attachment-wrapper'><video><source src='{0}'></video></div></div>",
                                 HttpUtility.HtmlEncode(attachment.proxy_url),
-                                (chatOption.attachments == 1) ? "blur" : ""
+                                ((chatOption.attachments == 1) || attachment.IsSpoiler) ? "blur" : ""
                             );
                             break;
                         case "jpeg":
@@ -148,11 +148,11 @@ namespace NKDiscordChatWidget.General
                         case "gif":
                         case "png":
                             attachmentHTML += string.Format(
-                                "<div class='attachment {3}'><img src='{0}' data-width='{1}' data-height='{2}'></div>",
+                                "<div class='attachment {3}'><div class='attachment-wrapper'><img src='{0}' data-width='{1}' data-height='{2}'></div></div>",
                                 HttpUtility.HtmlEncode(attachment.proxy_url),
                                 attachment.width,
                                 attachment.height,
-                                (chatOption.attachments == 1) ? "blur" : ""
+                                ((chatOption.attachments == 1) || attachment.IsSpoiler) ? "blur" : ""
                             );
                             break;
                     }

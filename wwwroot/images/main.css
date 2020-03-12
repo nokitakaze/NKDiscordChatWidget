@@ -219,6 +219,10 @@ body {
     margin-right: 20px;
 }
 
+#chat .message .content .content-message .attachment-block .attachment .attachment-wrapper {
+    display: inline-block;
+}
+
 #chat .message .content .content-message .attachment-block .attachment img,
 #chat .message .content .content-message .attachment-block .attachment video {
     max-width: 90%;
@@ -227,7 +231,7 @@ body {
 
 #chat .message .content .content-message .attachment-block .attachment.blur img,
 #chat .message .content .content-message .attachment-block .attachment.blur video {
-    filter: blur(20px);
+    filter: blur(34px);
 }
 
 #chat .message .content .content-message .embed-block {
@@ -285,6 +289,6 @@ body {
 }
 
 #chat .message .content .content-message .embed-block .embed.blur .embed-content .preview img {
-    filter: blur(20px);
+    filter: blur(34px);
 }
 
