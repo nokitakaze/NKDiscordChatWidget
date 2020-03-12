@@ -59,8 +59,16 @@ namespace NKDiscordChatWidget.DiscordBot
                             Console.WriteLine("Load gateway/bot loaded");
                             var rawAnswer = await response.Content.ReadAsStringAsync();
                             var dict = JsonConvert.DeserializeObject<Dictionary<string, object>>(rawAnswer);
-                            wsBaseUrl = dict["url"] as string;
-                            break;
+                            if (!dict.ContainsKey("url"))
+                            {
+                                var message = dict["message"] as string;
+                                Console.WriteLine("Can not connect to bot {0}", message);
+                            }
+                            else
+                            {
+                                wsBaseUrl = dict["url"] as string;
+                                break;
+                            }
                         }
                     }
                     catch (Exception wsException)
@@ -304,19 +312,24 @@ namespace NKDiscordChatWidget.DiscordBot
 
                             var existedMessage =
                                 messages[messageUpdate.guild_id][messageUpdate.channel_id][messageUpdate.id];
-                            if ((existedMessage.content == null) || (messageUpdate.content != null))
+
+                            // При обновлении сообщения Дискорд пропускает контент, если контент не обновляется,
+                            // поэтому тут нужен ===null предикат
+                            var fields = new[]{"content", "embeds", "attachments", "mention_roles", "mentions"};
+                            foreach (var fieldName in fields)
                             {
-                                // При обновлении сообщения Дискорд пропускает контент, если контент не обновляется,
-                                // поэтому тут нужен ===null предикат
-                                existedMessage.content = messageUpdate.content;
+                                var field = typeof(EventMessageCreate).GetField(fieldName);
+                                var newValue =  field.GetValue(messageUpdate);
+                                if (newValue == null)
+                                {
+                                    continue;
+                                }
+                                
+                                field.SetValue(existedMessage, newValue);
                             }
 
                             existedMessage.edited_timestamp = messageUpdate.edited_timestamp;
-                            existedMessage.embeds = messageUpdate.embeds;
-                            existedMessage.attachments = messageUpdate.attachments;
-                            existedMessage.mention_roles = messageUpdate.mention_roles;
                             existedMessage.mention_everyone = messageUpdate.mention_everyone;
-                            existedMessage.mentions = messageUpdate.mentions;
                             existedMessage.pinned = messageUpdate.pinned;
                             WebsocketClientSide.UpdateMessage(existedMessage);
 
