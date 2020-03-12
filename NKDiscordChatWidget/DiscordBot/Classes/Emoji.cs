@@ -18,7 +18,8 @@ namespace NKDiscordChatWidget.DiscordBot.Classes
         public bool managed;
         public bool animated;
 
-        public string URL => string.Format("https://cdn.discordapp.com/emojis/{0}.png", this.id);
+        public string URL => string.Format("https://cdn.discordapp.com/emojis/{0}.{1}",
+            this.id, this.animated ? "gif" : "png");
 
         public bool IsEqual(Emoji other)
         {
