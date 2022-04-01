@@ -153,7 +153,8 @@ namespace NKDiscordChatWidget.DiscordBot.Classes
                     if ((this.avatar == null) || (this.avatar == ""))
                     {
                         // Нет аватарки, отображаем Дефолтную
-                        return "https://discordapp.com/assets/322c936a8c8be1b803cd94861bdfa868.png";
+                        // todo Найти оригинальный URL с CDN Дискорда
+                        return "https://nktkz.s3.eu-central-1.amazonaws.com/cdn/discord-widget/322c936a8c8be1b803cd94861bdfa868.png";
                     }
 
                     string extension = "png";
