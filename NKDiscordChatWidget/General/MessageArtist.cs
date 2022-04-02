@@ -45,7 +45,7 @@ namespace NKDiscordChatWidget.General
             */
 
             string nickColor = "inherit";
-            if (message.member.roles.Any())
+            if ((message.member != null) && (message.member.roles.Any()))
             {
                 var roles = NKDiscordChatWidget.DiscordBot.Bot.guilds[message.guild_id].roles.ToList();
                 roles.Sort((a, b) => b.position.CompareTo(a.position));
@@ -74,7 +74,7 @@ namespace NKDiscordChatWidget.General
                 "</div><div style='clear: both;'></div><hr>",
                 HttpUtility.HtmlEncode(message.author.avatarURL),
                 HttpUtility.HtmlEncode(
-                    !string.IsNullOrEmpty(message.member.nick)
+                    (message.member != null) && !string.IsNullOrEmpty(message.member.nick)
                         ? message.member.nick
                         : message.author.username
                 ),
@@ -111,7 +111,7 @@ namespace NKDiscordChatWidget.General
             bool containOnlyUnicodeAndSpace;
             {
                 var rEmojiWithinText = new Regex(@"<\:(.+?)\:([0-9]+)>", RegexOptions.Compiled);
-                long[] longs = { };
+                long[] longs = {};
                 if (message.content != null)
                 {
                     longs = Utf8ToUnicode.ToUnicodeCode(rEmojiWithinText.Replace(message.content, ""));

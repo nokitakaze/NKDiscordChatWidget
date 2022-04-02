@@ -332,8 +332,8 @@ function startSignalRClient(queryData) {
         });
 
     connection.onclose(function () {
-        console.warn('Chat connection was closed');
-        $('#error_block').text('chat was disconnected').show();
+        console.warn('Chat connection closed');
+        $('#error_block').text('chat disconnected').show();
         setTimeout(function () {
             startSignalRClient(queryData);
         }, 5000);
