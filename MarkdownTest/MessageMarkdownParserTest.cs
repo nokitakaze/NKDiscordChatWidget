@@ -120,7 +120,7 @@ namespace MarkdownTest
                     new GuildMember()
                     {
                         nick = "北風",
-                        roles = new List<string> {"568376310133424152", "633954441485221898"},
+                        roles = new List<string> { "568376310133424152", "633954441485221898" },
                         user = new User()
                         {
                             avatar = "8a33053d4a3ef74577fdd4b21431ed2e",
@@ -132,7 +132,7 @@ namespace MarkdownTest
                     new GuildMember()
                     {
                         nick = null,
-                        roles = new List<string> {"568217115031502868", "633965723764523028", "633954441485221898"},
+                        roles = new List<string> { "568217115031502868", "633965723764523028", "633954441485221898" },
                         user = new User()
                         {
                             avatar = null,
@@ -161,19 +161,20 @@ namespace MarkdownTest
             // bold, em, ~~, spoiler (on/off)
             // quote, no-formatting
             // emoji, mention user, mention role
-            //* todo вернуть всё взад
             {
                 var simpleTest = GenerateSimpleTests();
                 result.AddRange(simpleTest.Select(singleCase =>
-                    new[] {singleCase[0], "<div class='line'>" + singleCase[1] + "</div>", null, null, null}));
+                    new[] { singleCase[0], "<div class='line'>" + singleCase[1] + "</div>", null, null, null }));
             }
             result.AddRange(GetThreeAsteriskTests());
             result.AddRange(GetSpaceCharacterTests());
             result.AddRange(GetInputs());
             result.AddRange(GetQuoteCheck());
-            result.AddRange(GetEdgeCases());
+            result.AddRange(GetEdgeCases_EmojiChatOption());
+            result.AddRange(GetHardEmoji());
+            result.AddRange(GetTextSpoiler());
+            result.AddRange(GetMessageMentionsStyle());
             result.AddRange(GetLinksCases());
-            // */
             result.AddRange(GetHTMLInject());
 
             return result;
@@ -244,7 +245,7 @@ namespace MarkdownTest
                         }
                     }
 
-                    result.Add(new object[] {currentMarkdown, currentHTML});
+                    result.Add(new object[] { currentMarkdown, currentHTML });
                 }
             }
 
@@ -255,7 +256,7 @@ namespace MarkdownTest
         {
             if (rawList.Count == 1)
             {
-                return new List<List<int>>() {new List<int>() {rawList.First()}};
+                return new List<List<int>>() { new List<int>() { rawList.First() } };
             }
 
             var result = new List<List<int>>();
@@ -269,7 +270,7 @@ namespace MarkdownTest
 
                 foreach (var otherList in otherLists)
                 {
-                    var resultSubList = new List<int>() {prefix};
+                    var resultSubList = new List<int>() { prefix };
                     resultSubList.AddRange(otherList);
                     result.Add(resultSubList);
                 }
@@ -362,26 +363,26 @@ namespace MarkdownTest
         {
             var result = GetThreeAsteriskTestsRaw()
                 .Select(pair => new[]
-                    {pair[0], string.Format("<div class='line'>{0}</div>", pair[1]), null, null, null})
+                    { pair[0], string.Format("<div class='line'>{0}</div>", pair[1]), null, null, null })
                 .Cast<object[]>()
                 .ToList();
 
             // ReSharper disable once LoopCanBeConvertedToQuery
             foreach (var local in new[]
+                     {
+                         new[]
+                         {
+                             "~~ > ~~",
+                             "<div class='line'><del> &gt; </del></div>"
+                         },
+                         new[]
+                         {
+                             "|| > ||",
+                             "<div class='line'><span class='spoiler '><span class='spoiler-content'> &gt; </span></span></div>"
+                         },
+                     })
             {
-                new[]
-                {
-                    "~~ > ~~",
-                    "<div class='line'><del> &gt; </del></div>"
-                },
-                new[]
-                {
-                    "|| > ||",
-                    "<div class='line'><span class='spoiler '><span class='spoiler-content'> &gt; </span></span></div>"
-                },
-            })
-            {
-                result.Add(new object[] {local[0], local[1], null, null, null});
+                result.Add(new object[] { local[0], local[1], null, null, null });
             }
 
             return result;
@@ -427,25 +428,25 @@ namespace MarkdownTest
                 },
 
                 //
-                new[] {"im*italic*within", "im<em>italic</em>within"},
+                new[] { "im*italic*within", "im<em>italic</em>within" },
 
-                new[] {"! **bold** !", "! <strong>bold</strong> !"},
-                new[] {"! ** bold ** !", "! <strong> bold </strong> !"},
+                new[] { "! **bold** !", "! <strong>bold</strong> !" },
+                new[] { "! ** bold ** !", "! <strong> bold </strong> !" },
 
                 // Discord идёт на встречу пользователям, поэтому парсер не такой как по спеке
-                new[] {"! *italic* !", "! <em>italic</em> !"},
-                new[] {"! * not italic * !", "! * not italic * !"},
-                new[] {"!* not italic *!", "!* not italic *!"},
-                new[] {"* not italic*", "* not italic*"},
-                new[] {"*not italic *", "*not italic *"},
-                new[] {"! _italic_ !", "! <em>italic</em> !"},
-                new[] {"! _ italic _ !", "! <em> italic </em> !"},
+                new[] { "! *italic* !", "! <em>italic</em> !" },
+                new[] { "! * not italic * !", "! * not italic * !" },
+                new[] { "!* not italic *!", "!* not italic *!" },
+                new[] { "* not italic*", "* not italic*" },
+                new[] { "*not italic *", "*not italic *" },
+                new[] { "! _italic_ !", "! <em>italic</em> !" },
+                new[] { "! _ italic _ !", "! <em> italic </em> !" },
 
                 // Underscore tests
-                new[] {"__underscore__", "<u>underscore</u>"},
-                new[] {"__ underscore __", "<u> underscore </u>"},
-                new[] {"___underscore italic___", "<em><u>underscore italic</u></em>"},
-                new[] {"___ underscore italic ___", "<em><u> underscore italic </u></em>"},
+                new[] { "__underscore__", "<u>underscore</u>" },
+                new[] { "__ underscore __", "<u> underscore </u>" },
+                new[] { "___underscore italic___", "<em><u>underscore italic</u></em>" },
+                new[] { "___ underscore italic ___", "<em><u> underscore italic </u></em>" },
             };
         }
 
@@ -505,7 +506,7 @@ namespace MarkdownTest
 
             foreach (var input in inputs)
             {
-                foreach (var u1 in new[] {false, true})
+                foreach (var u1 in new[] { false, true })
                 {
                     var prefix = u1 ? GetRandomWord() + " " : "";
 
@@ -597,7 +598,7 @@ namespace MarkdownTest
                 });
             }
 
-            var chatOption = new ChatDrawOption() {message_mentions_style = 1};
+            var chatOption = new ChatDrawOption() { message_mentions_style = 1 };
 
             for (int i = 0; i < Math.Pow(4, 4); i++)
             {
@@ -681,7 +682,7 @@ namespace MarkdownTest
             return result;
         }
 
-        private static IEnumerable<object[]> GetEdgeCases()
+        private static IEnumerable<object[]> GetEdgeCases_EmojiChatOption()
         {
             var result = new List<object[]>();
 
@@ -696,18 +697,6 @@ namespace MarkdownTest
                 "<span class='emoji {0}'><img src='https://cdn.discordapp.com/emojis/500000000000000000.png' alt=':unk2:'></span>";
             const string ourServerEmojiPlain = ":box1: :st1:";
             const string otherServerEmojiPlain = ":unk1: :unk2:";
-
-            var mentions = new List<EventMessageCreate.EventMessageCreate_Mention>();
-            // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
-            foreach (var member in NKDiscordChatWidget.DiscordBot.Bot.guilds[guildID].members)
-            {
-                mentions.Add(new EventMessageCreate.EventMessageCreate_Mention()
-                {
-                    member = member,
-                    username = member.user.username,
-                    id = member.user.id,
-                });
-            }
 
             for (int i1 = 1; i1 < 4; i1++)
             {
@@ -769,95 +758,81 @@ namespace MarkdownTest
                 }
             }
 
+            return result;
+        }
+
+        private static IEnumerable<object[]> GetHardEmoji()
+        {
+            var result = new List<object[]>();
+
+            var inputs = new dynamic[]
             {
-                var inputs = new dynamic[]
+                // st E. Ponasenkov
+                new
                 {
-                    new
-                    {
-                        codes = new[] {0x1F346},
-                        expected =
-                            "<span class='emoji unicode-emoji '><img src='/images/emoji/twemoji/1f346.svg' alt=':1f346:'></span>"
-                    },
-                    new
-                    {
-                        codes = new[] {0x1F47A},
-                        expected =
-                            "<span class='emoji unicode-emoji '><img src='/images/emoji/twemoji/1f47a.svg' alt=':1f47a:'></span>"
-                    },
-                    new
-                    {
-                        codes = new[] {0x1F346, 0x1F47A},
-                        expected =
-                            "<span class='emoji unicode-emoji '><img src='/images/emoji/twemoji/1f346.svg' alt=':1f346:'></span>" +
-                            "<span class='emoji unicode-emoji '><img src='/images/emoji/twemoji/1f47a.svg' alt=':1f47a:'></span>"
-                    },
-                    new
-                    {
-                        codes = new[] {0x1F1F7, 0x1F1FA},
-                        expected =
-                            "<span class='emoji unicode-emoji '><img src='/images/emoji/twemoji/1f1f7-1f1fa.svg' alt=':1f1f7-1f1fa:'></span>"
-                    },
-                    new
-                    {
-                        codes = new[] {0x31, 0xfe0f, 0x20e3},
-                        expected = (string) null,
-                    },
-                };
-
-                foreach (var input in inputs)
+                    codes = new[] { 0x1F346 },
+                    expected =
+                        "<span class='emoji unicode-emoji '><img src='/images/emoji/twemoji/1f346.svg' alt=':1f346:'></span>"
+                },
+                // japanese goblin
+                new
                 {
-                    int[] codes = input.codes;
-                    string expectedTwemoji = input.expected;
+                    codes = new[] { 0x1F47A },
+                    expected =
+                        "<span class='emoji unicode-emoji '><img src='/images/emoji/twemoji/1f47a.svg' alt=':1f47a:'></span>"
+                },
+                // Eggplant + japanese goblin
+                new
+                {
+                    codes = new[] { 0x1F346, 0x1F47A },
+                    expected =
+                        "<span class='emoji unicode-emoji '><img src='/images/emoji/twemoji/1f346.svg' alt=':1f346:'></span>" +
+                        "<span class='emoji unicode-emoji '><img src='/images/emoji/twemoji/1f47a.svg' alt=':1f47a:'></span>"
+                },
+                // Russian flag
+                new
+                {
+                    codes = new[] { 0x1F1F7, 0x1F1FA },
+                    expected =
+                        "<span class='emoji unicode-emoji '><img src='/images/emoji/twemoji/1f1f7-1f1fa.svg' alt=':1f1f7-1f1fa:'></span>"
+                },
+                // Broken emoji
+                new
+                {
+                    codes = new[] { 0x31, 0xfe0f, 0x20e3 },
+                    expected = (string)null,
+                },
+            };
 
-                    foreach (var emojiPack in new[] {EmojiPackType.Twemoji, EmojiPackType.StandardOS})
+            foreach (var input in inputs)
+            {
+                int[] codes = input.codes;
+                string expectedTwemoji = input.expected;
+
+                foreach (var emojiPack in new[] { EmojiPackType.Twemoji, EmojiPackType.StandardOS })
+                {
+                    var chatOption = new ChatDrawOption { unicode_emoji_displaying = emojiPack };
+                    var emoji = codes.Aggregate("",
+                        (current, code) => current + Utf8ToUnicode.UnicodeCodeToString(code));
+
+                    string expectedHTML;
+                    // ReSharper disable once SwitchStatementHandlesSomeKnownEnumValuesWithDefault
+                    switch (emojiPack)
                     {
-                        var chatOption = new ChatDrawOption {unicode_emoji_displaying = emojiPack};
-                        var emoji = codes.Aggregate("",
-                            (current, code) => current + Utf8ToUnicode.UnicodeCodeToString(code));
-
-                        var expectedHTML = "";
-                        // ReSharper disable once SwitchStatementHandlesSomeKnownEnumValuesWithDefault
-                        switch (emojiPack)
-                        {
-                            case EmojiPackType.Twemoji:
-                                expectedHTML = expectedTwemoji ?? emoji;
-                                break;
-                            case EmojiPackType.StandardOS:
-                                expectedHTML = emoji;
-                                break;
-                            default:
-                                throw new ArgumentOutOfRangeException();
-                        }
-
-                        result.Add(new object[]
-                        {
-                            emoji,
-                            "<div class='line'>" + expectedHTML + "</div>",
-                            chatOption,
-                            null,
-                            null
-                        });
+                        case EmojiPackType.Twemoji:
+                            expectedHTML = expectedTwemoji ?? emoji;
+                            break;
+                        case EmojiPackType.StandardOS:
+                            expectedHTML = emoji;
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
                     }
-                }
-            }
-
-            // text_spoiler
-            {
-                var word = GetRandomWord();
-                string markdown = string.Format("||{0}||", word);
-                for (int i = 0; i < 2; i++)
-                {
-                    var chatOption = new ChatDrawOption {text_spoiler = i};
-                    var html = string.Format(
-                        "<div class='line'><span class='spoiler {0}'><span class='spoiler-content'>{1}</span></span></div>",
-                        (i == 1) ? "spoiler-show" : "",
-                        word
-                    );
 
                     result.Add(new object[]
                     {
-                        markdown,
-                        html,
+                        emoji,
+                        "<div class='line'>" + expectedHTML + "</div>",
                         chatOption,
                         null,
                         null
@@ -865,53 +840,97 @@ namespace MarkdownTest
                 }
             }
 
-            // message_mentions_style
+            return result;
+        }
+
+        private static IEnumerable<object[]> GetTextSpoiler()
+        {
+            var result = new List<object[]>();
+
+            var word = GetRandomWord();
+            string markdown = string.Format("||{0}||", word);
+            for (int i = 0; i < 2; i++)
             {
-                var inputs = new[]
-                {
-                    new[]
-                    {
-                        "428567095563780107",
-                        "北風",
-                        "F1C40F",
-                    },
-                    new[]
-                    {
-                        "568138249986375682",
-                        "NKDiscordChatWidget",
-                        "E74C3C",
-                    },
-                };
+                var chatOption = new ChatDrawOption { text_spoiler = i };
+                var html = string.Format(
+                    "<div class='line'><span class='spoiler {0}'><span class='spoiler-content'>{1}</span></span></div>",
+                    (i == 1) ? "spoiler-show" : "",
+                    word
+                );
 
-                foreach (var input in inputs)
+                result.Add(new object[]
                 {
-                    for (int i = 0; i < 2; i++)
-                    {
-                        string markdown = string.Format("<@!{0}>", input[0]);
-                        var chatOption = new ChatDrawOption {message_mentions_style = i};
-                        var html = string.Format(
-                            "<div class='line'><span class='user mention'{0}>@{1}</span></div>",
-                            (i == 1) ? string.Format(" style='color: #{0};'", input[2]) : "",
-                            input[1]
-                        );
+                    markdown,
+                    html,
+                    chatOption,
+                    null,
+                    null
+                });
+            }
 
-                        result.Add(new object[]
-                        {
-                            markdown,
-                            html,
-                            chatOption,
-                            mentions,
-                            null
-                        });
-                        result.Add(new object[]
-                        {
-                            markdown,
-                            string.Format("<div class='line'>&lt;User Unknown #{0}&gt;</div>", input[0]),
-                            chatOption,
-                            null,
-                            null
-                        });
-                    }
+            return result;
+        }
+
+        private static IEnumerable<object[]> GetMessageMentionsStyle()
+        {
+            var result = new List<object[]>();
+
+            var mentions = new List<EventMessageCreate.EventMessageCreate_Mention>();
+            // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
+            foreach (var member in NKDiscordChatWidget.DiscordBot.Bot.guilds[guildID].members)
+            {
+                mentions.Add(new EventMessageCreate.EventMessageCreate_Mention()
+                {
+                    member = member,
+                    username = member.user.username,
+                    id = member.user.id,
+                });
+            }
+
+            var inputs = new[]
+            {
+                new[]
+                {
+                    "428567095563780107",
+                    "北風",
+                    "F1C40F",
+                },
+                new[]
+                {
+                    "568138249986375682",
+                    "NKDiscordChatWidget",
+                    "E74C3C",
+                },
+            };
+
+            foreach (var input in inputs)
+            {
+                for (int i = 0; i < 2; i++)
+                {
+                    string markdown = string.Format("<@!{0}>", input[0]);
+                    var chatOption = new ChatDrawOption { message_mentions_style = i };
+                    var html = string.Format(
+                        "<div class='line'><span class='user mention'{0}>@{1}</span></div>",
+                        (i == 1) ? string.Format(" style='color: #{0};'", input[2]) : "",
+                        input[1]
+                    );
+
+                    result.Add(new object[]
+                    {
+                        markdown,
+                        html,
+                        chatOption,
+                        mentions,
+                        null
+                    });
+                    result.Add(new object[]
+                    {
+                        markdown,
+                        string.Format("<div class='line'>&lt;User Unknown #{0}&gt;</div>", input[0]),
+                        chatOption,
+                        null,
+                        null
+                    });
                 }
             }
 
@@ -933,15 +952,15 @@ namespace MarkdownTest
 
             // ReSharper disable once LoopCanBeConvertedToQuery
             foreach (var input in new[]
-            {
-                new[] {"http://example.com/", "http://example.com/", "http://example.com/"},
-                new[]
-                {
-                    "https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5",
-                    "https://ru.wikipedia.org/wiki/Википедия:Введение",
-                    "https://ru.wikipedia.org/wiki/Википед...",
-                },
-            })
+                     {
+                         new[] { "http://example.com/", "http://example.com/", "http://example.com/" },
+                         new[]
+                         {
+                             "https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5",
+                             "https://ru.wikipedia.org/wiki/Википедия:Введение",
+                             "https://ru.wikipedia.org/wiki/Википед...",
+                         },
+                     })
             {
                 var markdown = input[0];
                 var html = string.Format("<a href='{0}' target='_blank'>{1}</a>",
@@ -974,132 +993,138 @@ namespace MarkdownTest
             //
             // ReSharper disable once LoopCanBeConvertedToQuery
             foreach (var input in new[]
-            {
-                new dynamic[]
-                {
-                    "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg",
-                    new List<string>() {"https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg"},
-                    "",
-                    chatOptionShort
-                },
-                new dynamic[]
-                {
-                    "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg",
-                    new List<string>() {"https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg"},
-                    "",
-                    chatOptionNotShort
-                },
-                new dynamic[]
-                {
-                    "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg",
-                    new List<string>(),
-                    "<a href='https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg' target='_blank'>https://cs7.pikabu.ru/post_img/big/20...</a>",
-                    chatOptionShort
-                },
-                new dynamic[]
-                {
-                    "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg",
-                    new List<string>(),
-                    "<a href='https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg' target='_blank'>https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg</a>",
-                    chatOptionNotShort
-                },
+                     {
+                         new dynamic[]
+                         {
+                             "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg",
+                             new List<string>()
+                                 { "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg" },
+                             "",
+                             chatOptionShort
+                         },
+                         new dynamic[]
+                         {
+                             "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg",
+                             new List<string>()
+                                 { "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg" },
+                             "",
+                             chatOptionNotShort
+                         },
+                         new dynamic[]
+                         {
+                             "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg",
+                             new List<string>(),
+                             "<a href='https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg' target='_blank'>https://cs7.pikabu.ru/post_img/big/20...</a>",
+                             chatOptionShort
+                         },
+                         new dynamic[]
+                         {
+                             "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg",
+                             new List<string>(),
+                             "<a href='https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg' target='_blank'>https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg</a>",
+                             chatOptionNotShort
+                         },
 
-                new dynamic[]
-                {
-                    "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5",
-                    new List<string>() {"https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg"},
-                    " <a href='https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5' target='_blank'>https://ru.wikipedia.org/wiki/Википед...</a>",
-                    chatOptionShort
-                },
-                new dynamic[]
-                {
-                    "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5",
-                    new List<string>() {"https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg"},
-                    " <a href='https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5' target='_blank'>https://ru.wikipedia.org/wiki/Википедия:Введение</a>",
-                    chatOptionNotShort
-                },
-                new dynamic[]
-                {
-                    "https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5",
-                    new List<string>() {"https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg"},
-                    "<a href='https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5' target='_blank'>https://ru.wikipedia.org/wiki/Википед...</a>",
-                    chatOptionShort
-                },
-                new dynamic[]
-                {
-                    "https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5",
-                    new List<string>() {"https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg"},
-                    "<a href='https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5' target='_blank'>https://ru.wikipedia.org/wiki/Википедия:Введение</a>",
-                    chatOptionNotShort
-                },
-                new dynamic[]
-                {
-                    "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5",
-                    new List<string>()
-                    {
-                        "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg",
-                        "https://media.discordapp.net/attachments/421392740970921996/599311410807439390/terminator-thumbs-up.gif"
-                    },
-                    " <a href='https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5' target='_blank'>https://ru.wikipedia.org/wiki/Википед...</a>",
-                    chatOptionShort
-                },
-                new dynamic[]
-                {
-                    "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5",
-                    new List<string>()
-                    {
-                        "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg",
-                        "https://media.discordapp.net/attachments/421392740970921996/599311410807439390/terminator-thumbs-up.gif"
-                    },
-                    " <a href='https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5' target='_blank'>https://ru.wikipedia.org/wiki/Википедия:Введение</a>",
-                    chatOptionNotShort
-                },
-                new dynamic[]
-                {
-                    "https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5",
-                    new List<string>()
-                    {
-                        "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg",
-                        "https://media.discordapp.net/attachments/421392740970921996/599311410807439390/terminator-thumbs-up.gif"
-                    },
-                    "<a href='https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5' target='_blank'>https://ru.wikipedia.org/wiki/Википед...</a>",
-                    chatOptionShort
-                },
-                new dynamic[]
-                {
-                    "https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5",
-                    new List<string>()
-                    {
-                        "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg",
-                        "https://media.discordapp.net/attachments/421392740970921996/599311410807439390/terminator-thumbs-up.gif"
-                    },
-                    "<a href='https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5' target='_blank'>https://ru.wikipedia.org/wiki/Википедия:Введение</a>",
-                    chatOptionNotShort
-                },
-                //
-                new dynamic[]
-                {
-                    "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg https://media.discordapp.net/attachments/421392740970921996/599311410807439390/terminator-thumbs-up.gif",
-                    new List<string>()
-                    {
-                        "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg",
-                        "https://media.discordapp.net/attachments/421392740970921996/599311410807439390/terminator-thumbs-up.gif"
-                    },
-                    " ",
-                    chatOptionShort
-                },
-                new dynamic[]
-                {
-                    "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg https://media.discordapp.net/attachments/421392740970921996/599311410807439390/terminator-thumbs-up.gif",
-                    new List<string>()
-                    {
-                        "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg",
-                        "https://media.discordapp.net/attachments/421392740970921996/599311410807439390/terminator-thumbs-up.gif"
-                    },
-                    " ",
-                    chatOptionNotShort
-                },
-            })
+                         new dynamic[]
+                         {
+                             "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5",
+                             new List<string>()
+                                 { "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg" },
+                             " <a href='https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5' target='_blank'>https://ru.wikipedia.org/wiki/Википед...</a>",
+                             chatOptionShort
+                         },
+                         new dynamic[]
+                         {
+                             "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5",
+                             new List<string>()
+                                 { "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg" },
+                             " <a href='https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5' target='_blank'>https://ru.wikipedia.org/wiki/Википедия:Введение</a>",
+                             chatOptionNotShort
+                         },
+                         new dynamic[]
+                         {
+                             "https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5",
+                             new List<string>()
+                                 { "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg" },
+                             "<a href='https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5' target='_blank'>https://ru.wikipedia.org/wiki/Википед...</a>",
+                             chatOptionShort
+                         },
+                         new dynamic[]
+                         {
+                             "https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5",
+                             new List<string>()
+                                 { "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg" },
+                             "<a href='https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5' target='_blank'>https://ru.wikipedia.org/wiki/Википедия:Введение</a>",
+                             chatOptionNotShort
+                         },
+                         new dynamic[]
+                         {
+                             "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5",
+                             new List<string>()
+                             {
+                                 "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg",
+                                 "https://media.discordapp.net/attachments/421392740970921996/599311410807439390/terminator-thumbs-up.gif"
+                             },
+                             " <a href='https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5' target='_blank'>https://ru.wikipedia.org/wiki/Википед...</a>",
+                             chatOptionShort
+                         },
+                         new dynamic[]
+                         {
+                             "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5",
+                             new List<string>()
+                             {
+                                 "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg",
+                                 "https://media.discordapp.net/attachments/421392740970921996/599311410807439390/terminator-thumbs-up.gif"
+                             },
+                             " <a href='https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5' target='_blank'>https://ru.wikipedia.org/wiki/Википедия:Введение</a>",
+                             chatOptionNotShort
+                         },
+                         new dynamic[]
+                         {
+                             "https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5",
+                             new List<string>()
+                             {
+                                 "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg",
+                                 "https://media.discordapp.net/attachments/421392740970921996/599311410807439390/terminator-thumbs-up.gif"
+                             },
+                             "<a href='https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5' target='_blank'>https://ru.wikipedia.org/wiki/Википед...</a>",
+                             chatOptionShort
+                         },
+                         new dynamic[]
+                         {
+                             "https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5",
+                             new List<string>()
+                             {
+                                 "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg",
+                                 "https://media.discordapp.net/attachments/421392740970921996/599311410807439390/terminator-thumbs-up.gif"
+                             },
+                             "<a href='https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5' target='_blank'>https://ru.wikipedia.org/wiki/Википедия:Введение</a>",
+                             chatOptionNotShort
+                         },
+                         //
+                         new dynamic[]
+                         {
+                             "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg https://media.discordapp.net/attachments/421392740970921996/599311410807439390/terminator-thumbs-up.gif",
+                             new List<string>()
+                             {
+                                 "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg",
+                                 "https://media.discordapp.net/attachments/421392740970921996/599311410807439390/terminator-thumbs-up.gif"
+                             },
+                             " ",
+                             chatOptionShort
+                         },
+                         new dynamic[]
+                         {
+                             "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg https://media.discordapp.net/attachments/421392740970921996/599311410807439390/terminator-thumbs-up.gif",
+                             new List<string>()
+                             {
+                                 "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg",
+                                 "https://media.discordapp.net/attachments/421392740970921996/599311410807439390/terminator-thumbs-up.gif"
+                             },
+                             " ",
+                             chatOptionNotShort
+                         },
+                     })
             {
                 string markdown = input[0];
                 List<string> list = input[1];
@@ -1184,35 +1209,33 @@ namespace MarkdownTest
             {
                 var configuration = Configuration.Default;
                 var context = BrowsingContext.New(configuration);
-                document = (IHtmlDocument) context.OpenAsync(res => res
+                document = (IHtmlDocument)context.OpenAsync(res => res
                     .Content(renderedText)
                     .Address("http://localhost:5050/chat.cgi")).Result;
             }
 
-            var realExpectedHtml = "";
+            string rebuildExpectedHtml;
             {
-                var r1 = new Regex("<em><strong>(.*?)</strong></em>",
-                    RegexOptions.Compiled);
+                var r1 = new Regex("<em><strong>(.*?)</strong></em>", RegexOptions.Compiled);
                 expectedHtml = r1.Replace(expectedHtml,
-                    (m) => m.Groups[1].Value.IndexOf("<", StringComparison.Ordinal) == -1
+                    m => m.Groups[1].Value.IndexOf("<", StringComparison.Ordinal) == -1
                         ? string.Format("<strong><em>{0}</em></strong>", m.Groups[1].Value)
                         : m.Groups[0].Value);
-                var r2 = new Regex("<u><em>(.*?)</em></u>",
-                    RegexOptions.Compiled);
+                var r2 = new Regex("<u><em>(.*?)</em></u>", RegexOptions.Compiled);
                 expectedHtml = r2.Replace(expectedHtml,
-                    (m) => m.Groups[1].Value.IndexOf("<", StringComparison.Ordinal) == -1
+                    m => m.Groups[1].Value.IndexOf("<", StringComparison.Ordinal) == -1
                         ? string.Format("<em><u>{0}</u></em>", m.Groups[1].Value)
                         : m.Groups[0].Value);
 
                 var configuration = Configuration.Default;
                 var context = BrowsingContext.New(configuration);
-                var document1 = (IHtmlDocument) context.OpenAsync(res => res
+                var document1 = (IHtmlDocument)context.OpenAsync(res => res
                     .Content(expectedHtml)
                     .Address("http://localhost:5050/chat.cgi")).Result;
-                realExpectedHtml = document1.Body.InnerHtml;
+                rebuildExpectedHtml = document1.Body.InnerHtml;
             }
-            var resultHTML = document.Body.InnerHtml;
-            Assert.Equal(realExpectedHtml, resultHTML);
+            var rebuildActualHTML = document.Body.InnerHtml;
+            Assert.Equal(rebuildExpectedHtml, rebuildActualHTML);
         }
 
         #endregion

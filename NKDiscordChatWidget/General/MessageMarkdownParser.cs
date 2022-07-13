@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
@@ -182,11 +183,14 @@ namespace NKDiscordChatWidget.General
             var guild = NKDiscordChatWidget.DiscordBot.Bot.guilds[guildID];
 
             var waitDictionary = new Dictionary<string, string>();
-            // todo mentions -> wait
-            // todo HttpUtility.HtmlEncode
+
+            var textWithoutEmoji =
+                RenderEmojiAndMentions(text, chatOption, waitDictionary, guild, mentions, usedEmbedsUrls);
+            textWithoutEmoji = HttpUtility.HtmlEncode(textWithoutEmoji);
 
             var textWithWaiting =
-                RenderMarkdownBlockAsHTMLInnerBlock(text, chatOption, waitDictionary, guild, mentions, usedEmbedsUrls);
+                RenderMarkdownBlockAsHTMLInnerBlock(textWithoutEmoji, chatOption, waitDictionary, guild,
+                    mentions, usedEmbedsUrls);
 
             // Меняем все wait'ы внутри текста на значения из словаря
             // hint: Мы делаем это в бесконечном цикле, потому что маркировки могут быть вложенными
@@ -218,6 +222,36 @@ namespace NKDiscordChatWidget.General
         }
 
         /// <summary>
+        /// Удаление из блока сообщения mentions & server emoji
+        /// </summary>
+        /// <param name="text">Текст с сырым Markdown</param>
+        /// <param name="chatOption">Опции чата, заданные стримером для виджета</param>
+        /// <param name="waitDictionary">Dictionary для саб-блоков</param>
+        /// <param name="guild">Гильдия (сервер), внутри которого написано сообщение</param>
+        /// <param name="mentions">Список упоминаний, сделанных в сообщении</param>
+        /// <param name="usedEmbedsUrls">Список использованных Url'ов в embed</param>
+        /// <returns></returns>
+        private static string RenderEmojiAndMentions(
+            string text,
+            ChatDrawOption chatOption,
+            Dictionary<string, string> waitDictionary,
+            EventGuildCreate guild,
+            List<EventMessageCreate.EventMessageCreate_Mention> mentions,
+            HashSet<string> usedEmbedsUrls
+        )
+        {
+            return RenderMarkdownBlockAsHTMLInnerBlockWithPatternList(
+                text,
+                chatOption,
+                waitDictionary,
+                guild,
+                mentions,
+                usedEmbedsUrls,
+                0
+            );
+        }
+
+        /// <summary>
         /// Обработка разметки сообщения внутри логического блока сообщения (root-сообщение, цитата, спойлер)
         /// </summary>
         /// <param name="text">Текст с сырым Markdown</param>
@@ -237,52 +271,90 @@ namespace NKDiscordChatWidget.General
             HashSet<string> usedEmbedsUrls
         )
         {
+            return RenderMarkdownBlockAsHTMLInnerBlockWithPatternList(
+                text,
+                chatOption,
+                waitDictionary,
+                guild,
+                mentions,
+                usedEmbedsUrls,
+                1
+            );
+        }
+
+        /// <summary>
+        /// Обработка разметки сообщения внутри логического блока сообщения (root-сообщение, цитата, спойлер)
+        /// </summary>
+        /// <param name="text">Текст с сырым Markdown</param>
+        /// <param name="chatOption">Опции чата, заданные стримером для виджета</param>
+        /// <param name="waitDictionary">Dictionary для саб-блоков</param>
+        /// <param name="guild">Гильдия (сервер), внутри которого написано сообщение</param>
+        /// <param name="mentions">Список упоминаний, сделанных в сообщении</param>
+        /// <param name="usedEmbedsUrls">Список использованных Url'ов в embed</param>
+        /// <param name="mode">Режим замены (mentions+server emoji / всё остальное)</param>
+        /// <returns></returns>
+        [SuppressMessage("ReSharper", "AccessToModifiedClosure")]
+        private static string RenderMarkdownBlockAsHTMLInnerBlockWithPatternList(
+            string text,
+            ChatDrawOption chatOption,
+            Dictionary<string, string> waitDictionary,
+            EventGuildCreate guild,
+            List<EventMessageCreate.EventMessageCreate_Mention> mentions,
+            HashSet<string> usedEmbedsUrls,
+            int mode
+        )
+        {
             while (true)
             {
-                var patternOptions = new List<( Regex regexp, Func<string> deleg )>
+                List<( Regex regexp, Func<string> deleg )> patternOptions;
+                if (mode == 0)
                 {
-                    (rWithoutMark, () => MarkNoFormatting(text, chatOption, waitDictionary)),
-                    (rLink, () => MarkLinks(text, chatOption, waitDictionary, usedEmbedsUrls)),
-                    (rEmojiWithinText, () => MarkEmojiImages(text, chatOption, waitDictionary, guild)),
-
-                    // mentions
-                    (rMentionNick, () => MarkMentionsPeople(text, chatOption, waitDictionary, guild, mentions)),
-                    (rMentionRole, () => MarkMentionsRole(text, chatOption, waitDictionary, guild)),
-
-                    // simple mark
-                    (rSpoilerMark, () => MarkSpoilers(text, chatOption, waitDictionary, guild,
-                        mentions, usedEmbedsUrls)),
-                    (rBoldItalic, () => MarkBoldItalic(text, chatOption, waitDictionary, guild,
-                        mentions, usedEmbedsUrls)),
-                    (rBold, () => MarkBold(text, chatOption, waitDictionary, guild,
-                        mentions, usedEmbedsUrls)),
-
-                    (rTripleUnderscore, () => MarkUnderscoreItalic(text, chatOption, waitDictionary, guild,
-                        mentions, usedEmbedsUrls)),
-                    (rDoubleUnderscore, () => MarkUnderscore(text, chatOption, waitDictionary, guild,
-                        mentions, usedEmbedsUrls)),
-                    (rSingleAsterisk, () => MarkItalicViaAsterisk(text, chatOption, waitDictionary, guild,
-                        mentions, usedEmbedsUrls)),
-                    (rItalicUnderscore, () => MarkItalicViaUnderscore(text, chatOption, waitDictionary, guild,
-                        mentions, usedEmbedsUrls)),
-                    (rDelete, () => MarkDelete(text, chatOption, waitDictionary, guild, mentions, usedEmbedsUrls)),
-                };
-
-                var matches = new List<(int index, Func<string> deleg)>();
-                foreach (var (regex, deleg) in patternOptions)
-                {
-                    var m = regex.Match(text);
-                    if (!m.Success)
+                    patternOptions = new List<( Regex regexp, Func<string> deleg )>
                     {
-                        continue;
-                    }
+                        (rEmojiWithinText, () => MarkEmojiImages(text, chatOption, waitDictionary, guild)),
 
-                    matches.Add((m.Index, deleg: deleg));
-                    if (m.Index == 0)
-                    {
-                        break;
-                    }
+                        // mentions
+                        (rMentionNick, () => MarkMentionsPeople(text, chatOption, waitDictionary, guild, mentions)),
+                        (rMentionRole, () => MarkMentionsRole(text, chatOption, waitDictionary, guild)),
+                    };
                 }
+                else
+                {
+                    patternOptions = new List<( Regex regexp, Func<string> deleg )>
+                    {
+                        (rWithoutMark, () => MarkNoFormatting(text, chatOption, waitDictionary)),
+                        (rLink, () => MarkLinks(text, chatOption, waitDictionary, usedEmbedsUrls)),
+
+                        // simple mark
+                        (rSpoilerMark, () => MarkSpoilers(text, chatOption, waitDictionary, guild,
+                            mentions, usedEmbedsUrls)),
+                        (rBoldItalic, () => MarkBoldItalic(text, chatOption, waitDictionary, guild,
+                            mentions, usedEmbedsUrls)),
+                        (rBold, () => MarkBold(text, chatOption, waitDictionary, guild,
+                            mentions, usedEmbedsUrls)),
+
+                        (rTripleUnderscore, () => MarkUnderscoreItalic(text, chatOption, waitDictionary, guild,
+                            mentions, usedEmbedsUrls)),
+                        (rDoubleUnderscore, () => MarkUnderscore(text, chatOption, waitDictionary, guild,
+                            mentions, usedEmbedsUrls)),
+                        (rSingleAsterisk, () => MarkItalicViaAsterisk(text, chatOption, waitDictionary, guild,
+                            mentions, usedEmbedsUrls)),
+                        (rItalicUnderscore, () => MarkItalicViaUnderscore(text, chatOption, waitDictionary, guild,
+                            mentions, usedEmbedsUrls)),
+                        (rDelete, () => MarkDelete(text, chatOption, waitDictionary, guild, mentions, usedEmbedsUrls)),
+                    };
+                }
+
+                var matches = patternOptions
+                    .Select(item =>
+                    {
+                        var m = item.regexp.Match(text);
+                        return (match: m, deleg: item.deleg);
+                    })
+                    .Where(x => x.match.Success)
+                    .Select(item => (index: item.match.Index, deleg: item.deleg))
+                    .OrderBy(t => t.index)
+                    .ToArray();
 
                 if (!matches.Any())
                 {
@@ -290,8 +362,6 @@ namespace NKDiscordChatWidget.General
 
                     break;
                 }
-
-                matches.Sort((a, b) => a.index.CompareTo(b.index));
 
                 var u = false;
                 // ReSharper disable once ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
@@ -314,7 +384,10 @@ namespace NKDiscordChatWidget.General
                 }
             }
 
-            text = MarkEmojiUnicode(text, chatOption, waitDictionary);
+            if (mode == 0)
+            {
+                text = MarkEmojiUnicode(text, chatOption, waitDictionary);
+            }
 
             return text;
         }
@@ -432,7 +505,8 @@ namespace NKDiscordChatWidget.General
         }
 
         /// <summary>
-        /// Парсинг эмодзи из дополнительных plain'ов в Unicode
+        /// Парсинг эмодзи из дополнительных plain'ов в Unicode.
+        /// Возвращает {wait:...} вместо встреченных emoji
         /// </summary>
         /// <param name="text">Текст с сырым Markdown</param>
         /// <param name="chatOption">Опции чата, заданные стримером для виджета</param>
@@ -483,6 +557,7 @@ namespace NKDiscordChatWidget.General
                 activeEmoji.Add(code);
             } // foreach
 
+            // ReSharper disable once InvertIf
             if (activeEmoji.Any())
             {
                 // У нас не пустой буффер emoji символов, надо их записать в строку
@@ -496,12 +571,7 @@ namespace NKDiscordChatWidget.General
                 );
             }
 
-            if (containEmoji)
-            {
-                text = textAfter;
-            }
-
-            return text;
+            return containEmoji ? textAfter : text;
         }
 
         /// <summary>
@@ -578,7 +648,7 @@ namespace NKDiscordChatWidget.General
                 if (mentions == null)
                 {
                     // Приколы дискорда
-                    return string.Format("&lt;User Unknown #{0}&gt;", mentionID);
+                    return string.Format("<User Unknown #{0}>", mentionID);
                 }
 
                 // ReSharper disable once SuggestVarOrType_SimpleTypes
@@ -587,7 +657,7 @@ namespace NKDiscordChatWidget.General
 
                 if (mention == null)
                 {
-                    return string.Format("&lt;User Unknown #{0}&gt;", mentionID);
+                    return string.Format("<User Unknown #{0}>", mentionID);
                 }
 
                 // Выбираем наиболее приоритетную роль
@@ -643,7 +713,7 @@ namespace NKDiscordChatWidget.General
                 var role = guild.roles.FirstOrDefault(t => t.id == roleID);
                 if (role == null)
                 {
-                    return string.Format("&lt;Role Unknown #{0}&gt;", roleID);
+                    return string.Format("<Role Unknown #{0}>", roleID);
                 }
 
                 string nickColor = role.color.ToString("X");
