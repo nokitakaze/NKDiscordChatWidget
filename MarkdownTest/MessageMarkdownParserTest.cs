@@ -161,6 +161,7 @@ namespace MarkdownTest
             // bold, em, ~~, spoiler (on/off)
             // quote, no-formatting
             // emoji, mention user, mention role
+            //* todo вернуть всё взад
             {
                 var simpleTest = GenerateSimpleTests();
                 result.AddRange(simpleTest.Select(singleCase =>
@@ -172,6 +173,8 @@ namespace MarkdownTest
             result.AddRange(GetQuoteCheck());
             result.AddRange(GetEdgeCases());
             result.AddRange(GetLinksCases());
+            // */
+            result.AddRange(GetHTMLInject());
 
             return result;
         }
@@ -1110,6 +1113,38 @@ namespace MarkdownTest
                     chatOption,
                     null,
                     list
+                });
+            }
+
+            return result;
+        }
+
+        private static IEnumerable<object[]> GetHTMLInject()
+        {
+            var chatOptionNotShort = new ChatDrawOption
+            {
+                short_anchor = 0,
+            };
+
+            var result = new List<object[]>();
+            var htmls = new List<string>()
+            {
+                "<img>",
+                "<a></a>",
+                "<script></script>",
+                "<script/>",
+                "<script />",
+            };
+            // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
+            foreach (var html in htmls)
+            {
+                result.Add(new object[]
+                {
+                    html,
+                    string.Format("<div class='line'>{0}</div>", HttpUtility.HtmlEncode(html)),
+                    chatOptionNotShort,
+                    null,
+                    null
                 });
             }
 

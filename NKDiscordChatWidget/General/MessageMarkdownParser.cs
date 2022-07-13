@@ -79,7 +79,7 @@ namespace NKDiscordChatWidget.General
 
             if (isInQuote)
             {
-                // Текст заканчивается цитатой
+                // Последняя строка текста это цитата
                 result += string.Format(
                     "<div class='quote-block'><div class='quote-border'></div><div class='quote-content'>{0}</div></div>",
                     currentQuoteHTML
@@ -227,6 +227,7 @@ namespace NKDiscordChatWidget.General
         /// <param name="mentions">Список упоминаний, сделанных в сообщении</param>
         /// <param name="usedEmbedsUrls">Список использованных Url'ов в embed</param>
         /// <returns></returns>
+        [SuppressMessage("ReSharper", "AccessToModifiedClosure")]
         private static string RenderMarkdownBlockAsHTMLInnerBlock(
             string text,
             ChatDrawOption chatOption,
@@ -238,126 +239,66 @@ namespace NKDiscordChatWidget.General
         {
             while (true)
             {
-                // todo tuple
-                var pairs = new List<dynamic>()
+                var patternOptions = new List<( Regex regexp, Func<string> deleg )>
                 {
-                    new
-                    {
-                        regexp = rWithoutMark,
-                        deleg = (Func<string>)(() => MarkNoFormatting(text, chatOption, waitDictionary))
-                    },
-                    new
-                    {
-                        regexp = rLink,
-                        deleg = (Func<string>)(() =>
-                            MarkLinks(text, chatOption, waitDictionary, usedEmbedsUrls))
-                    },
-                    new
-                    {
-                        regexp = rEmojiWithinText,
-                        deleg = (Func<string>)(() => MarkEmojiImages(text, chatOption, waitDictionary, guild))
-                    },
+                    (rWithoutMark, () => MarkNoFormatting(text, chatOption, waitDictionary)),
+                    (rLink, () => MarkLinks(text, chatOption, waitDictionary, usedEmbedsUrls)),
+                    (rEmojiWithinText, () => MarkEmojiImages(text, chatOption, waitDictionary, guild)),
+
                     // mentions
-                    new
-                    {
-                        regexp = rMentionNick,
-                        deleg = (Func<string>)(() =>
-                            MarkMentionsPeople(text, chatOption, waitDictionary, guild, mentions))
-                    },
-                    new
-                    {
-                        regexp = rMentionRole,
-                        deleg = (Func<string>)(() => MarkMentionsRole(text, chatOption, waitDictionary, guild))
-                    },
+                    (rMentionNick, () => MarkMentionsPeople(text, chatOption, waitDictionary, guild, mentions)),
+                    (rMentionRole, () => MarkMentionsRole(text, chatOption, waitDictionary, guild)),
 
                     // simple mark
-                    new
-                    {
-                        regexp = rSpoilerMark,
-                        deleg = (Func<string>)(() =>
-                            MarkSpoilers(text, chatOption, waitDictionary, guild, mentions, usedEmbedsUrls))
-                    },
-                    new
-                    {
-                        regexp = rBoldItalic,
-                        deleg = (Func<string>)(() =>
-                            MarkBoldItalic(text, chatOption, waitDictionary, guild, mentions, usedEmbedsUrls))
-                    },
-                    new
-                    {
-                        regexp = rBold,
-                        deleg = (Func<string>)(() =>
-                            MarkBold(text, chatOption, waitDictionary, guild, mentions, usedEmbedsUrls))
-                    },
+                    (rSpoilerMark, () => MarkSpoilers(text, chatOption, waitDictionary, guild,
+                        mentions, usedEmbedsUrls)),
+                    (rBoldItalic, () => MarkBoldItalic(text, chatOption, waitDictionary, guild,
+                        mentions, usedEmbedsUrls)),
+                    (rBold, () => MarkBold(text, chatOption, waitDictionary, guild,
+                        mentions, usedEmbedsUrls)),
 
-                    new
-                    {
-                        regexp = rTripleUnderscore,
-                        deleg = (Func<string>)(() =>
-                            MarkUnderscoreItalic(text, chatOption, waitDictionary, guild, mentions,
-                                usedEmbedsUrls))
-                    },
-                    new
-                    {
-                        regexp = rDoubleUnderscore,
-                        deleg = (Func<string>)(() =>
-                            MarkUnderscore(text, chatOption, waitDictionary, guild, mentions, usedEmbedsUrls))
-                    },
-                    new
-                    {
-                        regexp = rSingleAsterisk,
-                        deleg = (Func<string>)(() =>
-                            MarkItalicViaAsterisk(text, chatOption, waitDictionary, guild, mentions,
-                                usedEmbedsUrls))
-                    },
-                    new
-                    {
-                        regexp = rItalicUnderscore,
-                        deleg = (Func<string>)(() =>
-                            MarkItalicViaUnderscore(text, chatOption, waitDictionary, guild, mentions,
-                                usedEmbedsUrls))
-                    },
-                    new
-                    {
-                        regexp = rDelete,
-                        deleg = (Func<string>)(() =>
-                            MarkDelete(text, chatOption, waitDictionary, guild, mentions, usedEmbedsUrls))
-                    },
+                    (rTripleUnderscore, () => MarkUnderscoreItalic(text, chatOption, waitDictionary, guild,
+                        mentions, usedEmbedsUrls)),
+                    (rDoubleUnderscore, () => MarkUnderscore(text, chatOption, waitDictionary, guild,
+                        mentions, usedEmbedsUrls)),
+                    (rSingleAsterisk, () => MarkItalicViaAsterisk(text, chatOption, waitDictionary, guild,
+                        mentions, usedEmbedsUrls)),
+                    (rItalicUnderscore, () => MarkItalicViaUnderscore(text, chatOption, waitDictionary, guild,
+                        mentions, usedEmbedsUrls)),
+                    (rDelete, () => MarkDelete(text, chatOption, waitDictionary, guild, mentions, usedEmbedsUrls)),
                 };
 
-                // todo tuple
-                var highlights = new List<dynamic>();
-                foreach (var pair in pairs)
+                var matches = new List<(int index, Func<string> deleg)>();
+                foreach (var (regex, deleg) in patternOptions)
                 {
-                    Regex regex = pair.regexp;
                     var m = regex.Match(text);
                     if (!m.Success)
                     {
                         continue;
                     }
 
-                    highlights.Add(new { index = m.Index, pair.deleg });
+                    matches.Add((m.Index, deleg: deleg));
                     if (m.Index == 0)
                     {
                         break;
                     }
                 }
 
-                if (!highlights.Any())
+                if (!matches.Any())
                 {
                     // Не осталось маркировки, выходим
 
                     break;
                 }
 
-                highlights.Sort((a, b) => a.index.CompareTo(b.index));
+                matches.Sort((a, b) => a.index.CompareTo(b.index));
 
                 var u = false;
                 // ReSharper disable once ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
-                foreach (var highlight in highlights)
+                foreach (var (_, delegateLocal) in matches)
                 {
-                    Func<string> delegateLocal = highlight.deleg;
                     var result = delegateLocal.Invoke();
+                    // ReSharper disable once InvertIf
                     if (result != text)
                     {
                         text = result;
@@ -1085,8 +1026,6 @@ namespace NKDiscordChatWidget.General
 
         #region UnionRandom
 
-        private static readonly Random _stdRandom = new Random();
-        private static readonly object _stdRandomLock = new object();
         private static readonly List<char> _waitAlphabet;
 
         static MessageMarkdownParser()
@@ -1110,18 +1049,17 @@ namespace NKDiscordChatWidget.General
 
         public static string GetWaitString()
         {
-            lock (_stdRandomLock)
-            {
-                var s = "";
-                int n = _waitAlphabet.Count - 1;
-                for (int i = 0; i < 40; i++)
-                {
-                    var j = _stdRandom.Next(0, n);
-                    s += _waitAlphabet[j];
-                }
+            var rnd = new Random();
 
-                return string.Format("{1}wait:{0}{2}", s, '{', '}');
+            var s = "";
+            int n = _waitAlphabet.Count;
+            for (int i = 0; i < 40; i++)
+            {
+                var j = rnd.Next(0, n);
+                s += _waitAlphabet[j];
             }
+
+            return string.Format("{1}wait:{0}{2}", s, '{', '}');
         }
 
         #endregion
