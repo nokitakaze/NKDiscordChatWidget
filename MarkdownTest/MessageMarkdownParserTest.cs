@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web;
@@ -12,6 +13,9 @@ using Xunit;
 
 namespace MarkdownTest
 {
+    [SuppressMessage("ReSharper", "RedundantEmptyObjectCreationArgumentList")]
+    [SuppressMessage("ReSharper", "UseStringInterpolation")]
+    [SuppressMessage("ReSharper", "UseStringInterpolationWhenPossible")]
     public class MessageMarkdownParserTest
     {
         #region Init
@@ -470,12 +474,12 @@ namespace MarkdownTest
                 new[]
                 {
                     "<@!400000000000000000>",
-                    "<Пользователь Unknown #400000000000000000>",
+                    "&lt;User Unknown #400000000000000000&gt;",
                 },
                 new[]
                 {
                     "<@&600000000000000000>",
-                    "<Role Unknown #600000000000000000>",
+                    "&lt;Role Unknown #600000000000000000&gt;",
                 },
             };
 
@@ -899,7 +903,7 @@ namespace MarkdownTest
                         result.Add(new object[]
                         {
                             markdown,
-                            string.Format("<div class='line'><Пользователь Unknown #{0}></div>", input[0]),
+                            string.Format("<div class='line'>&lt;User Unknown #{0}&gt;</div>", input[0]),
                             chatOption,
                             null,
                             null

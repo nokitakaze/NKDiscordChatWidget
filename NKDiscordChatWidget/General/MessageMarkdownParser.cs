@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -15,6 +16,7 @@ namespace NKDiscordChatWidget.General
     /// Дискорд меняет правила, поэтому парсер не такой как по спеке
     /// https://daringfireball.net/projects/markdown/syntax
     /// </description>
+    [SuppressMessage("ReSharper", "UseStringInterpolation")]
     public static class MessageMarkdownParser
     {
         /// <summary>
@@ -53,24 +55,26 @@ namespace NKDiscordChatWidget.General
                     currentQuoteHTML += string.Format("<div class='line'>{0}</div>",
                         RenderLineAsHTML(trimmedLine.Substring(2), chatOption, mentions, guildID, usedEmbedsUrls));
                     isInQuote = true;
+                    continue;
                 }
-                else
-                {
-                    if (isInQuote)
-                    {
-                        // hint: цитата может быть пустой, но это всё равно цитата, поэтому тут не просто
-                        // проверка на currentQuoteHTML != ""
-                        result += string.Format(
-                            "<div class='quote-block'><div class='quote-border'></div><div class='quote-content'>{0}</div></div>",
-                            currentQuoteHTML
-                        );
-                        currentQuoteHTML = "";
-                        isInQuote = false;
-                    }
 
-                    result += string.Format("<div class='line'>{0}</div>",
-                        RenderLineAsHTML(trimmedLine, chatOption, mentions, guildID, usedEmbedsUrls));
+                if (isInQuote)
+                {
+                    // Только что шёл режим цитаты, но на этой строке он кончился
+
+                    // hint: цитата может быть пустой, но это всё равно цитата, поэтому тут не просто
+                    // проверка на currentQuoteHTML != ""
+                    result += string.Format(
+                        "<div class='quote-block'><div class='quote-border'></div><div class='quote-content'>{0}</div></div>",
+                        currentQuoteHTML
+                    );
+                    currentQuoteHTML = "";
+                    isInQuote = false;
                 }
+
+                // Это не кусок цитаты
+                result += string.Format("<div class='line'>{0}</div>",
+                    RenderLineAsHTML(trimmedLine, chatOption, mentions, guildID, usedEmbedsUrls));
             }
 
             if (isInQuote)
@@ -162,7 +166,7 @@ namespace NKDiscordChatWidget.General
         /// <param name="mentions">Список упоминаний, сделанных в сообщении</param>
         /// <param name="guildID">ID гильдии (сервера), в котором написано сообщение</param>
         /// <param name="usedEmbedsUrls">Список использованных Url'ов в embed</param>
-        /// <returns></returns>
+        /// <returns>Возвращает санированный HTML</returns>
         private static string RenderLineAsHTML(
             string text,
             ChatDrawOption chatOption,
@@ -178,6 +182,8 @@ namespace NKDiscordChatWidget.General
             var guild = NKDiscordChatWidget.DiscordBot.Bot.guilds[guildID];
 
             var waitDictionary = new Dictionary<string, string>();
+            // todo mentions -> wait
+            // todo HttpUtility.HtmlEncode
 
             var textWithWaiting =
                 RenderMarkdownBlockAsHTMLInnerBlock(text, chatOption, waitDictionary, guild, mentions, usedEmbedsUrls);
@@ -232,88 +238,96 @@ namespace NKDiscordChatWidget.General
         {
             while (true)
             {
-                var highlights = new List<dynamic>();
-                foreach (var pair in new List<dynamic>()
+                // todo tuple
+                var pairs = new List<dynamic>()
                 {
                     new
                     {
                         regexp = rWithoutMark,
-                        deleg = (Func<string>) (() => MarkNoFormatting(text, chatOption, waitDictionary))
+                        deleg = (Func<string>)(() => MarkNoFormatting(text, chatOption, waitDictionary))
                     },
                     new
                     {
                         regexp = rLink,
-                        deleg = (Func<string>) (() => MarkLinks(text, chatOption, waitDictionary, usedEmbedsUrls))
+                        deleg = (Func<string>)(() =>
+                            MarkLinks(text, chatOption, waitDictionary, usedEmbedsUrls))
                     },
                     new
                     {
                         regexp = rEmojiWithinText,
-                        deleg = (Func<string>) (() => MarkEmojiImages(text, chatOption, waitDictionary, guild))
+                        deleg = (Func<string>)(() => MarkEmojiImages(text, chatOption, waitDictionary, guild))
                     },
                     // mentions
                     new
                     {
                         regexp = rMentionNick,
-                        deleg = (Func<string>) (() =>
+                        deleg = (Func<string>)(() =>
                             MarkMentionsPeople(text, chatOption, waitDictionary, guild, mentions))
                     },
                     new
                     {
                         regexp = rMentionRole,
-                        deleg = (Func<string>) (() => MarkMentionsRole(text, chatOption, waitDictionary, guild))
+                        deleg = (Func<string>)(() => MarkMentionsRole(text, chatOption, waitDictionary, guild))
                     },
 
                     // simple mark
                     new
                     {
                         regexp = rSpoilerMark,
-                        deleg = (Func<string>) (() =>
+                        deleg = (Func<string>)(() =>
                             MarkSpoilers(text, chatOption, waitDictionary, guild, mentions, usedEmbedsUrls))
                     },
                     new
                     {
                         regexp = rBoldItalic,
-                        deleg = (Func<string>) (() =>
+                        deleg = (Func<string>)(() =>
                             MarkBoldItalic(text, chatOption, waitDictionary, guild, mentions, usedEmbedsUrls))
                     },
                     new
                     {
                         regexp = rBold,
-                        deleg = (Func<string>) (() =>
+                        deleg = (Func<string>)(() =>
                             MarkBold(text, chatOption, waitDictionary, guild, mentions, usedEmbedsUrls))
                     },
 
                     new
                     {
                         regexp = rTripleUnderscore,
-                        deleg = (Func<string>) (() =>
-                            MarkUnderscoreItalic(text, chatOption, waitDictionary, guild, mentions, usedEmbedsUrls))
+                        deleg = (Func<string>)(() =>
+                            MarkUnderscoreItalic(text, chatOption, waitDictionary, guild, mentions,
+                                usedEmbedsUrls))
                     },
                     new
                     {
                         regexp = rDoubleUnderscore,
-                        deleg = (Func<string>) (() =>
+                        deleg = (Func<string>)(() =>
                             MarkUnderscore(text, chatOption, waitDictionary, guild, mentions, usedEmbedsUrls))
                     },
                     new
                     {
                         regexp = rSingleAsterisk,
-                        deleg = (Func<string>) (() =>
-                            MarkItalicViaAsterisk(text, chatOption, waitDictionary, guild, mentions, usedEmbedsUrls))
+                        deleg = (Func<string>)(() =>
+                            MarkItalicViaAsterisk(text, chatOption, waitDictionary, guild, mentions,
+                                usedEmbedsUrls))
                     },
                     new
                     {
                         regexp = rItalicUnderscore,
-                        deleg = (Func<string>) (() =>
-                            MarkItalicViaUnderscore(text, chatOption, waitDictionary, guild, mentions, usedEmbedsUrls))
+                        deleg = (Func<string>)(() =>
+                            MarkItalicViaUnderscore(text, chatOption, waitDictionary, guild, mentions,
+                                usedEmbedsUrls))
                     },
                     new
                     {
                         regexp = rDelete,
-                        deleg = (Func<string>) (() =>
+                        deleg = (Func<string>)(() =>
                             MarkDelete(text, chatOption, waitDictionary, guild, mentions, usedEmbedsUrls))
                     },
-                })
+                };
+
+                // todo tuple
+                var highlights = new List<dynamic>();
+                foreach (var pair in pairs)
                 {
                     Regex regex = pair.regexp;
                     var m = regex.Match(text);
@@ -322,7 +336,7 @@ namespace NKDiscordChatWidget.General
                         continue;
                     }
 
-                    highlights.Add(new {index = m.Index, pair.deleg});
+                    highlights.Add(new { index = m.Index, pair.deleg });
                     if (m.Index == 0)
                     {
                         break;
@@ -623,15 +637,16 @@ namespace NKDiscordChatWidget.General
                 if (mentions == null)
                 {
                     // Приколы дискорда
-                    return string.Format("<Пользователь Unknown #{0}>", mentionID);
+                    return string.Format("&lt;User Unknown #{0}&gt;", mentionID);
                 }
 
+                // ReSharper disable once SuggestVarOrType_SimpleTypes
                 EventMessageCreate.EventMessageCreate_Mention mention =
                     mentions.FirstOrDefault(eMention => eMention.id == mentionID);
 
                 if (mention == null)
                 {
-                    return string.Format("<Пользователь Unknown #{0}>", mentionID);
+                    return string.Format("&lt;User Unknown #{0}&gt;", mentionID);
                 }
 
                 // Выбираем наиболее приоритетную роль
@@ -684,10 +699,10 @@ namespace NKDiscordChatWidget.General
                 string roleID = m1.Groups[1].Value;
 
                 //
-                Role role = guild.roles.FirstOrDefault(t => t.id == roleID);
+                var role = guild.roles.FirstOrDefault(t => t.id == roleID);
                 if (role == null)
                 {
-                    return string.Format("<Role Unknown #{0}>", roleID);
+                    return string.Format("&lt;Role Unknown #{0}&gt;", roleID);
                 }
 
                 string nickColor = role.color.ToString("X");
@@ -1079,17 +1094,17 @@ namespace NKDiscordChatWidget.General
             _waitAlphabet = new List<char>();
             for (int c = '0'; c <= '9'; c++)
             {
-                _waitAlphabet.Add((char) c);
+                _waitAlphabet.Add((char)c);
             }
 
             for (int c = 'a'; c <= 'z'; c++)
             {
-                _waitAlphabet.Add((char) c);
+                _waitAlphabet.Add((char)c);
             }
 
             for (int c = 'A'; c <= 'Z'; c++)
             {
-                _waitAlphabet.Add((char) c);
+                _waitAlphabet.Add((char)c);
             }
         }
 
