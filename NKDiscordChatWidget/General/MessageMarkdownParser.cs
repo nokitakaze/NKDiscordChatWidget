@@ -39,6 +39,9 @@ namespace NKDiscordChatWidget.General
             {
                 return null;
             }
+            
+            // Запрещаем использовать HTML внутри выводимых сообщений.
+            text = System.Net.WebUtility.HtmlEncode(text);
 
             // hint: Цитаты в Дискорде ТОЛЬКО одноуровневые, поэтому парсер цитат нерекурсивный
             string result = "";
