@@ -60,6 +60,8 @@ namespace NKDiscordChatWidget.WidgetServer
             app.Run(Request);
         }
 
+        #region low level HTTP responder
+
         public static async Task Request(Microsoft.AspNetCore.Http.HttpContext httpContext)
         {
             var path = httpContext.Request.Path;
@@ -210,5 +212,7 @@ namespace NKDiscordChatWidget.WidgetServer
                 );
             });
         }
+
+        #endregion
     }
 }

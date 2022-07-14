@@ -134,12 +134,6 @@ namespace NKDiscordChatWidget.WidgetServer
             }
         }
 
-        ~WebsocketClientSide()
-        {
-            // @todo fix
-            // _clients.TryRemove(this.Context.ConnectionId, out _);
-        }
-
         #region ClientSideSignals
 
         /// <summary>
