@@ -44,7 +44,7 @@ namespace NKDiscordChatWidget.General
         {
             // MUST BE IN LOWER CASE
 
-            return new HashSet<string>() {"images/chat.js", "images/main.css", "chat.html"};
+            return new HashSet<string>() { "images/chat.js", "images/main.css", "chat.html" };
         }
 
         public static bool IfFileShouldBeWatched(string fullFilename, string WWWRootFolder)
@@ -103,7 +103,6 @@ namespace NKDiscordChatWidget.General
 
             public void HelloWorld()
             {
-                
             }
 
             public override string ToString()

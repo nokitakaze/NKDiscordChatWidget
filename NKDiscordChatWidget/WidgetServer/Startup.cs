@@ -98,7 +98,7 @@ namespace NKDiscordChatWidget.WidgetServer
                 string guildHTML = "";
                 var channelsByGroup = new Dictionary<string, List<EventGuildCreate.EventGuildCreate_Channel>>();
                 // Каналы без групп отображаются выше всех
-                var groupPositions = new Dictionary<string, int> {[""] = -2};
+                var groupPositions = new Dictionary<string, int> { [""] = -2 };
                 foreach (var channel in channels.Values)
                 {
                     // ReSharper disable once SwitchStatementMissingSomeCases

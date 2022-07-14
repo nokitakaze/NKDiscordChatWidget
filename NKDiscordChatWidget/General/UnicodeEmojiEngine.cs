@@ -47,7 +47,7 @@ namespace NKDiscordChatWidget.General
         public static void LoadAllEmojiPacks(string WWWRoot)
         {
             // Так делать нельзя, но если очень хочется, то можно
-            foreach (var pack in new[] {EmojiPackType.JoyPixels, EmojiPackType.Twemoji})
+            foreach (var pack in new[] { EmojiPackType.JoyPixels, EmojiPackType.Twemoji })
             {
                 var subFolder = GetImageSubFolder(pack);
                 var extension = GetImageExtension(pack);
@@ -57,15 +57,15 @@ namespace NKDiscordChatWidget.General
 
             foreach (var id in Enum.GetValues(typeof(EmojiPackType)))
             {
-                if (!emojiList.ContainsKey((EmojiPackType) id))
+                if (!emojiList.ContainsKey((EmojiPackType)id))
                 {
-                    emojiList[(EmojiPackType) id] = new string[] { };
-                    emojiCodesList[(EmojiPackType) id] = new HashSet<long>();
+                    emojiList[(EmojiPackType)id] = new string[] { };
+                    emojiCodesList[(EmojiPackType)id] = new HashSet<long>();
                     continue;
                 }
 
                 var rawList = new HashSet<long>();
-                foreach (var codeString in emojiList[(EmojiPackType) id])
+                foreach (var codeString in emojiList[(EmojiPackType)id])
                 {
                     var a = codeString.Split("-");
                     foreach (var singleStringCode in a)
@@ -78,7 +78,7 @@ namespace NKDiscordChatWidget.General
                     }
                 }
 
-                emojiCodesList[(EmojiPackType) id] = rawList;
+                emojiCodesList[(EmojiPackType)id] = rawList;
             }
         }
 
@@ -107,7 +107,7 @@ namespace NKDiscordChatWidget.General
 
         public static string GetStringForCodes(long code)
         {
-            return GetStringForCodes(new[] {code});
+            return GetStringForCodes(new[] { code });
         }
 
         public static string GetStringForCodes(IEnumerable<long> codes)
@@ -157,7 +157,7 @@ namespace NKDiscordChatWidget.General
                     if (dictionary.Contains(emojiString))
                     {
                         u = true;
-                        result.Add(new EmojiRenderResult() {emojiCode = emojiString});
+                        result.Add(new EmojiRenderResult() { emojiCode = emojiString });
                         break;
                     }
                 }

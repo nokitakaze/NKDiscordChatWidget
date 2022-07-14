@@ -154,7 +154,8 @@ namespace NKDiscordChatWidget.DiscordBot.Classes
                     {
                         // Нет аватарки, отображаем Дефолтную
                         // todo Найти оригинальный URL с CDN Дискорда
-                        return "https://nktkz.s3.eu-central-1.amazonaws.com/cdn/discord-widget/322c936a8c8be1b803cd94861bdfa868.png";
+                        return
+                            "https://nktkz.s3.eu-central-1.amazonaws.com/cdn/discord-widget/322c936a8c8be1b803cd94861bdfa868.png";
                     }
 
                     string extension = "png";

@@ -11,7 +11,7 @@ namespace NKDiscordChatWidget.General
 
         static Global()
         {
-            TimeStart = ((DateTimeOffset) (DateTime.Now)).ToUnixTimeSeconds();
+            TimeStart = ((DateTimeOffset)(DateTime.Now)).ToUnixTimeSeconds();
         }
     }
 }

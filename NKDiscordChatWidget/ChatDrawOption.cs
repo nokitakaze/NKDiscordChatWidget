@@ -139,7 +139,7 @@ namespace NKDiscordChatWidget
                                 valueInt = i;
                                 break;
                             case long l:
-                                valueInt = (int) l;
+                                valueInt = (int)l;
                                 break;
                             case bool u:
                                 valueInt = u ? 1 : 0;
@@ -158,7 +158,7 @@ namespace NKDiscordChatWidget
                                 break;
                         }
 
-                        field.SetValue(this, (EmojiPackType) valueInt);
+                        field.SetValue(this, (EmojiPackType)valueInt);
 
                         break;
                     }
@@ -170,7 +170,7 @@ namespace NKDiscordChatWidget
                                 field.SetValue(this, i);
                                 break;
                             case long l:
-                                field.SetValue(this, (int) l);
+                                field.SetValue(this, (int)l);
                                 break;
                             case string s: // hint: Самый частый вариант мутаций
                                 field.SetValue(this, int.TryParse(s, out var valueInt) ? valueInt : 0);

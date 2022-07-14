@@ -50,7 +50,7 @@ namespace NKDiscordChatWidget.WidgetServer
         /// </summary>
         public static void UpdateMessage(EventMessageCreate message)
         {
-            UpdateMessages(new[] {message});
+            UpdateMessages(new[] { message });
         }
 
         /// <summary>
@@ -87,12 +87,12 @@ namespace NKDiscordChatWidget.WidgetServer
                 };
 
                 foreach (var localAnswerMessage in localMessages.Select(message =>
-                    MessageArtist.DrawMessage(message, client._chatDrawOption)))
+                             MessageArtist.DrawMessage(message, client._chatDrawOption)))
                 {
                     answer.messages.Add(localAnswerMessage);
                 }
 
-                answer.time_answer = ((DateTimeOffset) DateTime.Now).ToUnixTimeMilliseconds() * 0.001d;
+                answer.time_answer = ((DateTimeOffset)DateTime.Now).ToUnixTimeMilliseconds() * 0.001d;
                 hubContext.Clients.Client(connectionId).SendCoreAsync("ReceiveMessage", new[]
                 {
                     answer,
@@ -201,7 +201,7 @@ namespace NKDiscordChatWidget.WidgetServer
                     answer.messages.Add(localAnswerMessage);
                 }
 
-                answer.time_answer = ((DateTimeOffset) DateTime.Now).ToUnixTimeMilliseconds() * 0.001d;
+                answer.time_answer = ((DateTimeOffset)DateTime.Now).ToUnixTimeMilliseconds() * 0.001d;
 
                 hubContext.Clients.Client(this.Context.ConnectionId)
                     .SendCoreAsync("ReceiveFullMessageList", new[]

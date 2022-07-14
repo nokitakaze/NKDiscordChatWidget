@@ -315,16 +315,16 @@ namespace NKDiscordChatWidget.DiscordBot
 
                             // При обновлении сообщения Дискорд пропускает контент, если контент не обновляется,
                             // поэтому тут нужен ===null предикат
-                            var fields = new[]{"content", "embeds", "attachments", "mention_roles", "mentions"};
+                            var fields = new[] { "content", "embeds", "attachments", "mention_roles", "mentions" };
                             foreach (var fieldName in fields)
                             {
                                 var field = typeof(EventMessageCreate).GetField(fieldName);
-                                var newValue =  field.GetValue(messageUpdate);
+                                var newValue = field.GetValue(messageUpdate);
                                 if (newValue == null)
                                 {
                                     continue;
                                 }
-                                
+
                                 field.SetValue(existedMessage, newValue);
                             }
 

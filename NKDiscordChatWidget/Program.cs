@@ -48,7 +48,7 @@ namespace NKDiscordChatWidget
 
         public static void RunOptionsAndReturnExitCode(object rawOptions)
         {
-            Global.options = (Options) rawOptions;
+            Global.options = (Options)rawOptions;
         }
 
         public static IWebHost BuildWebHost(string[] args) =>

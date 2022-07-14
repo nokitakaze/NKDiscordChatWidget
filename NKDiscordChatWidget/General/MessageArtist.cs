@@ -86,8 +86,8 @@ namespace NKDiscordChatWidget.General
             return new AnswerMessage()
             {
                 id = message.id,
-                time = ((DateTimeOffset) message.timestampAsDT).ToUnixTimeMilliseconds() * 0.001d,
-                time_update = ((DateTimeOffset) timeUpdate).ToUnixTimeMilliseconds() * 0.001d,
+                time = ((DateTimeOffset)message.timestampAsDT).ToUnixTimeMilliseconds() * 0.001d,
+                time_update = ((DateTimeOffset)timeUpdate).ToUnixTimeMilliseconds() * 0.001d,
                 html = html,
                 hash = sha1hash,
             };
@@ -111,7 +111,7 @@ namespace NKDiscordChatWidget.General
             bool containOnlyUnicodeAndSpace;
             {
                 var rEmojiWithinText = new Regex(@"<\:(.+?)\:([0-9]+)>", RegexOptions.Compiled);
-                long[] longs = {};
+                long[] longs = { };
                 if (message.content != null)
                 {
                     longs = Utf8ToUnicode.ToUnicodeCode(rEmojiWithinText.Replace(message.content, ""));
