@@ -1,0 +1,6 @@
+{
+    "dependencies": {
+        "emoji-assets": "^6.6.0",
+        "twemoji-emojis": "^14.0.0"
+    }
+}

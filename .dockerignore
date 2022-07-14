@@ -1,0 +1,15 @@
+DiscordModel/bin/
+DiscordModel/obj/
+NKDiscordChatWidget/bin/
+NKDiscordChatWidget/obj/
+WidgetServices/bin/
+WidgetServices/obj/
+
+wwwroot/images/emoji/
+wwwroot/images/node_modules/
+
+Dockerfile
+/appveyor.yml
+/.git
+/.gitignore
+/.idea
