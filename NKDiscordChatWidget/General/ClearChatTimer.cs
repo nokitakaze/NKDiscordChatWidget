@@ -8,6 +8,7 @@ namespace NKDiscordChatWidget.General
     /// <summary>
     /// Чистка сообщений в каналах для освобождения памяти и ускорения работы
     /// </summary>
+    // todo Перенести в BackgroundService
     public static class ClearChatTimer
     {
         /// <summary>

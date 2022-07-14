@@ -117,9 +117,11 @@ namespace NKDiscordChatWidget.General
                 return "";
             }
 
-            var s = codes.Aggregate("", (current, code) => current + ("-" + code.ToString("X").ToLower()));
+            var s = string
+                .Concat(codes.Select(code => "-" + code.ToString("x")))
+                .Substring(1);
 
-            return s.Substring(1);
+            return s;
         }
 
         public static bool IsInIntervalEmoji(long code, EmojiPackType pack)

@@ -13,6 +13,7 @@ namespace NKDiscordChatWidget.WidgetServer
     /// На этот end point приходит фактически один запрос: смена настроек отображения чата
     /// </summary>
     // ReSharper disable once ClassNeverInstantiated.Global
+    // TODO разделить на Pool & Hub
     public class WebsocketClientSide : Hub
     {
         private static IHubContext<WebsocketClientSide> _hubContext;

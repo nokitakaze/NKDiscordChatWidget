@@ -14,6 +14,7 @@ using NKDiscordChatWidget.WidgetServer;
 
 namespace NKDiscordChatWidget.DiscordBot
 {
+    // todo Перенести в BackgroundService
     public static class Bot
     {
         private static ClientWebSocket wsClient;
