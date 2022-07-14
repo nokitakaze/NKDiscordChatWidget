@@ -110,7 +110,7 @@ namespace NKDiscordChatWidget.General
             return GetStringForCodes(new[] { code });
         }
 
-        public static string GetStringForCodes(IEnumerable<long> codes)
+        public static string GetStringForCodes(ICollection<long> codes)
         {
             if (!codes.Any())
             {

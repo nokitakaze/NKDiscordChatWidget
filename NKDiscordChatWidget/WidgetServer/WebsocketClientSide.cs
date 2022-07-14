@@ -59,7 +59,7 @@ namespace NKDiscordChatWidget.WidgetServer
         /// Этот метод (event) вызывается, когда у нас создано/отредактировано сообщение. В редактирование
         /// входит также изменение реакций
         /// </summary>
-        public static void UpdateMessages(IEnumerable<EventMessageCreate> messages)
+        public static void UpdateMessages(ICollection<EventMessageCreate> messages)
         {
             if (!messages.Any())
             {
@@ -71,7 +71,7 @@ namespace NKDiscordChatWidget.WidgetServer
                 var localMessages = messages
                     .Where(message =>
                         (client._guildID == message.guild_id) && (client._channelID == message.channel_id))
-                    .ToList();
+                    .ToArray();
 
                 if (!localMessages.Any())
                 {

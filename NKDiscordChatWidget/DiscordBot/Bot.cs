@@ -37,7 +37,7 @@ namespace NKDiscordChatWidget.DiscordBot
 
         public static async Task StartTask()
         {
-            var options = NKDiscordChatWidget.General.Global.options;
+            var options = NKDiscordChatWidget.General.Global.ProgramOptions;
             string wsBaseUrl;
             {
                 Console.WriteLine("Load https://discordapp.com/api/gateway/bot");
@@ -201,7 +201,7 @@ namespace NKDiscordChatWidget.DiscordBot
                             ["op"] = 2,
                             ["d"] = new Dictionary<string, object>()
                             {
-                                ["token"] = Global.options.DiscordBotToken,
+                                ["token"] = Global.ProgramOptions.DiscordBotToken,
                                 ["session_id"] = sessionID,
                                 ["seq"] = websocketSequenceId,
                             },
@@ -214,7 +214,7 @@ namespace NKDiscordChatWidget.DiscordBot
                             ["op"] = 2,
                             ["d"] = new Dictionary<string, object>()
                             {
-                                ["token"] = Global.options.DiscordBotToken,
+                                ["token"] = Global.ProgramOptions.DiscordBotToken,
                                 ["properties"] = new Dictionary<string, object>()
                                 {
                                     ["$os"] = System.Environment.OSVersion.ToString(),

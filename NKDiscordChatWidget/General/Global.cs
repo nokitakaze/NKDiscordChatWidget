@@ -7,7 +7,7 @@ namespace NKDiscordChatWidget.General
     public static class Global
     {
         public static CancellationToken globalCancellationToken;
-        public static Options options;
+        public static ProgramOptions ProgramOptions;
         public static readonly long TimeStart;
 
         static Global()

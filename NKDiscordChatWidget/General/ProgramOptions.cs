@@ -4,7 +4,7 @@ using CommandLine;
 
 namespace NKDiscordChatWidget.General
 {
-    public class Options
+    public class ProgramOptions
     {
         [Option('t', "discord-token", Required = true, HelpText = "Discord bot token")]
         public string DiscordBotToken { get; set; }

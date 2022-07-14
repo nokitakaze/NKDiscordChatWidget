@@ -27,7 +27,7 @@ namespace NKDiscordChatWidget
                 tasks.Add(Task.Run(() => { NKDiscordChatWidget.General.ClearChatTimer.StartTask(); }));
                 tasks.Add(Task.Run(() => { NKDiscordChatWidget.General.ResourceFileWatch.StartTask(); }));
 
-                Parser.Default.ParseArguments<Options>(args)
+                Parser.Default.ParseArguments<ProgramOptions>(args)
                     .WithParsed(RunOptionsAndReturnExitCode);
                 tasks.Add(Task.Factory.StartNew(DiscordBot.Bot.StartTask, TaskCreationOptions.LongRunning));
             }
@@ -48,7 +48,7 @@ namespace NKDiscordChatWidget
 
         public static void RunOptionsAndReturnExitCode(object rawOptions)
         {
-            Global.options = (Options)rawOptions;
+            Global.ProgramOptions = (ProgramOptions)rawOptions;
         }
 
         public static IWebHost BuildWebHost(string[] args) =>
@@ -56,7 +56,7 @@ namespace NKDiscordChatWidget
                 .CreateDefaultBuilder(args)
                 .UseKestrel()
                 .UseStartup<WidgetServer.Startup>()
-                .UseUrls(string.Format("http://localhost:{0}", Global.options.HttpPort))
+                .UseUrls(string.Format("http://localhost:{0}", Global.ProgramOptions.HttpPort))
                 .ConfigureLogging(logging =>
                 {
                     // https://docs.microsoft.com/ru-ru/aspnet/core/fundamentals/logging/?view=aspnetcore-2.2

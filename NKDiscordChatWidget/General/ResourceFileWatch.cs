@@ -12,9 +12,9 @@ namespace NKDiscordChatWidget.General
     {
         public static void StartTask()
         {
-            using (FileSystemWatcher watcher1 = new FileSystemWatcher())
+            using (var watcher1 = new FileSystemWatcher())
             {
-                watcher1.Path = Options.WWWRoot;
+                watcher1.Path = ProgramOptions.WWWRoot;
 
                 // Watch for changes in LastAccess and LastWrite times, and
                 // the renaming of files or directories.
@@ -66,7 +66,7 @@ namespace NKDiscordChatWidget.General
 
         public static bool IfFileShouldBeWatched(string fullFilename)
         {
-            return IfFileShouldBeWatched(fullFilename, Options.WWWRoot);
+            return IfFileShouldBeWatched(fullFilename, ProgramOptions.WWWRoot);
         }
 
         // Define the event handlers.
@@ -92,23 +92,6 @@ namespace NKDiscordChatWidget.General
             // Specify what is done when a file is renamed.
             Console.WriteLine($"File: {e.OldFullPath} renamed to {e.FullPath}");
             WebsocketClientSide.ChangeResource(e.Name);
-        }
-
-        public struct S1
-        {
-            public int f1;
-            public string s1;
-
-            public int property1 => f1 + 1;
-
-            public void HelloWorld()
-            {
-            }
-
-            public override string ToString()
-            {
-                return "I am a struct";
-            }
         }
     }
 }

@@ -26,7 +26,7 @@ namespace MarkdownTest
 
         static MessageMarkdownParserTest()
         {
-            UnicodeEmojiEngine.LoadAllEmojiPacks(Options.WWWRoot);
+            UnicodeEmojiEngine.LoadAllEmojiPacks(ProgramOptions.WWWRoot);
             randomWords = new List<string>()
             {
                 "word1",

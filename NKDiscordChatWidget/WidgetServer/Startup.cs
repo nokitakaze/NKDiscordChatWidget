@@ -27,7 +27,7 @@ namespace NKDiscordChatWidget.WidgetServer
     {
         public Startup(IConfiguration configuration)
         {
-            if (string.IsNullOrEmpty(Global.options.DiscordBotToken))
+            if (string.IsNullOrEmpty(Global.ProgramOptions.DiscordBotToken))
             {
                 throw new Exception("DiscordBotToken is empty");
             }
@@ -41,14 +41,14 @@ namespace NKDiscordChatWidget.WidgetServer
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             // Можно решить это через nginx
-            Console.WriteLine("WWWRoot: {0}", Options.WWWRoot);
+            Console.WriteLine("WWWRoot: {0}", ProgramOptions.WWWRoot);
             app.UseStaticFiles(new StaticFileOptions
             {
-                FileProvider = new PhysicalFileProvider(Path.Combine(Options.WWWRoot, "images")),
+                FileProvider = new PhysicalFileProvider(Path.Combine(ProgramOptions.WWWRoot, "images")),
                 RequestPath = "/images"
             });
             app.UseDeveloperExceptionPage();
-            UnicodeEmojiEngine.LoadAllEmojiPacks(Options.WWWRoot);
+            UnicodeEmojiEngine.LoadAllEmojiPacks(ProgramOptions.WWWRoot);
 
             app.UseSignalR(routes =>
             {
@@ -92,7 +92,7 @@ namespace NKDiscordChatWidget.WidgetServer
         private static async Task MainPage(Microsoft.AspNetCore.Http.HttpContext httpContext)
         {
             // Главная
-            var html = File.ReadAllText(Options.WWWRoot + "/index.html");
+            var html = File.ReadAllText(ProgramOptions.WWWRoot + "/index.html");
             html = replaceLinksInHTML(html);
             string guildsHTML = "";
             foreach (var (guildID, channels) in NKDiscordChatWidget.DiscordBot.Bot.channels)
@@ -186,7 +186,7 @@ namespace NKDiscordChatWidget.WidgetServer
 
         private static async Task ChatHTML(Microsoft.AspNetCore.Http.HttpContext httpContext)
         {
-            var html = File.ReadAllText(Options.WWWRoot + "/chat.html");
+            var html = File.ReadAllText(ProgramOptions.WWWRoot + "/chat.html");
             html = replaceLinksInHTML(html);
             await httpContext.Response.WriteAsync(html);
         }
@@ -197,7 +197,7 @@ namespace NKDiscordChatWidget.WidgetServer
             {
                 var filename = m.Groups[1].Value;
                 // hint: тут специально не проверяется путь до файла
-                var bytes = File.ReadAllBytes(Options.WWWRoot + filename);
+                var bytes = File.ReadAllBytes(ProgramOptions.WWWRoot + filename);
 
                 string sha1hash;
                 using (var hashA = SHA1.Create())

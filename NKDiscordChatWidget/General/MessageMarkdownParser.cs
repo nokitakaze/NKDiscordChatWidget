@@ -1055,7 +1055,7 @@ namespace NKDiscordChatWidget.General
         #endregion
 
         public static string RenderEmojiStringListAsHtml(
-            IEnumerable<UnicodeEmojiEngine.EmojiRenderResult> codes,
+            ICollection<UnicodeEmojiEngine.EmojiRenderResult> codes,
             EmojiPackType pack,
             Dictionary<string, string> waitDictionary,
             int emojiShow
