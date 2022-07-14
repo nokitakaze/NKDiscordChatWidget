@@ -95,7 +95,7 @@ namespace NKDiscordChatWidget.Services
                     answer.messages.Add(localAnswerMessage);
                 }
 
-                answer.time_answer = ((DateTimeOffset)DateTime.Now).ToUnixTimeMilliseconds() * 0.001d;
+                answer.time_answer = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() * 0.001d;
 
                 Pool.HubContext.Clients.Client(this.Context.ConnectionId)
                     .SendCoreAsync("ReceiveFullMessageList", new[]

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -347,30 +348,33 @@ namespace NKDiscordChatWidget.Services.Services
     }
 
     // ReSharper disable NotAccessedField.Global
+    // ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
+    // ReSharper disable UnusedAutoPropertyAccessor.Global
+    // ReSharper disable CollectionNeverQueried.Global
     public class AnswerMessage
     {
-        public string id;
-        public double time;
-        public double time_update;
-        public string html;
+        public string id { get; set; }
+        public double time { get; set; }
+        public double time_update { get; set; }
+        public string html { get; set; }
 
         /// <summary>
         /// Уникальный хеш, взятый от HTML-контента сообщения
         /// </summary>
-        public string hash;
+        public string hash { get; set; }
     }
 
     public class AnswerFull
     {
-        public readonly List<AnswerMessage> messages = new List<AnswerMessage>();
-        public double time_answer;
-        public readonly HashSet<string> existedID = new HashSet<string>();
-        public long time_server_start;
+        public List<AnswerMessage> messages { get; } = new List<AnswerMessage>();
+        public double time_answer { get; set; }
+        public HashSet<string> existedID { get; } = new HashSet<string>();
+        public long time_server_start { get; set; }
 
         /// <summary>
         /// Заголовок для окна виджета (нужно только для дебага этого виджета)
         /// </summary>
-        public string channel_title;
+        public string channel_title { get; set; }
 
         private static readonly long TimeStart = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
@@ -379,5 +383,8 @@ namespace NKDiscordChatWidget.Services.Services
             this.time_server_start = TimeStart;
         }
     }
+    // ReSharper restore CollectionNeverQueried.Global
+    // ReSharper restore UnusedAutoPropertyAccessor.Global
     // ReSharper restore NotAccessedField.Global
+    // ReSharper restore AutoPropertyCanBeMadeGetOnly.Global
 }
