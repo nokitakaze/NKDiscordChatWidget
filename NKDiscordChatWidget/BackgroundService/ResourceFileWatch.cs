@@ -1,8 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Hosting;
 using NKDiscordChatWidget.General;
-using NKDiscordChatWidget.WidgetServer;
+using NKDiscordChatWidget.Services;
 
 namespace NKDiscordChatWidget.BackgroundService
 {
@@ -10,9 +13,42 @@ namespace NKDiscordChatWidget.BackgroundService
     /// https://docs.microsoft.com/en-us/dotnet/api/system.io.filesystemwatcher?redirectedfrom=MSDN&view=netcore-2.1
     /// </summary>
     // todo Перенести в BackgroundService
-    public static class ResourceFileWatch
+    public class ResourceFileWatch : IHostedService
     {
-        public static void StartTask()
+        private readonly WebsocketClientSidePool Pool;
+        private readonly ProgramOptions ProgramOptions;
+
+        public ResourceFileWatch(
+            WebsocketClientSidePool pool,
+            ProgramOptions programOptions
+        )
+        {
+            Pool = pool;
+            ProgramOptions = programOptions;
+        }
+
+        #region IHostedService
+
+        private readonly CancellationTokenSource CancellationSource = new CancellationTokenSource();
+        private CancellationToken CancellationToken => CancellationSource.Token;
+        private Task MainTask;
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "MethodSupportsCancellation")]
+        public Task StartAsync(CancellationToken cancellationToken)
+        {
+            MainTask = Task.Run(StartTask);
+            return Task.CompletedTask;
+        }
+
+        public async Task StopAsync(CancellationToken cancellationToken)
+        {
+            CancellationSource.Cancel();
+            await MainTask;
+        }
+
+        #endregion
+
+        public void StartTask()
         {
             using (var watcher1 = new FileSystemWatcher())
             {
@@ -38,7 +74,7 @@ namespace NKDiscordChatWidget.BackgroundService
                 // Begin watching.
                 watcher1.EnableRaisingEvents = true;
 
-                General.Global.globalCancellationToken.WaitHandle.WaitOne();
+                CancellationToken.WaitHandle.WaitOne();
             }
         }
 
@@ -66,13 +102,13 @@ namespace NKDiscordChatWidget.BackgroundService
             return GetWatchedFilenames().Contains(postfix);
         }
 
-        public static bool IfFileShouldBeWatched(string fullFilename)
+        public bool IfFileShouldBeWatched(string fullFilename)
         {
             return IfFileShouldBeWatched(fullFilename, ProgramOptions.WWWRoot);
         }
 
         // Define the event handlers.
-        private static void OnChanged(object source, FileSystemEventArgs e)
+        private void OnChanged(object source, FileSystemEventArgs e)
         {
             if (!IfFileShouldBeWatched(e.FullPath))
             {
@@ -81,10 +117,10 @@ namespace NKDiscordChatWidget.BackgroundService
 
             // Specify what is done when a file is changed, created, or deleted.
             Console.WriteLine($"File: {e.FullPath} {e.ChangeType}");
-            WebsocketClientSide.ChangeResource(e.Name);
+            Pool.ChangeResource(e.Name);
         }
 
-        private static void OnRenamed(object source, RenamedEventArgs e)
+        private void OnRenamed(object source, RenamedEventArgs e)
         {
             if (!IfFileShouldBeWatched(e.FullPath) && !IfFileShouldBeWatched(e.OldFullPath))
             {
@@ -93,7 +129,7 @@ namespace NKDiscordChatWidget.BackgroundService
 
             // Specify what is done when a file is renamed.
             Console.WriteLine($"File: {e.OldFullPath} renamed to {e.FullPath}");
-            WebsocketClientSide.ChangeResource(e.Name);
+            Pool.ChangeResource(e.Name);
         }
     }
 }

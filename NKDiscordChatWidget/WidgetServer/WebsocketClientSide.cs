@@ -1,11 +1,11 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
 using NKDiscordChatWidget.DiscordModel;
 using System.Linq;
 using NKDiscordChatWidget.General;
+using NKDiscordChatWidget.Services;
 using NKDiscordChatWidget.Util;
 
 namespace NKDiscordChatWidget.WidgetServer
@@ -14,127 +14,18 @@ namespace NKDiscordChatWidget.WidgetServer
     /// На этот end point приходит фактически один запрос: смена настроек отображения чата
     /// </summary>
     // ReSharper disable once ClassNeverInstantiated.Global
-    // TODO разделить на Pool & Hub
     public class WebsocketClientSide : Hub
     {
-        private static IHubContext<WebsocketClientSide> _hubContext;
+        public readonly ChatDrawOption ChatDrawOption = new ChatDrawOption();
+        public readonly WebsocketClientSidePool Pool;
 
-        private static readonly ConcurrentDictionary<string, WebsocketClientSide> _clients =
-            new ConcurrentDictionary<string, WebsocketClientSide>();
-
-        protected readonly ChatDrawOption _chatDrawOption = new ChatDrawOption();
-
-        protected string _guildID;
-        protected string _channelID;
-
-        /// <summary>
-        /// Контекст всех подключенных по WebSocket клиентов к end-point'у /websocketChat
-        /// </summary>
-        public static IHubContext<WebsocketClientSide> hubContext
+        public WebsocketClientSide(WebsocketClientSidePool pool)
         {
-            get => _hubContext;
-            set
-            {
-                if (_hubContext != null)
-                {
-                    throw new Exception();
-                }
-
-                _hubContext = value;
-            }
+            Pool = pool;
         }
 
-        /// <summary>
-        /// Отправка сообщения всем клиентам
-        ///
-        /// Этот метод (event) вызывается, когда у нас создано/отредактировано сообщение. В редактирование
-        /// входит также изменение реакций
-        /// </summary>
-        public static void UpdateMessage(EventMessageCreate message)
-        {
-            UpdateMessages(new[] { message });
-        }
-
-        /// <summary>
-        /// Отправка нескольких сообщений всем клиентам
-        ///
-        /// Этот метод (event) вызывается, когда у нас создано/отредактировано сообщение. В редактирование
-        /// входит также изменение реакций
-        /// </summary>
-        public static void UpdateMessages(ICollection<EventMessageCreate> messages)
-        {
-            if (!messages.Any())
-            {
-                return;
-            }
-
-            foreach (var (connectionId, client) in _clients)
-            {
-                var localMessages = messages
-                    .Where(message =>
-                        (client._guildID == message.guild_id) && (client._channelID == message.channel_id))
-                    .ToArray();
-
-                if (!localMessages.Any())
-                {
-                    continue;
-                }
-
-                // Сообщение для этого сервера (гильдии) и канала
-
-                var answer = new AnswerFull
-                {
-                    channel_title = string.Format("Discord Widget Chat: {0}-{1} [nkt]",
-                        client._guildID, client._channelID),
-                };
-
-                foreach (var localAnswerMessage in localMessages.Select(message =>
-                             MessageArtist.DrawMessage(message, client._chatDrawOption)))
-                {
-                    answer.messages.Add(localAnswerMessage);
-                }
-
-                answer.time_answer = ((DateTimeOffset)DateTime.Now).ToUnixTimeMilliseconds() * 0.001d;
-                hubContext.Clients.Client(connectionId).SendCoreAsync("ReceiveMessage", new[]
-                {
-                    answer,
-                });
-            }
-        }
-
-        /// <summary>
-        /// Этот метод (event) вызывается, когда у нас сообщение было удалено
-        /// </summary>
-        public static void RemoveMessage(string guildId, string channelId, string messageId)
-        {
-            foreach (var (connectionId, client) in _clients)
-            {
-                if ((client._guildID != guildId) || (client._channelID != channelId))
-                {
-                    continue;
-                }
-
-                hubContext.Clients.Client(connectionId).SendCoreAsync("RemoveMessage", new[]
-                {
-                    messageId
-                });
-            }
-        }
-
-        /// <summary>
-        /// Поменялся один из основных ресурсов, надо перезагрузить страницу
-        /// </summary>
-        /// <param name="filename">Название изменённого файла</param>
-        public static void ChangeResource(string filename)
-        {
-            foreach (var connectionId in _clients.Keys)
-            {
-                hubContext.Clients.Client(connectionId).SendCoreAsync("ChangeResource", new[]
-                {
-                    filename
-                });
-            }
-        }
+        public string GuildID { get; private set; }
+        public string ChannelID { get; private set; }
 
         #region ClientSideSignals
 
@@ -146,7 +37,7 @@ namespace NKDiscordChatWidget.WidgetServer
         // ReSharper disable once UnusedMember.Global
         public void ChangeDrawOptionAndGetAllMessages(string jsonOptions)
         {
-            _clients[this.Context.ConnectionId] = this;
+            Pool._clients[this.Context.ConnectionId] = this;
 
             Dictionary<string, object> newChatDrawOption;
             try
@@ -159,22 +50,22 @@ namespace NKDiscordChatWidget.WidgetServer
                 return;
             }
 
-            _chatDrawOption.SetOptionsFromDictionary(newChatDrawOption);
+            ChatDrawOption.SetOptionsFromDictionary(newChatDrawOption);
 
-            _guildID = newChatDrawOption["guild"] as string;
-            _channelID = newChatDrawOption["channel"] as string;
+            GuildID = newChatDrawOption["guild"] as string;
+            ChannelID = newChatDrawOption["channel"] as string;
 
             {
                 var answer = new AnswerFull
                 {
-                    channel_title = string.Format("Discord Widget Chat: {0}-{1} [nkt]", _guildID, _channelID),
+                    channel_title = string.Format("Discord Widget Chat: {0}-{1} [nkt]", GuildID, ChannelID),
                 };
 
                 List<EventMessageCreate> messages;
-                if (NKDiscordChatWidget.BackgroundService.Bot.messages.ContainsKey(_guildID) &&
-                    (NKDiscordChatWidget.BackgroundService.Bot.messages[_guildID].ContainsKey(_channelID)))
+                if (NKDiscordChatWidget.BackgroundService.Bot.messages.ContainsKey(GuildID) &&
+                    (NKDiscordChatWidget.BackgroundService.Bot.messages[GuildID].ContainsKey(ChannelID)))
                 {
-                    messages = NKDiscordChatWidget.BackgroundService.Bot.messages[_guildID][_channelID].Values.ToList();
+                    messages = NKDiscordChatWidget.BackgroundService.Bot.messages[GuildID][ChannelID].Values.ToList();
                 }
                 else
                 {
@@ -193,13 +84,13 @@ namespace NKDiscordChatWidget.WidgetServer
                 {
                     // @todo не работает мердж сообщений от одного пользователя
                     var message = messages[i];
-                    var localAnswerMessage = MessageArtist.DrawMessage(message, _chatDrawOption);
+                    var localAnswerMessage = MessageArtist.DrawMessage(message, ChatDrawOption);
                     answer.messages.Add(localAnswerMessage);
                 }
 
                 answer.time_answer = ((DateTimeOffset)DateTime.Now).ToUnixTimeMilliseconds() * 0.001d;
 
-                hubContext.Clients.Client(this.Context.ConnectionId)
+                Pool.HubContext.Clients.Client(this.Context.ConnectionId)
                     .SendCoreAsync("ReceiveFullMessageList", new[]
                     {
                         answer,

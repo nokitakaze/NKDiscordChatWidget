@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading;
-using System.Threading.Tasks;
 using CommandLine;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
-using NKDiscordChatWidget.BackgroundService;
 using NKDiscordChatWidget.General;
+using NKDiscordChatWidget.WidgetServer;
 
 namespace NKDiscordChatWidget
 {
@@ -18,18 +16,11 @@ namespace NKDiscordChatWidget
         static void Main(string[] args)
         {
             globalCancellationToken = new CancellationTokenSource();
-            Global.globalCancellationToken = globalCancellationToken.Token;
 
-            var tasks = new List<Task>();
             try
             {
-                tasks.Add(Task.Run(() => { ClearChatTimer.StartTask(); }));
-                tasks.Add(Task.Run(() => { ResourceFileWatch.StartTask(); }));
-
                 Parser.Default.ParseArguments<ProgramOptions>(args)
                     .WithParsed(RunOptionsAndReturnExitCode);
-                tasks.Add(Task.Factory.StartNew(NKDiscordChatWidget.BackgroundService.Bot.StartTask,
-                    TaskCreationOptions.LongRunning));
             }
             catch (Exception)
             {
@@ -38,17 +29,11 @@ namespace NKDiscordChatWidget
             }
 
             BuildWebHost(args).Run();
-
-            // Тред отменили, закрываемся
-            globalCancellationToken.Cancel();
-
-            // Ждём всех
-            Task.WaitAll(tasks.ToArray());
         }
 
         public static void RunOptionsAndReturnExitCode(object rawOptions)
         {
-            Global.ProgramOptions = (ProgramOptions)rawOptions;
+            Startup.ProgramOptions = (ProgramOptions)rawOptions;
         }
 
         public static IWebHost BuildWebHost(string[] args) =>
@@ -56,7 +41,7 @@ namespace NKDiscordChatWidget
                 .CreateDefaultBuilder(args)
                 .UseKestrel()
                 .UseStartup<WidgetServer.Startup>()
-                .UseUrls(string.Format("http://localhost:{0}", Global.ProgramOptions.HttpPort))
+                .UseUrls(string.Format("http://localhost:{0}", Startup.ProgramOptions.HttpPort))
                 .ConfigureLogging(logging =>
                 {
                     // https://docs.microsoft.com/ru-ru/aspnet/core/fundamentals/logging/?view=aspnetcore-2.2

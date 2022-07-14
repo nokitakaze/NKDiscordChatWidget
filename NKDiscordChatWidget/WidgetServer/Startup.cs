@@ -1,42 +1,48 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Security.Cryptography;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Internal;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
-using Newtonsoft.Json;
+using NKDiscordChatWidget.BackgroundService;
 using NKDiscordChatWidget.DiscordModel;
 using NKDiscordChatWidget.General;
+using NKDiscordChatWidget.Services;
 using NKDiscordChatWidget.Util;
 
 namespace NKDiscordChatWidget.WidgetServer
 {
     public class Startup
     {
+        public static ProgramOptions ProgramOptions;
+
         public Startup(IConfiguration configuration)
         {
-            if (string.IsNullOrEmpty(Global.ProgramOptions.DiscordBotToken))
+            if (string.IsNullOrEmpty(ProgramOptions.DiscordBotToken))
             {
                 throw new Exception("DiscordBotToken is empty");
             }
         }
 
+        [SuppressMessage("ReSharper", "RedundantTypeArgumentsOfMethod")]
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSignalR();
+            services.AddSingleton<WebsocketClientSidePool>();
+            services.AddSingleton<ProgramOptions>(_ => ProgramOptions);
+
+            services.AddHostedService<ResourceFileWatch>();
+            services.AddHostedService<ClearChatTimer>();
+            services.AddHostedService<Bot>();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
@@ -54,9 +60,6 @@ namespace NKDiscordChatWidget.WidgetServer
             app.UseSignalR(routes =>
             {
                 routes.MapHub<NKDiscordChatWidget.WidgetServer.WebsocketClientSide>("/websocketChat");
-
-                // Берём контекст всех подключенных по WebSocket клиентов к end-point'у /websocketChat
-                WebsocketClientSide.hubContext = app.ApplicationServices.GetService<IHubContext<WebsocketClientSide>>();
             });
             app.Run(Request);
         }

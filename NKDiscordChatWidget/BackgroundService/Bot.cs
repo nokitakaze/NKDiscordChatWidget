@@ -7,23 +7,27 @@ using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using NKDiscordChatWidget.DiscordModel;
 using NKDiscordChatWidget.General;
-using NKDiscordChatWidget.WidgetServer;
+using NKDiscordChatWidget.Services;
 
 namespace NKDiscordChatWidget.BackgroundService
 {
     // todo Перенести в BackgroundService
-    public static class Bot
+    public class Bot : IHostedService
     {
-        private static ClientWebSocket wsClient;
-        private static ulong websocketSequenceId;
-        private static string sessionID;
-        private static volatile int msBetweenPing = 10000;
-        private static DateTime lastIncomingMessageTime = DateTime.MinValue;
-        private static DateTime lastIncomingPingTime = DateTime.MinValue;
+        private ClientWebSocket wsClient;
+        private ulong websocketSequenceId;
+        private string sessionID;
+        private volatile int msBetweenPing = 10000;
+        private DateTime lastIncomingMessageTime = DateTime.MinValue;
+        private DateTime lastIncomingPingTime = DateTime.MinValue;
 
+        #region Data
+
+        // todo Перенести в репозиторий
         public static ConcurrentDictionary<string, EventGuildCreate> guilds { get; } =
             new ConcurrentDictionary<string, EventGuildCreate>();
 
@@ -36,9 +40,43 @@ namespace NKDiscordChatWidget.BackgroundService
             new ConcurrentDictionary<string,
                 ConcurrentDictionary<string, ConcurrentDictionary<string, EventMessageCreate>>>();
 
-        public static async Task StartTask()
+        #endregion
+
+        private readonly ProgramOptions ProgramOptions;
+        private readonly WebsocketClientSidePool Pool;
+
+        public Bot(
+            ProgramOptions programOptions,
+            WebsocketClientSidePool pool
+        )
         {
-            var options = NKDiscordChatWidget.General.Global.ProgramOptions;
+            ProgramOptions = programOptions;
+            Pool = pool;
+        }
+
+        #region IHostedService
+
+        private readonly CancellationTokenSource CancellationSource = new CancellationTokenSource();
+        private CancellationToken CancellationToken => CancellationSource.Token;
+        private Task MainTask;
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "MethodSupportsCancellation")]
+        public Task StartAsync(CancellationToken cancellationToken)
+        {
+            MainTask = Task.Run(StartTask);
+            return Task.CompletedTask;
+        }
+
+        public async Task StopAsync(CancellationToken cancellationToken)
+        {
+            CancellationSource.Cancel();
+            await MainTask;
+        }
+
+        #endregion
+
+        public async Task StartTask()
+        {
             string wsBaseUrl;
             {
                 Console.WriteLine("Load https://discordapp.com/api/gateway/bot");
@@ -50,7 +88,7 @@ namespace NKDiscordChatWidget.BackgroundService
                         using (var client = new HttpClient())
                         {
                             client.DefaultRequestHeaders.Add("Authorization",
-                                "Bot " + options.DiscordBotToken);
+                                "Bot " + ProgramOptions.DiscordBotToken);
 
                             client.DefaultRequestHeaders
                                 .Accept
@@ -91,7 +129,7 @@ namespace NKDiscordChatWidget.BackgroundService
                     using (wsClient = new ClientWebSocket())
                     {
                         var fullConnectURI = string.Format("{0}?v=6&encoding=json", wsBaseUrl);
-                        await wsClient.ConnectAsync(new Uri(fullConnectURI), Global.globalCancellationToken);
+                        await wsClient.ConnectAsync(new Uri(fullConnectURI), CancellationToken);
                         await ProcessWebSocket();
                     }
                 }
@@ -99,21 +137,21 @@ namespace NKDiscordChatWidget.BackgroundService
                 {
                     Console.Error.WriteLine(e);
                 }
-            } while (!Global.globalCancellationToken.IsCancellationRequested);
+            } while (!CancellationToken.IsCancellationRequested);
         }
 
-        private static async Task SendMessageToWebSocket(object data)
+        private async Task SendMessageToWebSocket(object data)
         {
             await SendMessageToWebSocket(JsonConvert.SerializeObject(data));
         }
 
-        private static async Task SendMessageToWebSocket(string message)
+        private async Task SendMessageToWebSocket(string message)
         {
             ArraySegment<byte> bytesToSend = new ArraySegment<byte>(Encoding.UTF8.GetBytes(message));
             await wsClient.SendAsync(bytesToSend, WebSocketMessageType.Text, true, CancellationToken.None);
         }
 
-        private static async Task ProcessWebSocket()
+        private async Task ProcessWebSocket()
         {
             byte[] b = new byte[10 * 1024 * 1024];
             do
@@ -124,8 +162,8 @@ namespace NKDiscordChatWidget.BackgroundService
                     break;
                 }
 
-                ArraySegment<byte> bytesReceived = new ArraySegment<byte>(b);
-                WebSocketReceiveResult result = await wsClient.ReceiveAsync(bytesReceived, CancellationToken.None);
+                var bytesReceived = new ArraySegment<byte>(b);
+                var result = await wsClient.ReceiveAsync(bytesReceived, CancellationToken.None);
 
                 if (result.Count > 0)
                 {
@@ -158,9 +196,9 @@ namespace NKDiscordChatWidget.BackgroundService
             public string dAsString => JsonConvert.SerializeObject(this.d);
         }
 
-        private static async Task heartBeat()
+        private async Task heartBeat()
         {
-            while (!Global.globalCancellationToken.IsCancellationRequested)
+            while (!CancellationToken.IsCancellationRequested)
             {
                 if (wsClient.State == WebSocketState.Open)
                 {
@@ -174,7 +212,7 @@ namespace NKDiscordChatWidget.BackgroundService
             }
         }
 
-        private static async Task Ws_OnMessage(DiscordWebSocketMessage message)
+        private async Task Ws_OnMessage(DiscordWebSocketMessage message)
         {
             if (message.s != null)
             {
@@ -202,7 +240,7 @@ namespace NKDiscordChatWidget.BackgroundService
                             ["op"] = 2,
                             ["d"] = new Dictionary<string, object>()
                             {
-                                ["token"] = Global.ProgramOptions.DiscordBotToken,
+                                ["token"] = ProgramOptions.DiscordBotToken,
                                 ["session_id"] = sessionID,
                                 ["seq"] = websocketSequenceId,
                             },
@@ -215,7 +253,7 @@ namespace NKDiscordChatWidget.BackgroundService
                             ["op"] = 2,
                             ["d"] = new Dictionary<string, object>()
                             {
-                                ["token"] = Global.ProgramOptions.DiscordBotToken,
+                                ["token"] = ProgramOptions.DiscordBotToken,
                                 ["properties"] = new Dictionary<string, object>()
                                 {
                                     ["$os"] = System.Environment.OSVersion.ToString(),
@@ -286,7 +324,7 @@ namespace NKDiscordChatWidget.BackgroundService
 
                             messages[messageCreate.guild_id][messageCreate.channel_id][messageCreate.id] =
                                 messageCreate;
-                            WebsocketClientSide.UpdateMessage(messageCreate);
+                            Pool.UpdateMessage(messageCreate);
 
                             Console.WriteLine("channel_id {0} user {1} say: {2}",
                                 messageCreate.channel_id,
@@ -332,7 +370,7 @@ namespace NKDiscordChatWidget.BackgroundService
                             existedMessage.edited_timestamp = messageUpdate.edited_timestamp;
                             existedMessage.mention_everyone = messageUpdate.mention_everyone;
                             existedMessage.pinned = messageUpdate.pinned;
-                            WebsocketClientSide.UpdateMessage(existedMessage);
+                            Pool.UpdateMessage(existedMessage);
 
                             Console.WriteLine("channel_id {0} user {1} edited: {2}",
                                 messageUpdate.channel_id,
@@ -368,7 +406,7 @@ namespace NKDiscordChatWidget.BackgroundService
                             {
                                 var messageId = message.d.id.ToString() as string;
                                 messages[guild_id][channel_id].TryRemove(messageId, out _);
-                                WebsocketClientSide.RemoveMessage(guild_id, channel_id, messageId);
+                                Pool.RemoveMessage(guild_id, channel_id, messageId);
                             }
 
                             // Такого сообщения нет. Возможно, оно было создано раньше. Это не проблема 
@@ -389,7 +427,7 @@ namespace NKDiscordChatWidget.BackgroundService
 
                             messages[reaction.guild_id][reaction.channel_id][reaction.message_id]
                                 .AddReaction(reaction);
-                            WebsocketClientSide.UpdateMessage(
+                            Pool.UpdateMessage(
                                 messages[reaction.guild_id][reaction.channel_id][reaction.message_id]);
 
                             break;
@@ -409,7 +447,7 @@ namespace NKDiscordChatWidget.BackgroundService
 
                             messages[reaction.guild_id][reaction.channel_id][reaction.message_id]
                                 .RemoveReaction(reaction);
-                            WebsocketClientSide.UpdateMessage(
+                            Pool.UpdateMessage(
                                 messages[reaction.guild_id][reaction.channel_id][reaction.message_id]);
 
                             break;
@@ -444,7 +482,7 @@ namespace NKDiscordChatWidget.BackgroundService
                                 foreach (var messageId in forDeletions)
                                 {
                                     channelsMessages.TryRemove(messageId, out _);
-                                    WebsocketClientSide.RemoveMessage(banAdd.guild_id, channelId, messageId);
+                                    Pool.RemoveMessage(banAdd.guild_id, channelId, messageId);
                                 }
                             }
 
