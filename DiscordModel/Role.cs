@@ -1,4 +1,4 @@
-namespace NKDiscordChatWidget.DiscordBot.Classes
+namespace NKDiscordChatWidget.DiscordModel
 {
     /// <summary>
     /// https://discordapp.com/developers/docs/topics/permissions#role-object

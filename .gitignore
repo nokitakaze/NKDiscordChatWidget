@@ -1,7 +1,4 @@
-/NKDiscordChatWidget/bin
-/NKDiscordChatWidget/obj
-
-/MarkdownTest/bin
-/MarkdownTest/obj
+bin/
+obj/
 
 /.idea

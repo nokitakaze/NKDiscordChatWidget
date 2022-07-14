@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
-namespace NKDiscordChatWidget.DiscordBot.Classes
+namespace NKDiscordChatWidget.DiscordModel
 {
     /// <summary>
     /// https://discordapp.com/developers/docs/resources/guild#guild-object
@@ -20,8 +20,8 @@ namespace NKDiscordChatWidget.DiscordBot.Classes
         public List<EventGuildCreate_Channel> channels;
         public List<EventGuildCreate_PermissionOverwrite> permission_overwrites;
         public List<Role> roles;
-        public List<NKDiscordChatWidget.DiscordBot.Classes.Emoji> emojis;
-        public List<NKDiscordChatWidget.DiscordBot.Classes.GuildMember> members;
+        public List<NKDiscordChatWidget.DiscordModel.Emoji> emojis;
+        public List<NKDiscordChatWidget.DiscordModel.GuildMember> members;
 
         public string GetIconURL => string.Format("https://cdn.discordapp.com/icons/{0}/{1}.png", this.id, this.icon);
 

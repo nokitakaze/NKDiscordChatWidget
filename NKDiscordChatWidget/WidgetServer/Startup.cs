@@ -18,7 +18,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Newtonsoft.Json;
-using NKDiscordChatWidget.DiscordBot.Classes;
+using NKDiscordChatWidget.DiscordModel;
 using NKDiscordChatWidget.General;
 
 namespace NKDiscordChatWidget.WidgetServer

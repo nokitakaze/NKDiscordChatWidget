@@ -5,7 +5,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
-using NKDiscordChatWidget.DiscordBot.Classes;
+using NKDiscordChatWidget.DiscordModel;
 
 namespace NKDiscordChatWidget.General
 {
@@ -246,7 +246,7 @@ namespace NKDiscordChatWidget.General
 
         private static void AddMessageReactionHTML(
             ICollection<string> reactionHTMLs,
-            NKDiscordChatWidget.DiscordBot.Classes.EventMessageCreate.EventMessageCreate_Reaction reaction,
+            NKDiscordChatWidget.DiscordModel.EventMessageCreate.EventMessageCreate_Reaction reaction,
             int emojiShow,
             ChatDrawOption chatOption
         )
@@ -287,7 +287,7 @@ namespace NKDiscordChatWidget.General
         }
 
         private static string AddMessageReactionHTMLWithEmojiPack(
-            NKDiscordChatWidget.DiscordBot.Classes.EventMessageCreate.EventMessageCreate_Reaction reaction,
+            NKDiscordChatWidget.DiscordModel.EventMessageCreate.EventMessageCreate_Reaction reaction,
             EmojiPackType emojiPack
         )
         {

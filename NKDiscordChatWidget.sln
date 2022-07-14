@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NKDiscordChatWidget", "NKDi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MarkdownTest", "MarkdownTest\MarkdownTest.csproj", "{7C329532-F4E0-4AF4-8DF4-D3DCEAF8A14E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiscordModel", "DiscordModel\DiscordModel.csproj", "{75E98CB3-F90E-4DD8-BFED-CDF86521EC55}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{7C329532-F4E0-4AF4-8DF4-D3DCEAF8A14E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7C329532-F4E0-4AF4-8DF4-D3DCEAF8A14E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7C329532-F4E0-4AF4-8DF4-D3DCEAF8A14E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{75E98CB3-F90E-4DD8-BFED-CDF86521EC55}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{75E98CB3-F90E-4DD8-BFED-CDF86521EC55}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{75E98CB3-F90E-4DD8-BFED-CDF86521EC55}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{75E98CB3-F90E-4DD8-BFED-CDF86521EC55}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

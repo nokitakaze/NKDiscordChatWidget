@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
-namespace NKDiscordChatWidget.DiscordBot.Classes
+namespace NKDiscordChatWidget.DiscordModel
 {
     /// <summary>
     /// https://discordapp.com/developers/docs/resources/emoji

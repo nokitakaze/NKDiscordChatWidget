@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
-using NKDiscordChatWidget.DiscordBot.Classes;
+using NKDiscordChatWidget.DiscordModel;
 using NKDiscordChatWidget.General;
 using System.Linq;
 

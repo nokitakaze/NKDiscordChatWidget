@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
-namespace NKDiscordChatWidget.DiscordBot.Classes
+namespace NKDiscordChatWidget.DiscordModel
 {
     /// <summary>
     /// https://discordapp.com/developers/docs/resources/channel#guild-ban-add

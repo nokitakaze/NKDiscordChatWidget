@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
-namespace NKDiscordChatWidget.DiscordBot.Classes
+namespace NKDiscordChatWidget.DiscordModel
 {
     // ReSharper disable ClassNeverInstantiated.Global
     /// <summary>
@@ -315,7 +315,7 @@ namespace NKDiscordChatWidget.DiscordBot.Classes
 
             public int count;
             public bool me;
-            public NKDiscordChatWidget.DiscordBot.Classes.Emoji emoji;
+            public NKDiscordChatWidget.DiscordModel.Emoji emoji;
 
             public override string ToString()
             {

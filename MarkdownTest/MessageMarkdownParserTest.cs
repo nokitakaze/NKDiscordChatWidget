@@ -7,7 +7,7 @@ using System.Web;
 using AngleSharp;
 using AngleSharp.Html.Dom;
 using NKDiscordChatWidget;
-using NKDiscordChatWidget.DiscordBot.Classes;
+using NKDiscordChatWidget.DiscordModel;
 using NKDiscordChatWidget.General;
 using Xunit;
 
