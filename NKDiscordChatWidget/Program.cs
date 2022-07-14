@@ -4,7 +4,7 @@ using CommandLine;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
-using NKDiscordChatWidget.General;
+using NKDiscordChatWidget.Services.General;
 using NKDiscordChatWidget.WidgetServer;
 
 namespace NKDiscordChatWidget

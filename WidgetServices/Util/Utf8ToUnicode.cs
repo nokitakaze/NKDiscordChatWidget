@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace NKDiscordChatWidget.Util
+namespace NKDiscordChatWidget.Services.Util
 {
     public static class Utf8ToUnicode
     {

@@ -4,10 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.SignalR;
 using NKDiscordChatWidget.DiscordModel;
-using NKDiscordChatWidget.Util;
-using NKDiscordChatWidget.WidgetServer;
 
-namespace NKDiscordChatWidget.Services
+namespace NKDiscordChatWidget.Services.Services
 {
     public class WebsocketClientSidePool
     {
@@ -54,7 +52,7 @@ namespace NKDiscordChatWidget.Services
                 return;
             }
 
-            foreach (var (connectionId, client) in _clients)
+            foreach (var (connectionId, client) in _clients.Select(item => (item.Key, item.Value)))
             {
                 var localMessages = messages
                     .Where(message =>
@@ -93,7 +91,7 @@ namespace NKDiscordChatWidget.Services
         /// </summary>
         public void RemoveMessage(string guildId, string channelId, string messageId)
         {
-            foreach (var (connectionId, client) in _clients)
+            foreach (var (connectionId, client) in _clients.Select(item => (item.Key, item.Value)))
             {
                 if ((client.GuildID != guildId) || (client.ChannelID != channelId))
                 {

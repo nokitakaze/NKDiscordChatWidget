@@ -4,8 +4,8 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
-using NKDiscordChatWidget.General;
-using NKDiscordChatWidget.Services;
+using NKDiscordChatWidget.Services.General;
+using NKDiscordChatWidget.Services.Services;
 
 namespace NKDiscordChatWidget.BackgroundService
 {
@@ -49,32 +49,30 @@ namespace NKDiscordChatWidget.BackgroundService
 
         public void StartTask()
         {
-            using (var watcher1 = new FileSystemWatcher())
-            {
-                watcher1.Path = ProgramOptions.WWWRoot;
+            using var watcher1 = new FileSystemWatcher();
+            watcher1.Path = ProgramOptions.WWWRoot;
 
-                // Watch for changes in LastAccess and LastWrite times, and
-                // the renaming of files or directories.
-                watcher1.NotifyFilter = NotifyFilters.LastAccess
-                                        | NotifyFilters.LastWrite
-                                        | NotifyFilters.FileName
-                                        | NotifyFilters.DirectoryName;
+            // Watch for changes in LastAccess and LastWrite times, and
+            // the renaming of files or directories.
+            watcher1.NotifyFilter = NotifyFilters.LastAccess
+                                    | NotifyFilters.LastWrite
+                                    | NotifyFilters.FileName
+                                    | NotifyFilters.DirectoryName;
 
-                watcher1.IncludeSubdirectories = true;
+            watcher1.IncludeSubdirectories = true;
 
-                watcher1.Filter = "*";
+            watcher1.Filter = "*";
 
-                // Add event handlers.
-                watcher1.Changed += OnChanged;
-                watcher1.Created += OnChanged;
-                watcher1.Deleted += OnChanged;
-                watcher1.Renamed += OnRenamed;
+            // Add event handlers.
+            watcher1.Changed += OnChanged;
+            watcher1.Created += OnChanged;
+            watcher1.Deleted += OnChanged;
+            watcher1.Renamed += OnRenamed;
 
-                // Begin watching.
-                watcher1.EnableRaisingEvents = true;
+            // Begin watching.
+            watcher1.EnableRaisingEvents = true;
 
-                CancellationToken.WaitHandle.WaitOne();
-            }
+            CancellationToken.WaitHandle.WaitOne();
         }
 
         public static HashSet<string> GetWatchedFilenames()

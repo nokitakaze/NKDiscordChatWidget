@@ -1,17 +1,15 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 using NKDiscordChatWidget.DiscordModel;
-using NKDiscordChatWidget.General;
-using NKDiscordChatWidget.Services;
-using NKDiscordChatWidget.Util;
+using NKDiscordChatWidget.Services.General;
+using NKDiscordChatWidget.Services.Util;
 
-namespace NKDiscordChatWidget.Services
+namespace NKDiscordChatWidget.Services.Services
 {
     /// <summary>
     /// Парсер markdown
@@ -57,7 +55,7 @@ namespace NKDiscordChatWidget.Services
             string result = "";
             bool isInQuote = false;
             var currentQuoteHTML = "";
-            foreach (var line in text.Split("\n"))
+            foreach (var line in text.Split('\n'))
             {
                 var trimmedLine = line.TrimEnd('\r');
                 if ((trimmedLine.Length >= 2) && (trimmedLine.Substring(0, 2) == "> "))
@@ -211,7 +209,7 @@ namespace NKDiscordChatWidget.Services
                 // то удалять включение в waitDictionary и делать это пока waitDictionary.Any(),
                 // это решение более наглядно, но более затратно, потому что приходится перестраивать Dictionary
                 bool u = false;
-                foreach (var (wait, replace) in waitDictionary)
+                foreach (var (wait, replace) in waitDictionary.Select(item => (item.Key, item.Value)))
                 {
                     var textWithWaitingNew = textWithWaiting.Replace(wait, replace);
                     if (textWithWaitingNew != textWithWaiting)

@@ -4,7 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 
-namespace NKDiscordChatWidget.Util
+namespace NKDiscordChatWidget.Services.Util
 {
     public static class UnicodeEmojiEngine
     {
@@ -67,7 +67,7 @@ namespace NKDiscordChatWidget.Util
                 var rawList = new HashSet<long>();
                 foreach (var codeString in emojiList[(EmojiPackType)id])
                 {
-                    var a = codeString.Split("-");
+                    var a = codeString.Split('-');
                     foreach (var singleStringCode in a)
                     {
                         var code = int.Parse(singleStringCode, NumberStyles.HexNumber);
@@ -88,9 +88,9 @@ namespace NKDiscordChatWidget.Util
             // ReSharper disable once LoopCanBeConvertedToQuery
             foreach (var fileName in Directory.EnumerateFiles(folder))
             {
-                var a = fileName.Replace("\\", "/").Split("/");
+                var a = fileName.Replace("\\", "/").Split('/');
                 var filenameItself = a.Last();
-                a = filenameItself.Split(".");
+                a = filenameItself.Split('.');
 
                 var extension = a.Last();
                 if (extension != expectedExtension)

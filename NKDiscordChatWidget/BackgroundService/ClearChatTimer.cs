@@ -5,8 +5,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
-using NKDiscordChatWidget.General;
-using NKDiscordChatWidget.Services;
+using NKDiscordChatWidget.Services.General;
+using NKDiscordChatWidget.Services.Services;
 
 namespace NKDiscordChatWidget.BackgroundService
 {

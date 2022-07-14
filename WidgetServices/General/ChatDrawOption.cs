@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using NKDiscordChatWidget.Util;
+using NKDiscordChatWidget.Services.Util;
 
-namespace NKDiscordChatWidget.General
+namespace NKDiscordChatWidget.Services.General
 {
     // @todo Сделать атрибут "read only", чтобы нельзя было менять из URL'ов
 

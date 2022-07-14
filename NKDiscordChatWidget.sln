@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MarkdownTest", "MarkdownTes
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiscordModel", "DiscordModel\DiscordModel.csproj", "{75E98CB3-F90E-4DD8-BFED-CDF86521EC55}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WidgetServices", "WidgetServices\WidgetServices.csproj", "{6E815802-F2DE-4AF0-B75F-F762F5C9E9CE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{75E98CB3-F90E-4DD8-BFED-CDF86521EC55}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{75E98CB3-F90E-4DD8-BFED-CDF86521EC55}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{75E98CB3-F90E-4DD8-BFED-CDF86521EC55}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6E815802-F2DE-4AF0-B75F-F762F5C9E9CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6E815802-F2DE-4AF0-B75F-F762F5C9E9CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6E815802-F2DE-4AF0-B75F-F762F5C9E9CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6E815802-F2DE-4AF0-B75F-F762F5C9E9CE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

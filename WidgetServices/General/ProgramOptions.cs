@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using CommandLine;
 
-namespace NKDiscordChatWidget.General
+namespace NKDiscordChatWidget.Services.General
 {
     public class ProgramOptions
     {
@@ -16,7 +16,9 @@ namespace NKDiscordChatWidget.General
         {
             get
             {
-                string folder = AppDomain.CurrentDomain.BaseDirectory
+                string folder = AppDomain
+                    .CurrentDomain
+                    .BaseDirectory
                     .Replace('\\', '/')
                     .TrimEnd('/');
                 do

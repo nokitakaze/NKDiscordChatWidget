@@ -4,10 +4,10 @@ using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
 using NKDiscordChatWidget.DiscordModel;
 using System.Linq;
-using NKDiscordChatWidget.General;
-using NKDiscordChatWidget.Services;
+using NKDiscordChatWidget.Services.General;
+using NKDiscordChatWidget.Services.Services;
 
-namespace NKDiscordChatWidget.WidgetServer
+namespace NKDiscordChatWidget.Services
 {
     /// <summary>
     /// На этот end point приходит фактически один запрос: смена настроек отображения чата

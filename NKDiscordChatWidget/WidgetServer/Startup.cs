@@ -15,9 +15,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using NKDiscordChatWidget.BackgroundService;
 using NKDiscordChatWidget.DiscordModel;
-using NKDiscordChatWidget.General;
 using NKDiscordChatWidget.Services;
-using NKDiscordChatWidget.Util;
+using NKDiscordChatWidget.Services.General;
+using NKDiscordChatWidget.Services.Services;
+using NKDiscordChatWidget.Services.Util;
 
 namespace NKDiscordChatWidget.WidgetServer
 {
@@ -63,7 +64,7 @@ namespace NKDiscordChatWidget.WidgetServer
 
             app.UseSignalR(routes =>
             {
-                routes.MapHub<NKDiscordChatWidget.WidgetServer.WebsocketClientSide>("/websocketChat");
+                routes.MapHub<WebsocketClientSide>("/websocketChat");
             });
             app.Run(Request);
         }

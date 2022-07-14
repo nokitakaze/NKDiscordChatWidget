@@ -5,7 +5,11 @@
 
         <IsPackable>false</IsPackable>
 
-        <AssemblyName>Markdown.Test</AssemblyName>
+        <AssemblyName>NKDiscordChatWidget.Markdown.Test</AssemblyName>
+
+        <RootNamespace>NKDiscordChatWidget.Markdown.Test</RootNamespace>
+
+        <LangVersion>latestmajor</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>
@@ -19,7 +23,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\NKDiscordChatWidget\NKDiscordChatWidget.csproj" />
+      <ProjectReference Include="..\WidgetServices\WidgetServices.csproj" />
     </ItemGroup>
 
 </Project>

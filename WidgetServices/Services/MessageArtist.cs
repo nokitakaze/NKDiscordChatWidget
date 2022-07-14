@@ -6,10 +6,10 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 using NKDiscordChatWidget.DiscordModel;
-using NKDiscordChatWidget.General;
-using NKDiscordChatWidget.Util;
+using NKDiscordChatWidget.Services.General;
+using NKDiscordChatWidget.Services.Util;
 
-namespace NKDiscordChatWidget.Services
+namespace NKDiscordChatWidget.Services.Services
 {
     public class MessageArtist
     {
@@ -372,9 +372,11 @@ namespace NKDiscordChatWidget.Services
         /// </summary>
         public string channel_title;
 
+        private static readonly long TimeStart = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+
         public AnswerFull()
         {
-            this.time_server_start = Global.TimeStart;
+            this.time_server_start = TimeStart;
         }
     }
     // ReSharper restore NotAccessedField.Global

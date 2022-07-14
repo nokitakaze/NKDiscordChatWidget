@@ -7,12 +7,12 @@ using System.Web;
 using AngleSharp;
 using AngleSharp.Html.Dom;
 using NKDiscordChatWidget.DiscordModel;
-using NKDiscordChatWidget.General;
-using NKDiscordChatWidget.Services;
-using NKDiscordChatWidget.Util;
+using NKDiscordChatWidget.Services.General;
+using NKDiscordChatWidget.Services.Services;
+using NKDiscordChatWidget.Services.Util;
 using Xunit;
 
-namespace MarkdownTest
+namespace NKDiscordChatWidget.Markdown.Test
 {
     [SuppressMessage("ReSharper", "RedundantEmptyObjectCreationArgumentList")]
     [SuppressMessage("ReSharper", "UseStringInterpolation")]
