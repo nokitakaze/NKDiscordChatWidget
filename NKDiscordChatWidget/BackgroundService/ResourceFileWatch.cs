@@ -12,7 +12,6 @@ namespace NKDiscordChatWidget.BackgroundService
     /// <summary>
     /// https://docs.microsoft.com/en-us/dotnet/api/system.io.filesystemwatcher?redirectedfrom=MSDN&view=netcore-2.1
     /// </summary>
-    // todo Перенести в BackgroundService
     public class ResourceFileWatch : IHostedService
     {
         private readonly WebsocketClientSidePool Pool;

@@ -7,12 +7,22 @@ using System.Text.RegularExpressions;
 using System.Web;
 using NKDiscordChatWidget.DiscordModel;
 using NKDiscordChatWidget.General;
+using NKDiscordChatWidget.Util;
 
-namespace NKDiscordChatWidget.Util
+namespace NKDiscordChatWidget.Services
 {
-    public static class MessageArtist
+    public class MessageArtist
     {
-        public static AnswerMessage DrawMessage(EventMessageCreate message, ChatDrawOption chatDrawOption)
+        private readonly DiscordRepository Repository;
+        private readonly MessageMarkdownParser Parser;
+
+        public MessageArtist(DiscordRepository repository, MessageMarkdownParser parser)
+        {
+            Repository = repository;
+            Parser = parser;
+        }
+
+        public AnswerMessage DrawMessage(EventMessageCreate message, ChatDrawOption chatDrawOption)
         {
             string htmlContent = string.Format("<div class='content-message' data-id='{1}'>{0}</div>",
                 DrawMessageContent(message, chatDrawOption), message.id);
@@ -48,9 +58,9 @@ namespace NKDiscordChatWidget.Util
             string nickColor = "inherit";
             if ((message.member != null) && (message.member.roles.Any()))
             {
-                var roles = NKDiscordChatWidget.BackgroundService.Bot.guilds[message.guild_id].roles.ToList();
+                var roles = Repository.guilds[message.guild_id].roles.ToList();
                 roles.Sort((a, b) => b.position.CompareTo(a.position));
-                Role role = roles.FirstOrDefault(t => message.member.roles.Contains(t.id));
+                var role = roles.FirstOrDefault(t => message.member.roles.Contains(t.id));
                 if (role != null)
                 {
                     nickColor = role.color.ToString("X");
@@ -94,7 +104,7 @@ namespace NKDiscordChatWidget.Util
             };
         }
 
-        private static string DrawMessageContent(EventMessageCreate message, ChatDrawOption chatOption)
+        private string DrawMessageContent(EventMessageCreate message, ChatDrawOption chatOption)
         {
             var usedEmbedsUrls = new HashSet<string>();
             foreach (var embed in message.embeds)
@@ -103,11 +113,11 @@ namespace NKDiscordChatWidget.Util
             }
 
             var guildID = message.guild_id;
-            var guild = NKDiscordChatWidget.BackgroundService.Bot.guilds[guildID];
+            var guild = Repository.guilds[guildID];
             var thisGuildEmojis = new HashSet<string>(guild.emojis.Select(emoji => emoji.id).ToList());
 
             // Основной текст
-            string directContentHTML = NKDiscordChatWidget.Util.MessageMarkdownParser.RenderMarkdownAsHTML(
+            string directContentHTML = Parser.RenderMarkdownAsHTML(
                 message.content, chatOption, message.mentions, guildID, usedEmbedsUrls);
             bool containOnlyUnicodeAndSpace;
             {
@@ -245,7 +255,7 @@ namespace NKDiscordChatWidget.Util
 
         #region Reactions
 
-        private static void AddMessageReactionHTML(
+        private void AddMessageReactionHTML(
             ICollection<string> reactionHTMLs,
             NKDiscordChatWidget.DiscordModel.EventMessageCreate.EventMessageCreate_Reaction reaction,
             int emojiShow,
@@ -287,7 +297,7 @@ namespace NKDiscordChatWidget.Util
             }
         }
 
-        private static string AddMessageReactionHTMLWithEmojiPack(
+        private string AddMessageReactionHTMLWithEmojiPack(
             NKDiscordChatWidget.DiscordModel.EventMessageCreate.EventMessageCreate_Reaction reaction,
             EmojiPackType emojiPack
         )

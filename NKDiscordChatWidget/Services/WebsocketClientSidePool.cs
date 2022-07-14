@@ -19,11 +19,15 @@ namespace NKDiscordChatWidget.Services
         /// </summary>
         public IHubContext<WebsocketClientSide> HubContext { get; }
 
+        private readonly MessageArtist MessageArtist;
+
         public WebsocketClientSidePool(
-            IHubContext<WebsocketClientSide> hubContext
+            IHubContext<WebsocketClientSide> hubContext,
+            MessageArtist messageArtist
         )
         {
             HubContext = hubContext;
+            MessageArtist = messageArtist;
         }
 
         /// <summary>

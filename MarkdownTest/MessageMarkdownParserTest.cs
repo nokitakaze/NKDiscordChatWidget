@@ -6,9 +6,9 @@ using System.Text.RegularExpressions;
 using System.Web;
 using AngleSharp;
 using AngleSharp.Html.Dom;
-using NKDiscordChatWidget;
 using NKDiscordChatWidget.DiscordModel;
 using NKDiscordChatWidget.General;
+using NKDiscordChatWidget.Services;
 using NKDiscordChatWidget.Util;
 using Xunit;
 
@@ -25,6 +25,8 @@ namespace MarkdownTest
         private static readonly Random _rnd = new Random();
         private static readonly List<string> randomWords;
 
+        private static readonly DiscordRepository DiscordRepository = new DiscordRepository();
+
         static MessageMarkdownParserTest()
         {
             UnicodeEmojiEngine.LoadAllEmojiPacks(ProgramOptions.WWWRoot);
@@ -39,7 +41,7 @@ namespace MarkdownTest
                 "word7",
             };
 
-            NKDiscordChatWidget.BackgroundService.Bot.guilds[guildID] = new EventGuildCreate()
+            DiscordRepository.guilds[guildID] = new EventGuildCreate()
             {
                 id = guildID,
                 icon = "82000cc0465ffdf3d03bb09a6a79bc08",
@@ -490,7 +492,7 @@ namespace MarkdownTest
 
             var mentions = new List<EventMessageCreate.EventMessageCreate_Mention>();
             // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
-            foreach (var member in NKDiscordChatWidget.BackgroundService.Bot.guilds[guildID].members)
+            foreach (var member in DiscordRepository.guilds[guildID].members)
             {
                 mentions.Add(new EventMessageCreate.EventMessageCreate_Mention()
                 {
@@ -589,7 +591,7 @@ namespace MarkdownTest
 
             var mentions = new List<EventMessageCreate.EventMessageCreate_Mention>();
             // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
-            foreach (var member in NKDiscordChatWidget.BackgroundService.Bot.guilds[guildID].members)
+            foreach (var member in DiscordRepository.guilds[guildID].members)
             {
                 mentions.Add(new EventMessageCreate.EventMessageCreate_Mention()
                 {
@@ -878,7 +880,7 @@ namespace MarkdownTest
 
             var mentions = new List<EventMessageCreate.EventMessageCreate_Mention>();
             // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
-            foreach (var member in NKDiscordChatWidget.BackgroundService.Bot.guilds[guildID].members)
+            foreach (var member in DiscordRepository.guilds[guildID].members)
             {
                 mentions.Add(new EventMessageCreate.EventMessageCreate_Mention()
                 {
@@ -1191,14 +1193,12 @@ namespace MarkdownTest
             IEnumerable<string> usedEmbedUrl
         )
         {
-            if (chatOption == null)
-            {
-                chatOption = new ChatDrawOption();
-            }
+            chatOption ??= new ChatDrawOption();
 
             var usedEmbedUrlHash = (usedEmbedUrl != null) ? usedEmbedUrl.ToHashSet() : new HashSet<string>();
+            var parser = new MessageMarkdownParser(DiscordRepository);
 
-            var renderedText = MessageMarkdownParser.RenderMarkdownAsHTML(
+            var renderedText = parser.RenderMarkdownAsHTML(
                 rawMarkdown,
                 chatOption,
                 mentions,

@@ -24,6 +24,7 @@ namespace NKDiscordChatWidget.WidgetServer
     public class Startup
     {
         public static ProgramOptions ProgramOptions;
+        private static readonly DiscordRepository DiscordRepository = new DiscordRepository();
 
         public Startup(IConfiguration configuration)
         {
@@ -39,6 +40,9 @@ namespace NKDiscordChatWidget.WidgetServer
             services.AddSignalR();
             services.AddSingleton<WebsocketClientSidePool>();
             services.AddSingleton<ProgramOptions>(_ => ProgramOptions);
+            services.AddSingleton(_ => DiscordRepository);
+            services.AddSingleton<MessageMarkdownParser>();
+            services.AddSingleton<MessageArtist>();
 
             services.AddHostedService<ResourceFileWatch>();
             services.AddHostedService<ClearChatTimer>();
@@ -99,7 +103,7 @@ namespace NKDiscordChatWidget.WidgetServer
             var html = File.ReadAllText(ProgramOptions.WWWRoot + "/index.html");
             html = replaceLinksInHTML(html);
             string guildsHTML = "";
-            foreach (var (guildID, channels) in NKDiscordChatWidget.BackgroundService.Bot.channels)
+            foreach (var (guildID, channels) in DiscordRepository.channels)
             {
                 string guildHTML = "";
                 var channelsByGroup = new Dictionary<string, List<EventGuildCreate.EventGuildCreate_Channel>>();
@@ -172,8 +176,8 @@ namespace NKDiscordChatWidget.WidgetServer
                 guildHTML = string.Format(
                     "<div class='block-guild'><h2><img src='{2}'> {1}</h2><ul>{0}</ul></div>",
                     guildHTML,
-                    HttpUtility.HtmlEncode(NKDiscordChatWidget.BackgroundService.Bot.guilds[guildID].name),
-                    HttpUtility.HtmlEncode(NKDiscordChatWidget.BackgroundService.Bot.guilds[guildID].GetIconURL)
+                    HttpUtility.HtmlEncode(DiscordRepository.guilds[guildID].name),
+                    HttpUtility.HtmlEncode(DiscordRepository.guilds[guildID].GetIconURL)
                 );
                 guildsHTML += guildHTML;
             }
@@ -190,7 +194,7 @@ namespace NKDiscordChatWidget.WidgetServer
 
         private static async Task ChatHTML(Microsoft.AspNetCore.Http.HttpContext httpContext)
         {
-            var html = File.ReadAllText(ProgramOptions.WWWRoot + "/chat.html");
+            var html = await File.ReadAllTextAsync(ProgramOptions.WWWRoot + "/chat.html");
             html = replaceLinksInHTML(html);
             await httpContext.Response.WriteAsync(html);
         }

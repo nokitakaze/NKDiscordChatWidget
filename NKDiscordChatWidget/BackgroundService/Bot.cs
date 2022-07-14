@@ -15,7 +15,6 @@ using NKDiscordChatWidget.Services;
 
 namespace NKDiscordChatWidget.BackgroundService
 {
-    // todo Перенести в BackgroundService
     public class Bot : IHostedService
     {
         private ClientWebSocket wsClient;
@@ -25,33 +24,19 @@ namespace NKDiscordChatWidget.BackgroundService
         private DateTime lastIncomingMessageTime = DateTime.MinValue;
         private DateTime lastIncomingPingTime = DateTime.MinValue;
 
-        #region Data
-
-        // todo Перенести в репозиторий
-        public static ConcurrentDictionary<string, EventGuildCreate> guilds { get; } =
-            new ConcurrentDictionary<string, EventGuildCreate>();
-
-        public static ConcurrentDictionary<string,
-            ConcurrentDictionary<string, EventGuildCreate.EventGuildCreate_Channel>> channels { get; } =
-            new ConcurrentDictionary<string, ConcurrentDictionary<string, EventGuildCreate.EventGuildCreate_Channel>>();
-
-        public static ConcurrentDictionary<string,
-            ConcurrentDictionary<string, ConcurrentDictionary<string, EventMessageCreate>>> messages { get; } =
-            new ConcurrentDictionary<string,
-                ConcurrentDictionary<string, ConcurrentDictionary<string, EventMessageCreate>>>();
-
-        #endregion
-
         private readonly ProgramOptions ProgramOptions;
         private readonly WebsocketClientSidePool Pool;
+        private readonly DiscordRepository Repository;
 
         public Bot(
             ProgramOptions programOptions,
-            WebsocketClientSidePool pool
+            WebsocketClientSidePool pool,
+            DiscordRepository repository
         )
         {
             ProgramOptions = programOptions;
             Pool = pool;
+            Repository = repository;
         }
 
         #region IHostedService
@@ -285,16 +270,16 @@ namespace NKDiscordChatWidget.BackgroundService
                         {
                             // https://discordapp.com/developers/docs/topics/gateway#guild-create
                             var guild = JsonConvert.DeserializeObject<EventGuildCreate>(message.dAsString);
-                            guilds[guild.id] = guild;
-                            if (!channels.ContainsKey(guild.id))
+                            Repository.guilds[guild.id] = guild;
+                            if (!Repository.channels.ContainsKey(guild.id))
                             {
-                                channels[guild.id] =
+                                Repository.channels[guild.id] =
                                     new ConcurrentDictionary<string, EventGuildCreate.EventGuildCreate_Channel>();
                             }
 
                             foreach (var channel in guild.channels)
                             {
-                                channels[guild.id][channel.id] = channel;
+                                Repository.channels[guild.id][channel.id] = channel;
                             }
 
                             break;
@@ -310,19 +295,19 @@ namespace NKDiscordChatWidget.BackgroundService
                                 break;
                             }
 
-                            if (!messages.ContainsKey(messageCreate.guild_id))
+                            if (!Repository.messages.ContainsKey(messageCreate.guild_id))
                             {
-                                messages[messageCreate.guild_id] = new ConcurrentDictionary<string,
+                                Repository.messages[messageCreate.guild_id] = new ConcurrentDictionary<string,
                                     ConcurrentDictionary<string, EventMessageCreate>>();
                             }
 
-                            if (!messages[messageCreate.guild_id].ContainsKey(messageCreate.channel_id))
+                            if (!Repository.messages[messageCreate.guild_id].ContainsKey(messageCreate.channel_id))
                             {
-                                messages[messageCreate.guild_id][messageCreate.channel_id] =
+                                Repository.messages[messageCreate.guild_id][messageCreate.channel_id] =
                                     new ConcurrentDictionary<string, EventMessageCreate>();
                             }
 
-                            messages[messageCreate.guild_id][messageCreate.channel_id][messageCreate.id] =
+                            Repository.messages[messageCreate.guild_id][messageCreate.channel_id][messageCreate.id] =
                                 messageCreate;
                             Pool.UpdateMessage(messageCreate);
 
@@ -339,9 +324,9 @@ namespace NKDiscordChatWidget.BackgroundService
                             // https://discordapp.com/developers/docs/resources/channel#message-object
                             var messageUpdate = JsonConvert.DeserializeObject<EventMessageCreate>(message.dAsString);
                             if (
-                                !messages.ContainsKey(messageUpdate.guild_id) ||
-                                !messages[messageUpdate.guild_id].ContainsKey(messageUpdate.channel_id) ||
-                                !messages[messageUpdate.guild_id][messageUpdate.channel_id]
+                                !Repository.messages.ContainsKey(messageUpdate.guild_id) ||
+                                !Repository.messages[messageUpdate.guild_id].ContainsKey(messageUpdate.channel_id) ||
+                                !Repository.messages[messageUpdate.guild_id][messageUpdate.channel_id]
                                     .ContainsKey(messageUpdate.id)
                             )
                             {
@@ -350,7 +335,7 @@ namespace NKDiscordChatWidget.BackgroundService
                             }
 
                             var existedMessage =
-                                messages[messageUpdate.guild_id][messageUpdate.channel_id][messageUpdate.id];
+                                Repository.messages[messageUpdate.guild_id][messageUpdate.channel_id][messageUpdate.id];
 
                             // При обновлении сообщения Дискорд пропускает контент, если контент не обновляется,
                             // поэтому тут нужен ===null предикат
@@ -384,13 +369,14 @@ namespace NKDiscordChatWidget.BackgroundService
                             // https://discordapp.com/developers/docs/topics/gateway#channel-create
                             var messageChannelCreate =
                                 JsonConvert.DeserializeObject<EventGuildCreate.EventChannelCreate>(message.dAsString);
-                            if (!channels.ContainsKey(messageChannelCreate.guild_id))
+                            if (!Repository.channels.ContainsKey(messageChannelCreate.guild_id))
                             {
-                                channels[messageChannelCreate.guild_id] =
+                                Repository.channels[messageChannelCreate.guild_id] =
                                     new ConcurrentDictionary<string, EventGuildCreate.EventGuildCreate_Channel>();
                             }
 
-                            channels[messageChannelCreate.guild_id][messageChannelCreate.id] = messageChannelCreate;
+                            Repository.channels[messageChannelCreate.guild_id][messageChannelCreate.id] =
+                                messageChannelCreate;
 
                             break;
                         }
@@ -400,12 +386,12 @@ namespace NKDiscordChatWidget.BackgroundService
                             var guild_id = message.d.guild_id.ToString() as string;
                             var channel_id = message.d.channel_id.ToString() as string;
                             if (
-                                messages.ContainsKey(guild_id) &&
-                                messages[guild_id].ContainsKey(channel_id)
+                                Repository.messages.ContainsKey(guild_id) &&
+                                Repository.messages[guild_id].ContainsKey(channel_id)
                             )
                             {
                                 var messageId = message.d.id.ToString() as string;
-                                messages[guild_id][channel_id].TryRemove(messageId, out _);
+                                Repository.messages[guild_id][channel_id].TryRemove(messageId, out _);
                                 Pool.RemoveMessage(guild_id, channel_id, messageId);
                             }
 
@@ -417,18 +403,19 @@ namespace NKDiscordChatWidget.BackgroundService
                             // https://discordapp.com/developers/docs/topics/gateway#message-reaction-add
                             var reaction = JsonConvert.DeserializeObject<Reaction>(message.dAsString);
                             if (
-                                !messages.ContainsKey(reaction.guild_id) ||
-                                !messages[reaction.guild_id].ContainsKey(reaction.channel_id) ||
-                                !messages[reaction.guild_id][reaction.channel_id].ContainsKey(reaction.message_id)
+                                !Repository.messages.ContainsKey(reaction.guild_id) ||
+                                !Repository.messages[reaction.guild_id].ContainsKey(reaction.channel_id) ||
+                                !Repository.messages[reaction.guild_id][reaction.channel_id]
+                                    .ContainsKey(reaction.message_id)
                             )
                             {
                                 break;
                             }
 
-                            messages[reaction.guild_id][reaction.channel_id][reaction.message_id]
+                            Repository.messages[reaction.guild_id][reaction.channel_id][reaction.message_id]
                                 .AddReaction(reaction);
                             Pool.UpdateMessage(
-                                messages[reaction.guild_id][reaction.channel_id][reaction.message_id]);
+                                Repository.messages[reaction.guild_id][reaction.channel_id][reaction.message_id]);
 
                             break;
                         }
@@ -437,18 +424,19 @@ namespace NKDiscordChatWidget.BackgroundService
                             // https://discordapp.com/developers/docs/topics/gateway#message-reaction-remove
                             var reaction = JsonConvert.DeserializeObject<Reaction>(message.dAsString);
                             if (
-                                !messages.ContainsKey(reaction.guild_id) ||
-                                !messages[reaction.guild_id].ContainsKey(reaction.channel_id) ||
-                                !messages[reaction.guild_id][reaction.channel_id].ContainsKey(reaction.message_id)
+                                !Repository.messages.ContainsKey(reaction.guild_id) ||
+                                !Repository.messages[reaction.guild_id].ContainsKey(reaction.channel_id) ||
+                                !Repository.messages[reaction.guild_id][reaction.channel_id]
+                                    .ContainsKey(reaction.message_id)
                             )
                             {
                                 break;
                             }
 
-                            messages[reaction.guild_id][reaction.channel_id][reaction.message_id]
+                            Repository.messages[reaction.guild_id][reaction.channel_id][reaction.message_id]
                                 .RemoveReaction(reaction);
                             Pool.UpdateMessage(
-                                messages[reaction.guild_id][reaction.channel_id][reaction.message_id]);
+                                Repository.messages[reaction.guild_id][reaction.channel_id][reaction.message_id]);
 
                             break;
                         }
@@ -461,14 +449,14 @@ namespace NKDiscordChatWidget.BackgroundService
                         {
                             // https://discordapp.com/developers/docs/topics/gateway#guild-ban-add
                             var banAdd = JsonConvert.DeserializeObject<EventGuildBanAdd>(message.dAsString);
-                            if (!messages.ContainsKey(banAdd.guild_id))
+                            if (!Repository.messages.ContainsKey(banAdd.guild_id))
                             {
                                 break;
                             }
 
                             var userId = banAdd.user.id;
 
-                            foreach (var (channelId, channelsMessages) in messages[banAdd.guild_id])
+                            foreach (var (channelId, channelsMessages) in Repository.messages[banAdd.guild_id])
                             {
                                 var forDeletions = new List<string>();
                                 foreach (var (messageId, messageItem) in channelsMessages)

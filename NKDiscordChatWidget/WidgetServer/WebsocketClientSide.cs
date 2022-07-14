@@ -18,10 +18,18 @@ namespace NKDiscordChatWidget.WidgetServer
     {
         public readonly ChatDrawOption ChatDrawOption = new ChatDrawOption();
         public readonly WebsocketClientSidePool Pool;
+        private readonly DiscordRepository Repository;
+        private readonly MessageArtist MessageArtist;
 
-        public WebsocketClientSide(WebsocketClientSidePool pool)
+        public WebsocketClientSide(
+            WebsocketClientSidePool pool,
+            DiscordRepository repository,
+            MessageArtist messageArtist
+        )
         {
             Pool = pool;
+            Repository = repository;
+            MessageArtist = messageArtist;
         }
 
         public string GuildID { get; private set; }
@@ -62,10 +70,10 @@ namespace NKDiscordChatWidget.WidgetServer
                 };
 
                 List<EventMessageCreate> messages;
-                if (NKDiscordChatWidget.BackgroundService.Bot.messages.ContainsKey(GuildID) &&
-                    (NKDiscordChatWidget.BackgroundService.Bot.messages[GuildID].ContainsKey(ChannelID)))
+                if (Repository.messages.ContainsKey(GuildID) &&
+                    (Repository.messages[GuildID].ContainsKey(ChannelID)))
                 {
-                    messages = NKDiscordChatWidget.BackgroundService.Bot.messages[GuildID][ChannelID].Values.ToList();
+                    messages = Repository.messages[GuildID][ChannelID].Values.ToList();
                 }
                 else
                 {

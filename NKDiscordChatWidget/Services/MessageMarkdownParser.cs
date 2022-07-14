@@ -8,8 +8,10 @@ using System.Text.RegularExpressions;
 using System.Web;
 using NKDiscordChatWidget.DiscordModel;
 using NKDiscordChatWidget.General;
+using NKDiscordChatWidget.Services;
+using NKDiscordChatWidget.Util;
 
-namespace NKDiscordChatWidget.Util
+namespace NKDiscordChatWidget.Services
 {
     /// <summary>
     /// Парсер markdown
@@ -19,8 +21,15 @@ namespace NKDiscordChatWidget.Util
     /// https://daringfireball.net/projects/markdown/syntax
     /// </description>
     [SuppressMessage("ReSharper", "UseStringInterpolation")]
-    public static class MessageMarkdownParser
+    public class MessageMarkdownParser
     {
+        private readonly DiscordRepository Repository;
+
+        public MessageMarkdownParser(DiscordRepository repository)
+        {
+            Repository = repository;
+        }
+
         /// <summary>
         /// Получаем сырой текст с маркдауном и превращаем его в HTML-код
         /// </summary>
@@ -30,7 +39,7 @@ namespace NKDiscordChatWidget.Util
         /// <param name="guildID"></param>
         /// <param name="usedEmbedsUrls"></param>
         /// <returns>HTML-код, который можно безопасно рендерить в чате</returns>
-        public static string RenderMarkdownAsHTML(
+        public string RenderMarkdownAsHTML(
             string text,
             ChatDrawOption chatOption,
             List<EventMessageCreate.EventMessageCreate_Mention> mentions,
@@ -93,67 +102,67 @@ namespace NKDiscordChatWidget.Util
 
         #region Regexps
 
-        private static readonly Regex rLink = new Regex(
+        private readonly Regex rLink = new Regex(
             @"(^|\W)([a-z]+)://([a-z0-9.-]+)([a-z0-9/%().+&=_:-]+)?(\?[a-z0-9/%().+&=_-]*)?",
             RegexOptions.Compiled | RegexOptions.IgnoreCase
         );
 
-        private static readonly Regex rWithoutMark = new Regex(
+        private readonly Regex rWithoutMark = new Regex(
             @"`(.+?)`",
             RegexOptions.Compiled
         );
 
-        private static readonly Regex rSpoilerMark = new Regex(
+        private readonly Regex rSpoilerMark = new Regex(
             @"\|\|(.+?)\|\|",
             RegexOptions.Compiled
         );
 
-        private static readonly Regex rEmojiWithinText = new Regex(
+        private readonly Regex rEmojiWithinText = new Regex(
             @"<(a)?\:(.+?)\:([0-9]+)>",
             RegexOptions.Compiled
         );
 
-        private static readonly Regex rMentionNick = new Regex(
+        private readonly Regex rMentionNick = new Regex(
             @"<@!?([0-9]+)>",
             RegexOptions.Compiled
         );
 
-        private static readonly Regex rMentionRole = new Regex(
+        private readonly Regex rMentionRole = new Regex(
             @"<@&([0-9]+)>",
             RegexOptions.Compiled
         );
 
-        private static readonly Regex rDoubleUnderscore = new Regex(
+        private readonly Regex rDoubleUnderscore = new Regex(
             @"__(.+?)__",
             RegexOptions.Compiled
         );
 
-        private static readonly Regex rTripleUnderscore = new Regex(
+        private readonly Regex rTripleUnderscore = new Regex(
             @"___(.+?)___",
             RegexOptions.Compiled
         );
 
-        private static readonly Regex rBold = new Regex(
+        private readonly Regex rBold = new Regex(
             @"\*\*(.+?)\*\*",
             RegexOptions.Compiled
         );
 
-        private static readonly Regex rSingleAsterisk = new Regex(
+        private readonly Regex rSingleAsterisk = new Regex(
             @"\*(.+)\*",
             RegexOptions.Compiled
         );
 
-        private static readonly Regex rItalicUnderscore = new Regex(
+        private readonly Regex rItalicUnderscore = new Regex(
             @"_(.+?)_",
             RegexOptions.Compiled
         );
 
-        private static readonly Regex rBoldItalic = new Regex(
+        private readonly Regex rBoldItalic = new Regex(
             @"\*\*\*(.+?)\*\*\*",
             RegexOptions.Compiled
         );
 
-        private static readonly Regex rDelete = new Regex(
+        private readonly Regex rDelete = new Regex(
             @"\~\~(.+?)\~\~",
             RegexOptions.Compiled
         );
@@ -169,7 +178,7 @@ namespace NKDiscordChatWidget.Util
         /// <param name="guildID">ID гильдии (сервера), в котором написано сообщение</param>
         /// <param name="usedEmbedsUrls">Список использованных Url'ов в embed</param>
         /// <returns>Возвращает санированный HTML</returns>
-        private static string RenderLineAsHTML(
+        private string RenderLineAsHTML(
             string text,
             ChatDrawOption chatOption,
             List<EventMessageCreate.EventMessageCreate_Mention> mentions,
@@ -181,7 +190,7 @@ namespace NKDiscordChatWidget.Util
             // - цитаты (они уже обработаны, вложенных быть не может)
             // - спойлеры
             // Другие подтипы не порождают саб-блоки, даже удаление
-            var guild = NKDiscordChatWidget.BackgroundService.Bot.guilds[guildID];
+            var guild = Repository.guilds[guildID];
 
             var waitDictionary = new Dictionary<string, string>();
 
@@ -232,7 +241,7 @@ namespace NKDiscordChatWidget.Util
         /// <param name="mentions">Список упоминаний, сделанных в сообщении</param>
         /// <param name="usedEmbedsUrls">Список использованных Url'ов в embed</param>
         /// <returns></returns>
-        private static string RenderEmojiAndMentions(
+        private string RenderEmojiAndMentions(
             string text,
             ChatDrawOption chatOption,
             Dictionary<string, string> waitDictionary,
@@ -263,7 +272,7 @@ namespace NKDiscordChatWidget.Util
         /// <param name="usedEmbedsUrls">Список использованных Url'ов в embed</param>
         /// <returns></returns>
         [SuppressMessage("ReSharper", "AccessToModifiedClosure")]
-        private static string RenderMarkdownBlockAsHTMLInnerBlock(
+        private string RenderMarkdownBlockAsHTMLInnerBlock(
             string text,
             ChatDrawOption chatOption,
             Dictionary<string, string> waitDictionary,
@@ -295,7 +304,7 @@ namespace NKDiscordChatWidget.Util
         /// <param name="mode">Режим замены (mentions+server emoji / всё остальное)</param>
         /// <returns></returns>
         [SuppressMessage("ReSharper", "AccessToModifiedClosure")]
-        private static string RenderMarkdownBlockAsHTMLInnerBlockWithPatternList(
+        private string RenderMarkdownBlockAsHTMLInnerBlockWithPatternList(
             string text,
             ChatDrawOption chatOption,
             Dictionary<string, string> waitDictionary,
@@ -402,7 +411,7 @@ namespace NKDiscordChatWidget.Util
         /// <param name="chatOption">Опции чата, заданные стримером для виджета</param>
         /// <param name="waitDictionary">Dictionary для саб-блоков</param>
         /// <returns></returns>
-        public static string MarkNoFormatting(
+        public string MarkNoFormatting(
             string text,
             ChatDrawOption chatOption,
             Dictionary<string, string> waitDictionary
@@ -430,7 +439,7 @@ namespace NKDiscordChatWidget.Util
         /// <param name="waitDictionary">Dictionary для саб-блоков</param>
         /// <param name="usedEmbedsUrls">Список использованных Url'ов в embed</param>
         /// <returns></returns>
-        public static string MarkLinks(
+        public string MarkLinks(
             string text,
             ChatDrawOption chatOption,
             Dictionary<string, string> waitDictionary,
@@ -513,7 +522,7 @@ namespace NKDiscordChatWidget.Util
         /// <param name="chatOption">Опции чата, заданные стримером для виджета</param>
         /// <param name="waitDictionary">Dictionary для саб-блоков</param>
         /// <returns></returns>
-        public static string MarkEmojiUnicode(
+        public string MarkEmojiUnicode(
             string text,
             ChatDrawOption chatOption,
             Dictionary<string, string> waitDictionary
@@ -583,7 +592,7 @@ namespace NKDiscordChatWidget.Util
         /// <param name="waitDictionary">Dictionary для саб-блоков</param>
         /// <param name="guild">Гильдия (сервер), внутри которого написано сообщение</param>
         /// <returns></returns>
-        public static string MarkEmojiImages(
+        public string MarkEmojiImages(
             string text,
             ChatDrawOption chatOption,
             Dictionary<string, string> waitDictionary,
@@ -634,7 +643,7 @@ namespace NKDiscordChatWidget.Util
         /// <param name="guild">Гильдия (сервер), внутри которого написано сообщение</param>
         /// <param name="mentions">Список упоминаний, сделанных в сообщении</param>
         /// <returns></returns>
-        public static string MarkMentionsPeople(
+        public string MarkMentionsPeople(
             string text,
             ChatDrawOption chatOption,
             Dictionary<string, string> waitDictionary,
@@ -699,7 +708,7 @@ namespace NKDiscordChatWidget.Util
         /// <param name="waitDictionary">Dictionary для саб-блоков</param>
         /// <param name="guild">Гильдия (сервер), внутри которого написано сообщение</param>
         /// <returns></returns>
-        public static string MarkMentionsRole(
+        public string MarkMentionsRole(
             string text,
             ChatDrawOption chatOption,
             Dictionary<string, string> waitDictionary,
@@ -742,7 +751,7 @@ namespace NKDiscordChatWidget.Util
         /// <param name="mentions">Список упоминаний, сделанных в сообщении</param>
         /// <param name="usedEmbedsUrls">Список использованных Url'ов в embed</param>
         /// <returns></returns>
-        public static string MarkSpoilers(
+        public string MarkSpoilers(
             string text,
             ChatDrawOption chatOption,
             Dictionary<string, string> waitDictionary,
@@ -785,7 +794,7 @@ namespace NKDiscordChatWidget.Util
         /// <param name="mentions">Список упоминаний, сделанных в сообщении</param>
         /// <param name="usedEmbedsUrls">Список использованных Url'ов в embed</param>
         /// <returns></returns>
-        public static string MarkBold(
+        public string MarkBold(
             string text,
             ChatDrawOption chatOption,
             Dictionary<string, string> waitDictionary,
@@ -823,7 +832,7 @@ namespace NKDiscordChatWidget.Util
         /// <param name="mentions">Список упоминаний, сделанных в сообщении</param>
         /// <param name="usedEmbedsUrls">Список использованных Url'ов в embed</param>
         /// <returns></returns>
-        public static string MarkUnderscoreItalic(
+        public string MarkUnderscoreItalic(
             string text,
             ChatDrawOption chatOption,
             Dictionary<string, string> waitDictionary,
@@ -861,7 +870,7 @@ namespace NKDiscordChatWidget.Util
         /// <param name="mentions">Список упоминаний, сделанных в сообщении</param>
         /// <param name="usedEmbedsUrls">Список использованных Url'ов в embed</param>
         /// <returns></returns>
-        public static string MarkUnderscore(
+        public string MarkUnderscore(
             string text,
             ChatDrawOption chatOption,
             Dictionary<string, string> waitDictionary,
@@ -899,7 +908,7 @@ namespace NKDiscordChatWidget.Util
         /// <param name="mentions">Список упоминаний, сделанных в сообщении</param>
         /// <param name="usedEmbedsUrls">Список использованных Url'ов в embed</param>
         /// <returns></returns>
-        public static string MarkItalicViaAsterisk(
+        public string MarkItalicViaAsterisk(
             string text,
             ChatDrawOption chatOption,
             Dictionary<string, string> waitDictionary,
@@ -949,7 +958,7 @@ namespace NKDiscordChatWidget.Util
         /// <param name="mentions">Список упоминаний, сделанных в сообщении</param>
         /// <param name="usedEmbedsUrls">Список использованных Url'ов в embed</param>
         /// <returns></returns>
-        public static string MarkItalicViaUnderscore(
+        public string MarkItalicViaUnderscore(
             string text,
             ChatDrawOption chatOption,
             Dictionary<string, string> waitDictionary,
@@ -987,7 +996,7 @@ namespace NKDiscordChatWidget.Util
         /// <param name="mentions">Список упоминаний, сделанных в сообщении</param>
         /// <param name="usedEmbedsUrls">Список использованных Url'ов в embed</param>
         /// <returns></returns>
-        public static string MarkBoldItalic(
+        public string MarkBoldItalic(
             string text,
             ChatDrawOption chatOption,
             Dictionary<string, string> waitDictionary,
@@ -1025,7 +1034,7 @@ namespace NKDiscordChatWidget.Util
         /// <param name="mentions">Список упоминаний, сделанных в сообщении</param>
         /// <param name="usedEmbedsUrls">Список использованных Url'ов в embed</param>
         /// <returns></returns>
-        public static string MarkDelete(
+        public string MarkDelete(
             string text,
             ChatDrawOption chatOption,
             Dictionary<string, string> waitDictionary,
@@ -1055,7 +1064,7 @@ namespace NKDiscordChatWidget.Util
 
         #endregion
 
-        public static string RenderEmojiStringListAsHtml(
+        public string RenderEmojiStringListAsHtml(
             ICollection<UnicodeEmojiEngine.EmojiRenderResult> codes,
             EmojiPackType pack,
             Dictionary<string, string> waitDictionary,

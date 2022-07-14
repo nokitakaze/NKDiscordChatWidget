@@ -5,13 +5,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using NKDiscordChatWidget.General;
+using NKDiscordChatWidget.Services;
 
 namespace NKDiscordChatWidget.BackgroundService
 {
     /// <summary>
     /// Чистка сообщений в каналах для освобождения памяти и ускорения работы
     /// </summary>
-    // todo Перенести в BackgroundService
     public class ClearChatTimer : IHostedService
     {
         /// <summary>
@@ -25,12 +25,15 @@ namespace NKDiscordChatWidget.BackgroundService
         public const int MaximumMessagesPerChannelCount = 40;
 
         private readonly ProgramOptions ProgramOptions;
+        private readonly DiscordRepository Repository;
 
         public ClearChatTimer(
-            ProgramOptions programOptions
+            ProgramOptions programOptions,
+            DiscordRepository repository
         )
         {
             ProgramOptions = programOptions;
+            Repository = repository;
         }
 
         #region IHostedService
@@ -78,7 +81,7 @@ namespace NKDiscordChatWidget.BackgroundService
         private void SingleIteration()
         {
             // Перебор всех гильдий (серверов) и каналов внутри них
-            foreach (var (guildID, messagesInGuild) in NKDiscordChatWidget.BackgroundService.Bot.messages)
+            foreach (var (guildID, messagesInGuild) in Repository.messages)
             {
                 foreach (var (channelID, messagesInChannel) in messagesInGuild)
                 {
