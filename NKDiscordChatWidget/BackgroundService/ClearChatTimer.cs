@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -57,7 +58,8 @@ namespace NKDiscordChatWidget.BackgroundService
 
         #endregion
 
-        public void StartTask()
+        [SuppressMessage("ReSharper", "MethodSupportsCancellation")]
+        public async Task StartTask()
         {
             while (!CancellationToken.IsCancellationRequested)
             {
@@ -66,7 +68,7 @@ namespace NKDiscordChatWidget.BackgroundService
                 while ((DateTime.Now.ToUniversalTime() < nextTime) &&
                        !CancellationToken.IsCancellationRequested)
                 {
-                    Thread.Sleep(100);
+                    await Task.Delay(100);
                 }
 
                 if (CancellationToken.IsCancellationRequested)

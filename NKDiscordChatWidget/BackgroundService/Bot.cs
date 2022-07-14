@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.WebSockets;
@@ -132,7 +133,7 @@ namespace NKDiscordChatWidget.BackgroundService
 
         private async Task SendMessageToWebSocket(string message)
         {
-            ArraySegment<byte> bytesToSend = new ArraySegment<byte>(Encoding.UTF8.GetBytes(message));
+            var bytesToSend = new ArraySegment<byte>(Encoding.UTF8.GetBytes(message));
             await wsClient.SendAsync(bytesToSend, WebSocketMessageType.Text, true, CancellationToken.None);
         }
 
@@ -148,24 +149,37 @@ namespace NKDiscordChatWidget.BackgroundService
                 }
 
                 var bytesReceived = new ArraySegment<byte>(b);
-                var result = await wsClient.ReceiveAsync(bytesReceived, CancellationToken.None);
+                WebSocketReceiveResult result;
+                try
+                {
+                    result = await wsClient.ReceiveAsync(bytesReceived, CancellationToken);
+                }
+                catch (OperationCanceledException)
+                {
+                    if (CancellationToken.IsCancellationRequested)
+                    {
+                        return;
+                    }
 
-                if (result.Count > 0)
+                    throw;
+                }
+
+                if (result.Count == 0)
                 {
-                    var dest = new byte[result.Count];
-                    Array.Copy(b, dest, result.Count);
-                    var s = Encoding.UTF8.GetString(dest);
-                    var message = JsonConvert.DeserializeObject<DiscordWebSocketMessage>(s);
-                    lastIncomingMessageTime = DateTime.Now.ToUniversalTime();
+                    // ReSharper disable once MethodSupportsCancellation
+                    await Task.Delay(100);
+                    continue;
+                }
+
+                var dest = new byte[result.Count];
+                Array.Copy(b, dest, result.Count);
+                var s = Encoding.UTF8.GetString(dest);
+                var message = JsonConvert.DeserializeObject<DiscordWebSocketMessage>(s);
+                lastIncomingMessageTime = DateTime.Now.ToUniversalTime();
 #pragma warning disable 4014
-                    Ws_OnMessage(message);
+                Ws_OnMessage(message);
 #pragma warning restore 4014
-                }
-                else
-                {
-                    Thread.Sleep(100);
-                }
-            } while (true);
+            } while (!CancellationToken.IsCancellationRequested);
         }
 
         // ReSharper disable once ClassNeverInstantiated.Local
@@ -181,6 +195,7 @@ namespace NKDiscordChatWidget.BackgroundService
             public string dAsString => JsonConvert.SerializeObject(this.d);
         }
 
+        [SuppressMessage("ReSharper", "MethodSupportsCancellation")]
         private async Task heartBeat()
         {
             while (!CancellationToken.IsCancellationRequested)
@@ -189,11 +204,11 @@ namespace NKDiscordChatWidget.BackgroundService
                 {
                     string id = string.Format("{0}\"op\": 1,\"d\": {1}{2}", '{', websocketSequenceId, '}');
                     await SendMessageToWebSocket(id);
-                    Thread.Sleep(msBetweenPing);
+                    await Task.Delay(msBetweenPing);
                     continue;
                 }
 
-                Thread.Sleep(100);
+                await Task.Delay(100);
             }
         }
 

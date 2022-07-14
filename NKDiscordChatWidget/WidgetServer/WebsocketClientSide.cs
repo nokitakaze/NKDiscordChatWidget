@@ -6,7 +6,6 @@ using NKDiscordChatWidget.DiscordModel;
 using System.Linq;
 using NKDiscordChatWidget.General;
 using NKDiscordChatWidget.Services;
-using NKDiscordChatWidget.Util;
 
 namespace NKDiscordChatWidget.WidgetServer
 {
