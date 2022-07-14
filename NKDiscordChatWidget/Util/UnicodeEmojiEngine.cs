@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using NKDiscordChatWidget.General;
 
-namespace NKDiscordChatWidget.General
+namespace NKDiscordChatWidget.Util
 {
     public static class UnicodeEmojiEngine
     {

@@ -12,7 +12,7 @@ using NKDiscordChatWidget.DiscordModel;
 using NKDiscordChatWidget.General;
 using NKDiscordChatWidget.WidgetServer;
 
-namespace NKDiscordChatWidget.DiscordBot
+namespace NKDiscordChatWidget.BackgroundService
 {
     // todo Перенести в BackgroundService
     public static class Bot

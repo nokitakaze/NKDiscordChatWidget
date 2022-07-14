@@ -9,6 +9,7 @@ using AngleSharp.Html.Dom;
 using NKDiscordChatWidget;
 using NKDiscordChatWidget.DiscordModel;
 using NKDiscordChatWidget.General;
+using NKDiscordChatWidget.Util;
 using Xunit;
 
 namespace MarkdownTest
@@ -38,7 +39,7 @@ namespace MarkdownTest
                 "word7",
             };
 
-            NKDiscordChatWidget.DiscordBot.Bot.guilds[guildID] = new EventGuildCreate()
+            NKDiscordChatWidget.BackgroundService.Bot.guilds[guildID] = new EventGuildCreate()
             {
                 id = guildID,
                 icon = "82000cc0465ffdf3d03bb09a6a79bc08",
@@ -489,7 +490,7 @@ namespace MarkdownTest
 
             var mentions = new List<EventMessageCreate.EventMessageCreate_Mention>();
             // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
-            foreach (var member in NKDiscordChatWidget.DiscordBot.Bot.guilds[guildID].members)
+            foreach (var member in NKDiscordChatWidget.BackgroundService.Bot.guilds[guildID].members)
             {
                 mentions.Add(new EventMessageCreate.EventMessageCreate_Mention()
                 {
@@ -588,7 +589,7 @@ namespace MarkdownTest
 
             var mentions = new List<EventMessageCreate.EventMessageCreate_Mention>();
             // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
-            foreach (var member in NKDiscordChatWidget.DiscordBot.Bot.guilds[guildID].members)
+            foreach (var member in NKDiscordChatWidget.BackgroundService.Bot.guilds[guildID].members)
             {
                 mentions.Add(new EventMessageCreate.EventMessageCreate_Mention()
                 {
@@ -877,7 +878,7 @@ namespace MarkdownTest
 
             var mentions = new List<EventMessageCreate.EventMessageCreate_Mention>();
             // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
-            foreach (var member in NKDiscordChatWidget.DiscordBot.Bot.guilds[guildID].members)
+            foreach (var member in NKDiscordChatWidget.BackgroundService.Bot.guilds[guildID].members)
             {
                 mentions.Add(new EventMessageCreate.EventMessageCreate_Mention()
                 {

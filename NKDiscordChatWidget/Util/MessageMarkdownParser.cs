@@ -7,8 +7,9 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 using NKDiscordChatWidget.DiscordModel;
+using NKDiscordChatWidget.General;
 
-namespace NKDiscordChatWidget.General
+namespace NKDiscordChatWidget.Util
 {
     /// <summary>
     /// Парсер markdown
@@ -180,7 +181,7 @@ namespace NKDiscordChatWidget.General
             // - цитаты (они уже обработаны, вложенных быть не может)
             // - спойлеры
             // Другие подтипы не порождают саб-блоки, даже удаление
-            var guild = NKDiscordChatWidget.DiscordBot.Bot.guilds[guildID];
+            var guild = NKDiscordChatWidget.BackgroundService.Bot.guilds[guildID];
 
             var waitDictionary = new Dictionary<string, string>();
 

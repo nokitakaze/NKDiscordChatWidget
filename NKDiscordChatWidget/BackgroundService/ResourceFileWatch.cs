@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using NKDiscordChatWidget.General;
 using NKDiscordChatWidget.WidgetServer;
 
-namespace NKDiscordChatWidget.General
+namespace NKDiscordChatWidget.BackgroundService
 {
     /// <summary>
     /// https://docs.microsoft.com/en-us/dotnet/api/system.io.filesystemwatcher?redirectedfrom=MSDN&view=netcore-2.1

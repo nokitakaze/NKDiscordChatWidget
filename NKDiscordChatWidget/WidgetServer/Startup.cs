@@ -20,6 +20,7 @@ using Microsoft.Extensions.FileProviders;
 using Newtonsoft.Json;
 using NKDiscordChatWidget.DiscordModel;
 using NKDiscordChatWidget.General;
+using NKDiscordChatWidget.Util;
 
 namespace NKDiscordChatWidget.WidgetServer
 {
@@ -95,7 +96,7 @@ namespace NKDiscordChatWidget.WidgetServer
             var html = File.ReadAllText(ProgramOptions.WWWRoot + "/index.html");
             html = replaceLinksInHTML(html);
             string guildsHTML = "";
-            foreach (var (guildID, channels) in NKDiscordChatWidget.DiscordBot.Bot.channels)
+            foreach (var (guildID, channels) in NKDiscordChatWidget.BackgroundService.Bot.channels)
             {
                 string guildHTML = "";
                 var channelsByGroup = new Dictionary<string, List<EventGuildCreate.EventGuildCreate_Channel>>();
@@ -168,8 +169,8 @@ namespace NKDiscordChatWidget.WidgetServer
                 guildHTML = string.Format(
                     "<div class='block-guild'><h2><img src='{2}'> {1}</h2><ul>{0}</ul></div>",
                     guildHTML,
-                    HttpUtility.HtmlEncode(NKDiscordChatWidget.DiscordBot.Bot.guilds[guildID].name),
-                    HttpUtility.HtmlEncode(NKDiscordChatWidget.DiscordBot.Bot.guilds[guildID].GetIconURL)
+                    HttpUtility.HtmlEncode(NKDiscordChatWidget.BackgroundService.Bot.guilds[guildID].name),
+                    HttpUtility.HtmlEncode(NKDiscordChatWidget.BackgroundService.Bot.guilds[guildID].GetIconURL)
                 );
                 guildsHTML += guildHTML;
             }

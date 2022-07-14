@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 
-namespace NKDiscordChatWidget.General
+namespace NKDiscordChatWidget.BackgroundService
 {
     /// <summary>
     /// Чистка сообщений в каналах для освобождения памяти и ускорения работы
@@ -45,7 +45,7 @@ namespace NKDiscordChatWidget.General
         private static void SingleIteration()
         {
             // Перебор всех гильдий (серверов) и каналов внутри них
-            foreach (var (guildID, messagesInGuild) in NKDiscordChatWidget.DiscordBot.Bot.messages)
+            foreach (var (guildID, messagesInGuild) in NKDiscordChatWidget.BackgroundService.Bot.messages)
             {
                 foreach (var (channelID, messagesInChannel) in messagesInGuild)
                 {

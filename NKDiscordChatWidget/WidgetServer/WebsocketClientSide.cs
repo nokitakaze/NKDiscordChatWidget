@@ -4,8 +4,9 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
 using NKDiscordChatWidget.DiscordModel;
-using NKDiscordChatWidget.General;
 using System.Linq;
+using NKDiscordChatWidget.General;
+using NKDiscordChatWidget.Util;
 
 namespace NKDiscordChatWidget.WidgetServer
 {
@@ -170,10 +171,10 @@ namespace NKDiscordChatWidget.WidgetServer
                 };
 
                 List<EventMessageCreate> messages;
-                if (NKDiscordChatWidget.DiscordBot.Bot.messages.ContainsKey(_guildID) &&
-                    (NKDiscordChatWidget.DiscordBot.Bot.messages[_guildID].ContainsKey(_channelID)))
+                if (NKDiscordChatWidget.BackgroundService.Bot.messages.ContainsKey(_guildID) &&
+                    (NKDiscordChatWidget.BackgroundService.Bot.messages[_guildID].ContainsKey(_channelID)))
                 {
-                    messages = NKDiscordChatWidget.DiscordBot.Bot.messages[_guildID][_channelID].Values.ToList();
+                    messages = NKDiscordChatWidget.BackgroundService.Bot.messages[_guildID][_channelID].Values.ToList();
                 }
                 else
                 {

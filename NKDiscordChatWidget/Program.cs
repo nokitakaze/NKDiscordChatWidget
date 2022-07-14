@@ -1,18 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
+using NKDiscordChatWidget.BackgroundService;
 using NKDiscordChatWidget.General;
 
 namespace NKDiscordChatWidget
 {
-    class Program
+    internal static class Program
     {
         private static CancellationTokenSource globalCancellationToken;
 
@@ -24,12 +23,13 @@ namespace NKDiscordChatWidget
             var tasks = new List<Task>();
             try
             {
-                tasks.Add(Task.Run(() => { NKDiscordChatWidget.General.ClearChatTimer.StartTask(); }));
-                tasks.Add(Task.Run(() => { NKDiscordChatWidget.General.ResourceFileWatch.StartTask(); }));
+                tasks.Add(Task.Run(() => { ClearChatTimer.StartTask(); }));
+                tasks.Add(Task.Run(() => { ResourceFileWatch.StartTask(); }));
 
                 Parser.Default.ParseArguments<ProgramOptions>(args)
                     .WithParsed(RunOptionsAndReturnExitCode);
-                tasks.Add(Task.Factory.StartNew(DiscordBot.Bot.StartTask, TaskCreationOptions.LongRunning));
+                tasks.Add(Task.Factory.StartNew(NKDiscordChatWidget.BackgroundService.Bot.StartTask,
+                    TaskCreationOptions.LongRunning));
             }
             catch (Exception)
             {

@@ -1,8 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using NKDiscordChatWidget.General;
 
-namespace NKDiscordChatWidget.General
+namespace NKDiscordChatWidget.Util
 {
     public static class Utf8ToUnicode
     {

@@ -6,8 +6,9 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 using NKDiscordChatWidget.DiscordModel;
+using NKDiscordChatWidget.General;
 
-namespace NKDiscordChatWidget.General
+namespace NKDiscordChatWidget.Util
 {
     public static class MessageArtist
     {
@@ -47,7 +48,7 @@ namespace NKDiscordChatWidget.General
             string nickColor = "inherit";
             if ((message.member != null) && (message.member.roles.Any()))
             {
-                var roles = NKDiscordChatWidget.DiscordBot.Bot.guilds[message.guild_id].roles.ToList();
+                var roles = NKDiscordChatWidget.BackgroundService.Bot.guilds[message.guild_id].roles.ToList();
                 roles.Sort((a, b) => b.position.CompareTo(a.position));
                 Role role = roles.FirstOrDefault(t => message.member.roles.Contains(t.id));
                 if (role != null)
@@ -102,11 +103,11 @@ namespace NKDiscordChatWidget.General
             }
 
             var guildID = message.guild_id;
-            var guild = NKDiscordChatWidget.DiscordBot.Bot.guilds[guildID];
+            var guild = NKDiscordChatWidget.BackgroundService.Bot.guilds[guildID];
             var thisGuildEmojis = new HashSet<string>(guild.emojis.Select(emoji => emoji.id).ToList());
 
             // Основной текст
-            string directContentHTML = NKDiscordChatWidget.General.MessageMarkdownParser.RenderMarkdownAsHTML(
+            string directContentHTML = NKDiscordChatWidget.Util.MessageMarkdownParser.RenderMarkdownAsHTML(
                 message.content, chatOption, message.mentions, guildID, usedEmbedsUrls);
             bool containOnlyUnicodeAndSpace;
             {
