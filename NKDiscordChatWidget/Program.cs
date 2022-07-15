@@ -12,26 +12,23 @@ namespace NKDiscordChatWidget;
 internal static class Program
 {
     private static string[] ARGS;
-    private static ProgramOptions Options;
     private static readonly DiscordRepository DiscordRepository = new();
 
     private static void Main(string[] args)
     {
         ARGS = args;
-        try
-        {
-            Parser.Default.ParseArguments<ProgramOptions>(args).WithParsed(Startup);
-        }
-        catch (Exception)
-        {
-            throw;
-        }
+        Parser.Default.ParseArguments<ProgramOptions>(args).WithParsed(Startup);
     }
 
     [SuppressMessage("ReSharper", "RedundantTypeArgumentsOfMethod")]
     private static void Startup(ProgramOptions ProgramOptions)
     {
-        Options = ProgramOptions;
+        var token = Environment.GetEnvironmentVariable("DISCORD_BOT_TOKEN");
+        if (!string.IsNullOrEmpty(token) && string.IsNullOrEmpty(ProgramOptions.DiscordBotToken))
+        {
+            ProgramOptions.DiscordBotToken = token!;
+        }
+
         if (string.IsNullOrEmpty(ProgramOptions.DiscordBotToken))
         {
             throw new Exception("DiscordBotToken is empty");
@@ -51,14 +48,21 @@ internal static class Program
         builder.Services.AddSingleton<MessageMarkdownParser>();
         builder.Services.AddSingleton<MessageArtist>();
 
-        builder.Services.AddHostedService<ResourceFileWatch>();
+        // ResourceFileWatch отключён, потому что не функционирует корректно под Linux
+        // builder.Services.AddHostedService<ResourceFileWatch>();
         builder.Services.AddHostedService<ClearChatTimer>();
         builder.Services.AddHostedService<Bot>();
 
-        // Чтобы эта строка работала, надо отсутствие ASPNETCORE_URLS в переменных
+        var listenUrl = string.Format(
+            "http://{0}:{1}",
+            ProgramOptions.ListenGlobal ? "0.0.0.0" : "localhost",
+            ProgramOptions.HttpPort
+        );
+
+        // Чтобы эта строка работала, необходимо отсутствие ASPNETCORE_URLS в переменных
         builder.WebHost
             .PreferHostingUrls(false)
-            .UseUrls(string.Format("http://localhost:{0}", ProgramOptions.HttpPort));
+            .UseUrls(listenUrl);
 
         // Собираем готовое приложение из сервисов
         var app = builder.Build();

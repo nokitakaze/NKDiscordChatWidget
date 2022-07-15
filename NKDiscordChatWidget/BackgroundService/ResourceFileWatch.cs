@@ -43,6 +43,7 @@ namespace NKDiscordChatWidget.BackgroundService
 
         public void StartTask()
         {
+            // TODO: Этот код не функционирует под Linux по ему одному ведомой причине
             using var watcher1 = new FileSystemWatcher();
             watcher1.Path = ProgramOptions.WWWRoot;
 

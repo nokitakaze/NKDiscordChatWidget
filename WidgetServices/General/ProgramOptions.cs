@@ -6,11 +6,14 @@ namespace NKDiscordChatWidget.Services.General
 {
     public class ProgramOptions
     {
-        [Option('t', "discord-token", Required = true, HelpText = "Discord bot token")]
+        [Option('t', "discord-token", Required = false, HelpText = "Discord bot token")]
         public string DiscordBotToken { get; set; }
 
         [Option('p', "port", Required = false, HelpText = "Port for local HTTP server", Default = 5050)]
         public int HttpPort { get; set; }
+
+        [Option('g', "global", HelpText = "Listen entire net (otherwise only localhost)", Default = false)]
+        public bool ListenGlobal { get; set; }
 
         public static string WWWRoot
         {
@@ -28,7 +31,7 @@ namespace NKDiscordChatWidget.Services.General
                         return folder + "/wwwroot";
                     }
 
-                    folder = folder.Substring(0, folder.LastIndexOf('/')).TrimEnd('/');
+                    folder = folder[..folder.LastIndexOf('/')].TrimEnd('/');
                 } while (folder.Length > 3); // @todo поменять на правильный
 
                 return null;

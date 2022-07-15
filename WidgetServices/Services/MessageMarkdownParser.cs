@@ -58,11 +58,11 @@ namespace NKDiscordChatWidget.Services.Services
             foreach (var line in text.Split('\n'))
             {
                 var trimmedLine = line.TrimEnd('\r');
-                if ((trimmedLine.Length >= 2) && (trimmedLine.Substring(0, 2) == "> "))
+                if ((trimmedLine.Length >= 2) && (trimmedLine[..2] == "> "))
                 {
                     // Это кусок цитаты
                     currentQuoteHTML += string.Format("<div class='line'>{0}</div>",
-                        RenderLineAsHTML(trimmedLine.Substring(2), chatOption, mentions, guildID, usedEmbedsUrls));
+                        RenderLineAsHTML(trimmedLine[2..], chatOption, mentions, guildID, usedEmbedsUrls));
                     isInQuote = true;
                     continue;
                 }
@@ -475,15 +475,15 @@ namespace NKDiscordChatWidget.Services.Services
                     while (s != "")
                     {
                         var hex = s.Substring(1, 2);
-                        s = s.Substring(3);
+                        s = s[3..];
 
                         var b = byte.Parse(hex, System.Globalization.NumberStyles.HexNumber);
                         bytes.Add(b);
                     }
 
-                    var s1 = rawPath.Substring(0, m.Index);
+                    var s1 = rawPath[..m.Index];
                     var s2 = Encoding.UTF8.GetString(bytes.ToArray());
-                    var s3 = rawPath.Substring(m.Index + m.Length);
+                    var s3 = rawPath[(m.Index + m.Length)..];
                     rawPath = s1 + s2 + s3;
                 }
 
@@ -496,7 +496,7 @@ namespace NKDiscordChatWidget.Services.Services
 
                 if ((chatOption.short_anchor == 1) && (anchor.Length > 40))
                 {
-                    anchor = anchor.Substring(0, 37) + "...";
+                    anchor = anchor[..37] + "...";
                 }
 
                 // TODO: Иногда стирать всю ссылку, потому что она просто для превью картинки/видео
@@ -917,13 +917,13 @@ namespace NKDiscordChatWidget.Services.Services
         {
             text = rSingleAsterisk.Replace(text, m1 =>
             {
-                var firstChar = m1.Groups[1].Value.Substring(0, 1);
+                var firstChar = m1.Groups[1].Value[..1];
                 if (firstChar == " ")
                 {
                     return m1.Groups[0].Value;
                 }
 
-                var lastChar = m1.Groups[1].Value.Substring(m1.Groups[1].Value.Length - 1);
+                var lastChar = m1.Groups[1].Value[^1..];
                 if (lastChar == " ")
                 {
                     return m1.Groups[0].Value;

@@ -16,32 +16,24 @@ namespace NKDiscordChatWidget.Services.Util
 
         public static string GetImageExtension(EmojiPackType pack)
         {
-            switch (pack)
+            return pack switch
             {
-                case EmojiPackType.Twemoji:
-                    return "svg";
-                case EmojiPackType.JoyPixels:
-                    return "png";
-                case EmojiPackType.StandardOS:
-                    return "";
-                default:
-                    return "";
-            }
+                EmojiPackType.Twemoji => "svg",
+                EmojiPackType.JoyPixels => "png",
+                EmojiPackType.StandardOS => "",
+                _ => ""
+            };
         }
 
         public static string GetImageSubFolder(EmojiPackType pack)
         {
-            switch (pack)
+            return pack switch
             {
-                case EmojiPackType.Twemoji:
-                    return "twemoji";
-                case EmojiPackType.JoyPixels:
-                    return "joypixels";
-                case EmojiPackType.StandardOS:
-                    return "";
-                default:
-                    return "";
-            }
+                EmojiPackType.Twemoji => "twemoji",
+                EmojiPackType.JoyPixels => "joypixels",
+                EmojiPackType.StandardOS => "",
+                _ => ""
+            };
         }
 
         public static void LoadAllEmojiPacks(string WWWRoot)
@@ -51,8 +43,10 @@ namespace NKDiscordChatWidget.Services.Util
             {
                 var subFolder = GetImageSubFolder(pack);
                 var extension = GetImageExtension(pack);
+
                 emojiList[pack] =
-                    GetEmojiPacks(string.Format("{0}/images/emoji/{1}", WWWRoot, subFolder), extension);
+                    GetEmojiPacks(Path.Combine(WWWRoot, "images/emoji", subFolder), extension);
+                Console.WriteLine("Pack {0,-15} contains {1} emojis", pack, emojiList[pack].Length);
             }
 
             foreach (var id in Enum.GetValues(typeof(EmojiPackType)))
