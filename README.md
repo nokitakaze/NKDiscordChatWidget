@@ -37,7 +37,7 @@ services:
         environment:
             - DISCORD_BOT_TOKEN=NTXXXXXXXXXXXXXXXXXXXXXX.XXXXXX.XXXXXXXXXXXXXXXXXXXXXXXXXBI
 ```
-Than:
+Then:
 ```sh
 docker-compose up -d
 ```

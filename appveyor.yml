@@ -1,5 +1,11 @@
 image: Visual Studio 2022
 
+install:
+  - ps: Start-FileDownload 'https://nktkz.s3.eu-central-1.amazonaws.com/development/github/NKDiscordChatWidget/emoji.zip'
+  - ps: Start-FileDownload 'https://nktkz.s3.eu-central-1.amazonaws.com/development/github/NKDiscordChatWidget/node_modules.zip'
+  - ps: Expand-Archive -LiteralPath emoji.zip -DestinationPath wwwroot\images\
+  - ps: Expand-Archive -LiteralPath node_modules.zip -DestinationPath wwwroot\images\
+
 configuration:
   - Release
 
