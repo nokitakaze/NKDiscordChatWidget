@@ -9,7 +9,9 @@ wwwroot/images/emoji/
 wwwroot/images/node_modules/
 
 Dockerfile
-/appveyor.yml
-/.git
-/.gitignore
-/.idea
+appveyor.yml
+.git
+.gitignore
+.idea
+*.DotSettings.user
+README.md
