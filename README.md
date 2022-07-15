@@ -25,7 +25,7 @@ dotnet NKDiscordChatWidget.dll -p 5050 -t "LONG_DISCORD_BOT_TOKEN"
 Open the link http://127.0.0.1:5050/ in a browser (the port number is from the command line).
 Modify settings and pick the desired channel, copy the link to it into the "browser" plugin in your OBS.
 
-## As docker image
+### As docker image
 Your `docker-compose.yml`:
 ```yml
 version: "3"
