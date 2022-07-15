@@ -30,7 +30,7 @@ namespace NKDiscordChatWidget.Markdown.Test
         static MessageMarkdownParserTest()
         {
             UnicodeEmojiEngine.LoadAllEmojiPacks(ProgramOptions.WWWRoot);
-            randomWords = new List<string>()
+            randomWords = new List<string>
             {
                 "word1",
                 "word2",
@@ -45,28 +45,28 @@ namespace NKDiscordChatWidget.Markdown.Test
             {
                 id = guildID,
                 icon = "82000cc0465ffdf3d03bb09a6a79bc08",
-                emojis = new List<Emoji>()
+                emojis = new List<Emoji>
                 {
-                    new Emoji()
+                    new Emoji
                     {
                         id = "568685036979748865",
                         name = "st2",
                         require_colons = true,
                     },
-                    new Emoji()
+                    new Emoji
                     {
                         id = "568685037868810269",
                         name = "st1",
                         require_colons = true,
                     },
-                    new Emoji()
+                    new Emoji
                     {
                         id = "663446227550994452",
                         name = "box1",
                         animated = true,
                         require_colons = true,
                     },
-                    new Emoji()
+                    new Emoji
                     {
                         id = "663446228616478720",
                         name = "box2",
@@ -75,7 +75,7 @@ namespace NKDiscordChatWidget.Markdown.Test
                     },
                 },
                 channels = new List<EventGuildCreate.EventGuildCreate_Channel>(),
-                roles = new List<Role>()
+                roles = new List<Role>
                 {
                     new Role()
                     {
@@ -118,13 +118,13 @@ namespace NKDiscordChatWidget.Markdown.Test
                         position = 3,
                     },
                 },
-                members = new List<GuildMember>()
+                members = new List<GuildMember>
                 {
-                    new GuildMember()
+                    new GuildMember
                     {
                         nick = "北風",
                         roles = new List<string> { "568376310133424152", "633954441485221898" },
-                        user = new User()
+                        user = new User
                         {
                             avatar = "8a33053d4a3ef74577fdd4b21431ed2e",
                             discriminator = "2064",
@@ -132,11 +132,11 @@ namespace NKDiscordChatWidget.Markdown.Test
                             username = "nokitakaze",
                         },
                     },
-                    new GuildMember()
+                    new GuildMember
                     {
                         nick = null,
                         roles = new List<string> { "568217115031502868", "633965723764523028", "633954441485221898" },
-                        user = new User()
+                        user = new User
                         {
                             avatar = null,
                             discriminator = "0355",
@@ -290,7 +290,7 @@ namespace NKDiscordChatWidget.Markdown.Test
         {
             var result = new List<object[]>();
 
-            var htmlTemplate = new List<string>()
+            var htmlTemplate = new List<string>
             {
                 "<strong>{0}</strong>",
                 "<em>{0}</em>",
@@ -299,7 +299,7 @@ namespace NKDiscordChatWidget.Markdown.Test
                 "<u>{0}</u>",
                 "<em>{0}</em>",
             };
-            var markdownTemplate = new List<string>()
+            var markdownTemplate = new List<string>
             {
                 "**{0}**",
                 "*{0}*",
@@ -456,7 +456,7 @@ namespace NKDiscordChatWidget.Markdown.Test
         private static IEnumerable<object[]> GetInputs()
         {
             var result = new List<object[]>();
-            var inputs = new List<string[]>()
+            var inputs = new List<string[]>
             {
                 new[]
                 {
@@ -564,7 +564,7 @@ namespace NKDiscordChatWidget.Markdown.Test
         private static IEnumerable<object[]> GetQuoteCheck()
         {
             var result = new List<object[]>();
-            var inputs = new List<string[]>()
+            var inputs = new List<string[]>
             {
                 new[]
                 {
@@ -674,7 +674,7 @@ namespace NKDiscordChatWidget.Markdown.Test
 
                 result.Add(new object[]
                 {
-                    inputMarkdown.Substring(1),
+                    inputMarkdown[1..],
                     outputHTML,
                     chatOption,
                     mentions,
@@ -1000,7 +1000,7 @@ namespace NKDiscordChatWidget.Markdown.Test
                          new dynamic[]
                          {
                              "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg",
-                             new List<string>()
+                             new List<string>
                                  { "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg" },
                              "",
                              chatOptionShort
@@ -1008,7 +1008,7 @@ namespace NKDiscordChatWidget.Markdown.Test
                          new dynamic[]
                          {
                              "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg",
-                             new List<string>()
+                             new List<string>
                                  { "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg" },
                              "",
                              chatOptionNotShort
@@ -1031,7 +1031,7 @@ namespace NKDiscordChatWidget.Markdown.Test
                          new dynamic[]
                          {
                              "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5",
-                             new List<string>()
+                             new List<string>
                                  { "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg" },
                              " <a href='https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5' target='_blank'>https://ru.wikipedia.org/wiki/Википед...</a>",
                              chatOptionShort
@@ -1039,7 +1039,7 @@ namespace NKDiscordChatWidget.Markdown.Test
                          new dynamic[]
                          {
                              "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5",
-                             new List<string>()
+                             new List<string>
                                  { "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg" },
                              " <a href='https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5' target='_blank'>https://ru.wikipedia.org/wiki/Википедия:Введение</a>",
                              chatOptionNotShort
@@ -1047,7 +1047,7 @@ namespace NKDiscordChatWidget.Markdown.Test
                          new dynamic[]
                          {
                              "https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5",
-                             new List<string>()
+                             new List<string>
                                  { "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg" },
                              "<a href='https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5' target='_blank'>https://ru.wikipedia.org/wiki/Википед...</a>",
                              chatOptionShort
@@ -1055,7 +1055,7 @@ namespace NKDiscordChatWidget.Markdown.Test
                          new dynamic[]
                          {
                              "https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5",
-                             new List<string>()
+                             new List<string>
                                  { "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg" },
                              "<a href='https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5' target='_blank'>https://ru.wikipedia.org/wiki/Википедия:Введение</a>",
                              chatOptionNotShort
@@ -1063,7 +1063,7 @@ namespace NKDiscordChatWidget.Markdown.Test
                          new dynamic[]
                          {
                              "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5",
-                             new List<string>()
+                             new List<string>
                              {
                                  "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg",
                                  "https://media.discordapp.net/attachments/421392740970921996/599311410807439390/terminator-thumbs-up.gif"
@@ -1074,7 +1074,7 @@ namespace NKDiscordChatWidget.Markdown.Test
                          new dynamic[]
                          {
                              "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5",
-                             new List<string>()
+                             new List<string>
                              {
                                  "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg",
                                  "https://media.discordapp.net/attachments/421392740970921996/599311410807439390/terminator-thumbs-up.gif"
@@ -1085,7 +1085,7 @@ namespace NKDiscordChatWidget.Markdown.Test
                          new dynamic[]
                          {
                              "https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5",
-                             new List<string>()
+                             new List<string>
                              {
                                  "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg",
                                  "https://media.discordapp.net/attachments/421392740970921996/599311410807439390/terminator-thumbs-up.gif"
@@ -1096,7 +1096,7 @@ namespace NKDiscordChatWidget.Markdown.Test
                          new dynamic[]
                          {
                              "https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F:%D0%92%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5",
-                             new List<string>()
+                             new List<string>
                              {
                                  "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg",
                                  "https://media.discordapp.net/attachments/421392740970921996/599311410807439390/terminator-thumbs-up.gif"
@@ -1108,7 +1108,7 @@ namespace NKDiscordChatWidget.Markdown.Test
                          new dynamic[]
                          {
                              "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg https://media.discordapp.net/attachments/421392740970921996/599311410807439390/terminator-thumbs-up.gif",
-                             new List<string>()
+                             new List<string>
                              {
                                  "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg",
                                  "https://media.discordapp.net/attachments/421392740970921996/599311410807439390/terminator-thumbs-up.gif"
@@ -1119,7 +1119,7 @@ namespace NKDiscordChatWidget.Markdown.Test
                          new dynamic[]
                          {
                              "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg https://media.discordapp.net/attachments/421392740970921996/599311410807439390/terminator-thumbs-up.gif",
-                             new List<string>()
+                             new List<string>
                              {
                                  "https://cs7.pikabu.ru/post_img/big/2018/10/31/8/1540989921187952325.jpg",
                                  "https://media.discordapp.net/attachments/421392740970921996/599311410807439390/terminator-thumbs-up.gif"
@@ -1155,7 +1155,7 @@ namespace NKDiscordChatWidget.Markdown.Test
             };
 
             var result = new List<object[]>();
-            var htmls = new List<string>()
+            var htmls = new List<string>
             {
                 "<img>",
                 "<a></a>",

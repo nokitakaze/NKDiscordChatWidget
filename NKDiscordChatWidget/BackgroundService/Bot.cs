@@ -229,10 +229,10 @@ namespace NKDiscordChatWidget.BackgroundService
                     Dictionary<string, object> helloMessageData;
                     if ((sessionID != null) && false)
                     {
-                        helloMessageData = new Dictionary<string, object>()
+                        helloMessageData = new Dictionary<string, object>
                         {
                             ["op"] = 2,
-                            ["d"] = new Dictionary<string, object>()
+                            ["d"] = new Dictionary<string, object>
                             {
                                 ["token"] = ProgramOptions.DiscordBotToken,
                                 ["session_id"] = sessionID,
@@ -242,13 +242,13 @@ namespace NKDiscordChatWidget.BackgroundService
                     }
                     else
                     {
-                        helloMessageData = new Dictionary<string, object>()
+                        helloMessageData = new Dictionary<string, object>
                         {
                             ["op"] = 2,
-                            ["d"] = new Dictionary<string, object>()
+                            ["d"] = new Dictionary<string, object>
                             {
                                 ["token"] = ProgramOptions.DiscordBotToken,
-                                ["properties"] = new Dictionary<string, object>()
+                                ["properties"] = new Dictionary<string, object>
                                 {
                                     ["$os"] = System.Environment.OSVersion.ToString(),
                                 },

@@ -159,7 +159,7 @@ namespace NKDiscordChatWidget.DiscordModel
                     }
 
                     string extension = "png";
-                    if (this.avatar.Substring(0, 2) == "a_")
+                    if (this.avatar[..2] == "a_")
                     {
                         extension = "gif";
                     }

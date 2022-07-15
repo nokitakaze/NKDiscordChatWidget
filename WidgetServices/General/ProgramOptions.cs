@@ -31,7 +31,7 @@ namespace NKDiscordChatWidget.Services.General
                         return folder + "/wwwroot";
                     }
 
-                    folder = folder.Substring(0, folder.LastIndexOf('/')).TrimEnd('/');
+                    folder = folder[..folder.LastIndexOf('/')].TrimEnd('/');
                 } while (folder.Length > 3); // @todo поменять на правильный
 
                 return null;
