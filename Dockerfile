@@ -29,6 +29,9 @@ RUN dotnet publish -c Release -o /app
 
 # final stage/image
 FROM mcr.microsoft.com/dotnet/aspnet:6.0
+
+LABEL maintainer="Nokita Kaze <admin@kanaria.ru>"
+
 WORKDIR /app
 COPY ./wwwroot ./wwwroot/
 
