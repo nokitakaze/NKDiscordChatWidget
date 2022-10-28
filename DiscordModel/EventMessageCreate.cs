@@ -49,6 +49,8 @@ namespace NKDiscordChatWidget.DiscordModel
         /// </summary>
         public List<EventMessageCreate_Reaction> reactions;
 
+        public List<EventMessageCreate_Sticker> sticker_items;
+
         public DateTime timestampAsDT => DateTime.TryParse(this.timestamp, out var dt)
             ? dt.ToUniversalTime()
             : DateTime.MinValue;
@@ -59,10 +61,7 @@ namespace NKDiscordChatWidget.DiscordModel
 
         public void FixUp()
         {
-            if (this.reactions == null)
-            {
-                this.reactions = new List<EventMessageCreate_Reaction>();
-            }
+            this.reactions ??= new List<EventMessageCreate_Reaction>();
 
             foreach (var reaction in this.reactions)
             {
@@ -320,6 +319,40 @@ namespace NKDiscordChatWidget.DiscordModel
             public override string ToString()
             {
                 return emoji.ToString();
+            }
+        }
+
+        /// <summary>
+        /// https://discord.com/developers/docs/resources/sticker#sticker-item-object
+        /// </summary>
+        public class EventMessageCreate_Sticker
+        {
+            public string id;
+            public string name;
+            public Type format_type;
+
+            public string Url
+            {
+                get
+                {
+                    if (format_type != Type.PNG)
+                    {
+                        // TODO Другие форматы
+                        return null;
+                    }
+
+                    return string.Format(
+                        "https://media.discordapp.net/stickers/{0}.png?size=512",
+                        id
+                    );
+                }
+            }
+
+            public enum Type
+            {
+                PNG = 1,
+                APNG = 2,
+                LOTTIE = 3,
             }
         }
     }

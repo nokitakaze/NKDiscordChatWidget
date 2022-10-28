@@ -29,7 +29,7 @@ namespace NKDiscordChatWidget.Services.Services
         }
 
         /// <summary>
-        /// Получаем сырой текст с маркдауном и превращаем его в HTML-код
+        /// Получаем сырой текст всего сообщения с маркдауном и превращаем его в HTML-код
         /// </summary>
         /// <param name="text">Многострочный сырой текст с маркдауном</param>
         /// <param name="chatOption"></param>
@@ -45,10 +45,12 @@ namespace NKDiscordChatWidget.Services.Services
             HashSet<string> usedEmbedsUrls
         )
         {
-            // ReSharper disable once UseNullPropagation
-            if (text == null)
+            switch (text)
             {
-                return null;
+                case null:
+                    return null;
+                case "":
+                    return "<div class='line'></div>";
             }
 
             // hint: Цитаты в Дискорде ТОЛЬКО одноуровневые, поэтому парсер цитат нерекурсивный
@@ -168,7 +170,7 @@ namespace NKDiscordChatWidget.Services.Services
         #endregion
 
         /// <summary>
-        /// Обработка разметки текста ОДНОЙ СТРОКИ. Без использования цитат
+        /// Обработка разметки текста ОДНОЙ СТРОКИ сообщения. Без использования цитат
         /// </summary>
         /// <param name="text">Текст с сырым Markdown</param>
         /// <param name="chatOption">Опции чата, заданные стримером для виджета</param>
@@ -260,7 +262,7 @@ namespace NKDiscordChatWidget.Services.Services
         }
 
         /// <summary>
-        /// Обработка разметки сообщения внутри логического блока сообщения (root-сообщение, цитата, спойлер)
+        /// Обработка разметки сообщения внутри логического блока сообщения
         /// </summary>
         /// <param name="text">Текст с сырым Markdown</param>
         /// <param name="chatOption">Опции чата, заданные стримером для виджета</param>
@@ -1111,17 +1113,17 @@ namespace NKDiscordChatWidget.Services.Services
             _waitAlphabet = new List<char>();
             for (int c = '0'; c <= '9'; c++)
             {
-                _waitAlphabet.Add((char)c);
+                _waitAlphabet.Add((char) c);
             }
 
             for (int c = 'a'; c <= 'z'; c++)
             {
-                _waitAlphabet.Add((char)c);
+                _waitAlphabet.Add((char) c);
             }
 
             for (int c = 'A'; c <= 'Z'; c++)
             {
-                _waitAlphabet.Add((char)c);
+                _waitAlphabet.Add((char) c);
             }
         }
 

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -98,8 +97,8 @@ namespace NKDiscordChatWidget.Services.Services
             return new AnswerMessage()
             {
                 id = message.id,
-                time = ((DateTimeOffset)message.timestampAsDT).ToUnixTimeMilliseconds() * 0.001d,
-                time_update = ((DateTimeOffset)timeUpdate).ToUnixTimeMilliseconds() * 0.001d,
+                time = ((DateTimeOffset) message.timestampAsDT).ToUnixTimeMilliseconds() * 0.001d,
+                time_update = ((DateTimeOffset) timeUpdate).ToUnixTimeMilliseconds() * 0.001d,
                 html = html,
                 hash = sha1hash,
             };
@@ -123,7 +122,7 @@ namespace NKDiscordChatWidget.Services.Services
             bool containOnlyUnicodeAndSpace;
             {
                 var rEmojiWithinText = new Regex(@"<\:(.+?)\:([0-9]+)>", RegexOptions.Compiled);
-                long[] longs = { };
+                var longs = Array.Empty<long>();
                 if (message.content != null)
                 {
                     longs = Utf8ToUnicode.ToUnicodeCode(rEmojiWithinText.Replace(message.content, ""));
@@ -133,6 +132,20 @@ namespace NKDiscordChatWidget.Services.Services
             }
             string html = string.Format("<div class='content-direct {1}'>{0}</div>",
                 directContentHTML, containOnlyUnicodeAndSpace ? "only-emoji" : "");
+
+            if ((message.sticker_items?.Count ?? 0) > 0)
+            {
+                // Это сообщение со стикерами
+                var sticker = message.sticker_items[0];
+                if (sticker.Url != null)
+                {
+                    html = string.Format(
+                        "<div class='content-direct '><img src='{0}' style='max-height: 128px;' alt='{1}'></div>",
+                        HttpUtility.HtmlEncode(sticker.Url),
+                        HttpUtility.HtmlEncode(sticker.name)
+                    );
+                }
+            }
 
             // attachments
             if ((message.attachments != null) && message.attachments.Any() && (chatOption.attachments != 2))

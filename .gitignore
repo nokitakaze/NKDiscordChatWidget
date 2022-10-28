@@ -6,3 +6,4 @@ appsettings.*.json
 
 /wwwroot/images/emoji
 /wwwroot/images/node_modules
+/wwwroot/images/package-lock.json
