@@ -600,9 +600,9 @@ namespace NKDiscordChatWidget.Services.Services
         )
         {
             var thisGuildEmojis = new HashSet<string>();
-            foreach (var emoji in guild.emojis)
+            foreach (var emoji in guild.Emojis)
             {
-                thisGuildEmojis.Add(emoji.id);
+                thisGuildEmojis.Add(emoji.Id);
             }
 
             // Эмодзи внутри текста
@@ -663,7 +663,7 @@ namespace NKDiscordChatWidget.Services.Services
 
                 // ReSharper disable once SuggestVarOrType_SimpleTypes
                 EventMessageCreate.EventMessageCreate_Mention mention =
-                    mentions.FirstOrDefault(eMention => eMention.id == mentionID);
+                    mentions.FirstOrDefault(eMention => eMention.Id == mentionID);
 
                 if (mention == null)
                 {
@@ -672,16 +672,16 @@ namespace NKDiscordChatWidget.Services.Services
 
                 // Выбираем наиболее приоритетную роль
                 var nickColor = "inherit";
-                if ((guild.roles != null) && (mention.member?.roles != null) &&
+                if ((guild.Roles != null) && (mention.Member?.Roles != null) &&
                     (chatOption.message_mentions_style == 1))
                 {
                     var mention_roles_local =
-                        guild.roles.Where(t => mention.member.roles.Contains(t.id)).ToList();
-                    mention_roles_local.Sort((a, b) => b.position.CompareTo(a.position));
+                        guild.Roles.Where(t => mention.Member.Roles.Contains(t.Id)).ToList();
+                    mention_roles_local.Sort((a, b) => b.Position.CompareTo(a.Position));
                     var role = mention_roles_local.Any() ? mention_roles_local.First() : null;
                     if (role != null)
                     {
-                        nickColor = role.color.ToString("X");
+                        nickColor = role.Color.ToString("X");
                         nickColor = "#" + nickColor.PadLeft(6, '0');
                     }
                 }
@@ -690,7 +690,7 @@ namespace NKDiscordChatWidget.Services.Services
                 var wait = GetWaitString();
 
                 waitDictionary[wait] = string.Format("<span class='user mention' {1}>@{0}</span>",
-                    HttpUtility.HtmlEncode(mention.member?.nick ?? mention.username),
+                    HttpUtility.HtmlEncode(mention.Member?.Nick ?? mention.Username),
                     (chatOption.message_mentions_style == 1) ? string.Format(" style='color: {0};'", nickColor) : ""
                 );
 
@@ -720,18 +720,18 @@ namespace NKDiscordChatWidget.Services.Services
                 string roleID = m1.Groups[1].Value;
 
                 //
-                var role = guild.roles.FirstOrDefault(t => t.id == roleID);
+                var role = guild.Roles.FirstOrDefault(t => t.Id == roleID);
                 if (role == null)
                 {
                     return string.Format("<Role Unknown #{0}>", roleID);
                 }
 
-                string nickColor = role.color.ToString("X");
+                string nickColor = role.Color.ToString("X");
                 nickColor = "#" + nickColor.PadLeft(6, '0');
                 var wait = GetWaitString();
 
                 waitDictionary[wait] = string.Format("<span class='role mention' style='color: {1};'>@{0}</span>",
-                    HttpUtility.HtmlEncode(role.name),
+                    HttpUtility.HtmlEncode(role.Name),
                     nickColor
                 );
 

@@ -43,105 +43,105 @@ namespace NKDiscordChatWidget.Markdown.Test
 
             DiscordRepository.guilds[guildID] = new EventGuildCreate()
             {
-                id = guildID,
-                icon = "82000cc0465ffdf3d03bb09a6a79bc08",
-                emojis = new List<Emoji>
+                Id = guildID,
+                Icon = "82000cc0465ffdf3d03bb09a6a79bc08",
+                Emojis = new List<Emoji>
                 {
                     new Emoji
                     {
-                        id = "568685036979748865",
-                        name = "st2",
-                        require_colons = true,
+                        Id = "568685036979748865",
+                        Name = "st2",
+                        RequireColons = true,
                     },
                     new Emoji
                     {
-                        id = "568685037868810269",
-                        name = "st1",
-                        require_colons = true,
+                        Id = "568685037868810269",
+                        Name = "st1",
+                        RequireColons = true,
                     },
                     new Emoji
                     {
-                        id = "663446227550994452",
-                        name = "box1",
-                        animated = true,
-                        require_colons = true,
+                        Id = "663446227550994452",
+                        Name = "box1",
+                        Animated = true,
+                        RequireColons = true,
                     },
                     new Emoji
                     {
-                        id = "663446228616478720",
-                        name = "box2",
-                        animated = true,
-                        require_colons = true,
+                        Id = "663446228616478720",
+                        Name = "box2",
+                        Animated = true,
+                        RequireColons = true,
                     },
                 },
-                channels = new List<EventGuildCreate.EventGuildCreate_Channel>(),
-                roles = new List<Role>
+                Channels = new List<EventGuildCreate.EventGuildCreate_Channel>(),
+                Roles = new List<Role>
                 {
                     new Role()
                     {
-                        color = 0,
-                        id = "568216611366895631",
-                        name = "@everyone",
-                        permissions = 104324673,
-                        position = 0,
+                        Color = 0,
+                        Id = "568216611366895631",
+                        Name = "@everyone",
+                        Permissions = 104324673,
+                        Position = 0,
                     },
                     new Role()
                     {
-                        color = 1752220,
-                        id = "568217115031502868",
-                        name = "NKDiscordChatWidget",
-                        permissions = 1024,
-                        position = 1,
+                        Color = 1752220,
+                        Id = "568217115031502868",
+                        Name = "NKDiscordChatWidget",
+                        Permissions = 1024,
+                        Position = 1,
                     },
                     new Role()
                     {
-                        color = 15844367,
-                        id = "568376310133424152",
-                        name = "admins",
-                        permissions = 104324705,
-                        position = 4,
+                        Color = 15844367,
+                        Id = "568376310133424152",
+                        Name = "admins",
+                        Permissions = 104324705,
+                        Position = 4,
                     },
                     new Role()
                     {
-                        color = 10181046,
-                        id = "633965723764523028",
-                        name = "Фиолетовый",
-                        permissions = 104324673,
-                        position = 2,
+                        Color = 10181046,
+                        Id = "633965723764523028",
+                        Name = "Фиолетовый",
+                        Permissions = 104324673,
+                        Position = 2,
                     },
                     new Role()
                     {
-                        color = 15158332,
-                        id = "633954441485221898",
-                        name = "Orange men",
-                        permissions = 104324673,
-                        position = 3,
+                        Color = 15158332,
+                        Id = "633954441485221898",
+                        Name = "Orange men",
+                        Permissions = 104324673,
+                        Position = 3,
                     },
                 },
-                members = new List<GuildMember>
+                Members = new List<GuildMember>
                 {
                     new GuildMember
                     {
-                        nick = "北風",
-                        roles = new List<string> { "568376310133424152", "633954441485221898" },
-                        user = new User
+                        Nick = "北風",
+                        Roles = new List<string> { "568376310133424152", "633954441485221898" },
+                        User = new User
                         {
-                            avatar = "8a33053d4a3ef74577fdd4b21431ed2e",
-                            discriminator = "2064",
-                            id = "428567095563780107",
-                            username = "nokitakaze",
+                            Avatar = "8a33053d4a3ef74577fdd4b21431ed2e",
+                            Discriminator = "2064",
+                            Id = "428567095563780107",
+                            Username = "nokitakaze",
                         },
                     },
                     new GuildMember
                     {
-                        nick = null,
-                        roles = new List<string> { "568217115031502868", "633965723764523028", "633954441485221898" },
-                        user = new User
+                        Nick = null,
+                        Roles = new List<string> { "568217115031502868", "633965723764523028", "633954441485221898" },
+                        User = new User
                         {
-                            avatar = null,
-                            discriminator = "0355",
-                            id = "568138249986375682",
-                            username = "NKDiscordChatWidget",
+                            Avatar = null,
+                            Discriminator = "0355",
+                            Id = "568138249986375682",
+                            Username = "NKDiscordChatWidget",
                         },
                     },
                 },
@@ -492,13 +492,13 @@ namespace NKDiscordChatWidget.Markdown.Test
 
             var mentions = new List<EventMessageCreate.EventMessageCreate_Mention>();
             // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
-            foreach (var member in DiscordRepository.guilds[guildID].members)
+            foreach (var member in DiscordRepository.guilds[guildID].Members)
             {
                 mentions.Add(new EventMessageCreate.EventMessageCreate_Mention()
                 {
-                    member = member,
-                    username = member.user.username,
-                    id = member.user.id,
+                    Member = member,
+                    Username = member.User.Username,
+                    Id = member.User.Id,
                 });
             }
 
@@ -591,13 +591,13 @@ namespace NKDiscordChatWidget.Markdown.Test
 
             var mentions = new List<EventMessageCreate.EventMessageCreate_Mention>();
             // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
-            foreach (var member in DiscordRepository.guilds[guildID].members)
+            foreach (var member in DiscordRepository.guilds[guildID].Members)
             {
                 mentions.Add(new EventMessageCreate.EventMessageCreate_Mention()
                 {
-                    member = member,
-                    username = member.user.username,
-                    id = member.user.id,
+                    Member = member,
+                    Username = member.User.Username,
+                    Id = member.User.Id,
                 });
             }
 
@@ -880,13 +880,13 @@ namespace NKDiscordChatWidget.Markdown.Test
 
             var mentions = new List<EventMessageCreate.EventMessageCreate_Mention>();
             // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
-            foreach (var member in DiscordRepository.guilds[guildID].members)
+            foreach (var member in DiscordRepository.guilds[guildID].Members)
             {
                 mentions.Add(new EventMessageCreate.EventMessageCreate_Mention()
                 {
-                    member = member,
-                    username = member.user.username,
-                    id = member.user.id,
+                    Member = member,
+                    Username = member.User.Username,
+                    Id = member.User.Id,
                 });
             }
 

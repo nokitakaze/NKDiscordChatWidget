@@ -33,11 +33,11 @@ public class SmallController
             foreach (var channel in channels.Values)
             {
                 // ReSharper disable once SwitchStatementMissingSomeCases
-                switch (channel.type)
+                switch (channel.Type)
                 {
                     case 0:
                     {
-                        string parentId = channel.parent_id ?? "";
+                        string parentId = channel.ParentId ?? "";
                         if (!channelsByGroup.ContainsKey(parentId))
                         {
                             channelsByGroup[parentId] =
@@ -49,7 +49,7 @@ public class SmallController
                     }
 
                     case 4:
-                        groupPositions[channel.id] = channel.position ?? -1;
+                        groupPositions[channel.Id] = channel.Position ?? -1;
                         break;
                 }
             }
@@ -63,7 +63,7 @@ public class SmallController
                 if (parentChannelId != "")
                 {
                     guildHTML += string.Format("<li class='item'>{0}</li>",
-                        HttpUtility.HtmlEncode(channels[parentChannelId].name)
+                        HttpUtility.HtmlEncode(channels[parentChannelId].Name)
                     );
                 }
                 else
@@ -73,31 +73,31 @@ public class SmallController
 
                 localChannels.Sort((a, b) =>
                 {
-                    if (a.position == null)
+                    if (a.Position == null)
                     {
                         return -1;
                     }
 
                     // ReSharper disable once ConvertIfStatementToReturnStatement
-                    if (b.position == null)
+                    if (b.Position == null)
                     {
                         return 1;
                     }
 
-                    return a.position.Value.CompareTo(b.position.Value);
+                    return a.Position.Value.CompareTo(b.Position.Value);
                 });
 
                 guildHTML = localChannels.Aggregate(guildHTML, (current, realChannel) =>
                     current + string.Format(
                         "<li class='item-sub'><a href='/chat.cgi?guild={1}&channel={2}' " +
                         "data-guild-id='{1}' data-channel-id='{2}' target='_blank'>{0}</a></li>",
-                        HttpUtility.HtmlEncode(realChannel.name), guildID, realChannel.id));
+                        HttpUtility.HtmlEncode(realChannel.Name), guildID, realChannel.Id));
             }
 
             guildHTML = string.Format(
                 "<div class='block-guild'><h2><img src='{2}'> {1}</h2><ul>{0}</ul></div>",
                 guildHTML,
-                HttpUtility.HtmlEncode(DiscordRepository.guilds[guildID].name),
+                HttpUtility.HtmlEncode(DiscordRepository.guilds[guildID].Name),
                 HttpUtility.HtmlEncode(DiscordRepository.guilds[guildID].GetIconURL)
             );
             guildsHTML += guildHTML;

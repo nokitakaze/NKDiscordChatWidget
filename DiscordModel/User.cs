@@ -1,24 +1,42 @@
-using System.Diagnostics.CodeAnalysis;
+using Newtonsoft.Json;
 
-namespace NKDiscordChatWidget.DiscordModel
+namespace NKDiscordChatWidget.DiscordModel;
+
+/// <summary>
+/// https://discordapp.com/developers/docs/resources/user#user-object
+/// </summary>
+public class User
 {
-    /// <summary>
-    /// https://discordapp.com/developers/docs/resources/user#user-object
-    /// </summary>
-    [SuppressMessage("ReSharper", "UnassignedField.Global")]
-    [SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
-    public class User
-    {
-        public string id;
-        public string username;
-        public string discriminator;
-        public string avatar;
-        public bool bot;
-        public bool mfa_enabled;
-        public string locale;
-        public string email;
-        public bool verified;
-        public long flags;
-        public long premium_type;
-    }
+    [JsonProperty(PropertyName = "id")]
+    public string Id;
+        
+    [JsonProperty(PropertyName = "username")]
+    public string Username;
+        
+    [JsonProperty(PropertyName = "discriminator")]
+    public string Discriminator;
+        
+    [JsonProperty(PropertyName = "avatar")]
+    public string Avatar;
+        
+    [JsonProperty(PropertyName = "bot")]
+    public bool Bot;
+        
+    [JsonProperty(PropertyName = "mfa_enabled")]
+    public bool MfaEnabled;
+        
+    [JsonProperty(PropertyName = "locale")]
+    public string Locale;
+        
+    [JsonProperty(PropertyName = "email")]
+    public string Email;
+        
+    [JsonProperty(PropertyName = "verified")]
+    public bool Verified;
+        
+    [JsonProperty(PropertyName = "flags")]
+    public long Flags;
+        
+    [JsonProperty(PropertyName = "premium_type")]
+    public long PremiumType;
 }

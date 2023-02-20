@@ -25,7 +25,7 @@ namespace NKDiscordChatWidget.Services.Services
         public AnswerMessage DrawMessage(EventMessageCreate message, ChatDrawOption chatDrawOption)
         {
             string htmlContent = string.Format("<div class='content-message' data-id='{1}'>{0}</div>",
-                DrawMessageContent(message, chatDrawOption), message.id);
+                DrawMessageContent(message, chatDrawOption), message.Id);
             var timeUpdate = (message.edited_timestampAsDT != DateTime.MinValue)
                 ? message.edited_timestampAsDT
                 : message.timestampAsDT;
@@ -56,14 +56,14 @@ namespace NKDiscordChatWidget.Services.Services
             */
 
             string nickColor = "inherit";
-            if ((message.member != null) && (message.member.roles.Any()))
+            if ((message.Member != null) && (message.Member.Roles.Any()))
             {
-                var roles = Repository.guilds[message.guild_id].roles.ToList();
-                roles.Sort((a, b) => b.position.CompareTo(a.position));
-                var role = roles.FirstOrDefault(t => message.member.roles.Contains(t.id));
+                var roles = Repository.guilds[message.GuildId].Roles.ToList();
+                roles.Sort((a, b) => b.Position.CompareTo(a.Position));
+                var role = roles.FirstOrDefault(t => message.Member.Roles.Contains(t.Id));
                 if (role != null)
                 {
-                    nickColor = role.color.ToString("X");
+                    nickColor = role.Color.ToString("X");
                     nickColor = "#" + nickColor.PadLeft(6, '0');
                 }
             }
@@ -83,11 +83,11 @@ namespace NKDiscordChatWidget.Services.Services
                 "<div class='content-header'><span class='content-user' style='color: {4};'>{1}</span><span class='content-time'>{3:HH:mm:ss dd.MM.yyyy}</span></div>" +
                 "{2}" +
                 "</div><div style='clear: both;'></div><hr>",
-                HttpUtility.HtmlEncode(message.author.avatarURL),
+                HttpUtility.HtmlEncode(message.Author.avatarURL),
                 HttpUtility.HtmlEncode(
-                    (message.member != null) && !string.IsNullOrEmpty(message.member.nick)
-                        ? message.member.nick
-                        : message.author.username
+                    (message.Member != null) && !string.IsNullOrEmpty(message.Member.Nick)
+                        ? message.Member.Nick
+                        : message.Author.Username
                 ),
                 htmlContent,
                 drawDateTime,
@@ -96,7 +96,7 @@ namespace NKDiscordChatWidget.Services.Services
 
             return new AnswerMessage()
             {
-                id = message.id,
+                id = message.Id,
                 time = ((DateTimeOffset) message.timestampAsDT).ToUnixTimeMilliseconds() * 0.001d,
                 time_update = ((DateTimeOffset) timeUpdate).ToUnixTimeMilliseconds() * 0.001d,
                 html = html,
@@ -107,25 +107,25 @@ namespace NKDiscordChatWidget.Services.Services
         private string DrawMessageContent(EventMessageCreate message, ChatDrawOption chatOption)
         {
             var usedEmbedsUrls = new HashSet<string>();
-            foreach (var embed in message.embeds)
+            foreach (var embed in message.Embeds)
             {
-                usedEmbedsUrls.Add(embed.url);
+                usedEmbedsUrls.Add(embed.Url);
             }
 
-            var guildID = message.guild_id;
+            var guildID = message.GuildId;
             var guild = Repository.guilds[guildID];
-            var thisGuildEmojis = new HashSet<string>(guild.emojis.Select(emoji => emoji.id).ToList());
+            var thisGuildEmojis = new HashSet<string>(guild.Emojis.Select(emoji => emoji.Id).ToList());
 
             // Основной текст
             string directContentHTML = Parser.RenderMarkdownAsHTML(
-                message.content, chatOption, message.mentions, guildID, usedEmbedsUrls);
+                message.Content, chatOption, message.Mentions, guildID, usedEmbedsUrls);
             bool containOnlyUnicodeAndSpace;
             {
                 var rEmojiWithinText = new Regex(@"<\:(.+?)\:([0-9]+)>", RegexOptions.Compiled);
                 var longs = Array.Empty<long>();
-                if (message.content != null)
+                if (message.Content != null)
                 {
-                    longs = Utf8ToUnicode.ToUnicodeCode(rEmojiWithinText.Replace(message.content, ""));
+                    longs = Utf8ToUnicode.ToUnicodeCode(rEmojiWithinText.Replace(message.Content, ""));
                 }
 
                 containOnlyUnicodeAndSpace = Utf8ToUnicode.ContainOnlyUnicodeAndSpace(longs);
@@ -133,28 +133,28 @@ namespace NKDiscordChatWidget.Services.Services
             string html = string.Format("<div class='content-direct {1}'>{0}</div>",
                 directContentHTML, containOnlyUnicodeAndSpace ? "only-emoji" : "");
 
-            if ((message.sticker_items?.Count ?? 0) > 0)
+            if ((message.StickerItems?.Count ?? 0) > 0)
             {
                 // Это сообщение со стикерами
-                var sticker = message.sticker_items[0];
+                var sticker = message.StickerItems[0];
                 if (sticker.Url != null)
                 {
                     html = string.Format(
                         "<div class='content-direct '><img src='{0}' style='max-height: 128px;' alt='{1}'></div>",
                         HttpUtility.HtmlEncode(sticker.Url),
-                        HttpUtility.HtmlEncode(sticker.name)
+                        HttpUtility.HtmlEncode(sticker.Name)
                     );
                 }
             }
 
             // attachments
-            if ((message.attachments != null) && message.attachments.Any() && (chatOption.attachments != 2))
+            if ((message.Attachments != null) && message.Attachments.Any() && (chatOption.attachments != 2))
             {
                 string attachmentHTML = "";
 
-                foreach (var attachment in message.attachments)
+                foreach (var attachment in message.Attachments)
                 {
-                    var extension = attachment.filename.Split('.').Last().ToLowerInvariant();
+                    var extension = attachment.Filename.Split('.').Last().ToLowerInvariant();
                     // ReSharper disable once SwitchStatementMissingSomeCases
                     switch (extension)
                     {
@@ -163,7 +163,7 @@ namespace NKDiscordChatWidget.Services.Services
                             // TODO: Отображать размер видео
                             attachmentHTML += string.Format(
                                 "<div class='attachment {1}'><div class='attachment-wrapper'><video><source src='{0}'></video></div></div>",
-                                HttpUtility.HtmlEncode(attachment.proxy_url),
+                                HttpUtility.HtmlEncode(attachment.ProxyUrl),
                                 ((chatOption.attachments == 1) || attachment.IsSpoiler) ? "blur" : ""
                             );
                             break;
@@ -174,9 +174,9 @@ namespace NKDiscordChatWidget.Services.Services
                         case "png":
                             attachmentHTML += string.Format(
                                 "<div class='attachment {3}'><div class='attachment-wrapper'><img src='{0}' data-width='{1}' data-height='{2}'></div></div>",
-                                HttpUtility.HtmlEncode(attachment.proxy_url),
-                                attachment.width,
-                                attachment.height,
+                                HttpUtility.HtmlEncode(attachment.ProxyUrl),
+                                attachment.Width,
+                                attachment.Height,
                                 ((chatOption.attachments == 1) || attachment.IsSpoiler) ? "blur" : ""
                             );
                             break;
@@ -187,37 +187,37 @@ namespace NKDiscordChatWidget.Services.Services
             }
 
             // Preview
-            if ((message.embeds != null) && message.embeds.Any() && (chatOption.link_preview != 2))
+            if ((message.Embeds != null) && message.Embeds.Any() && (chatOption.link_preview != 2))
             {
                 string previewHTML = "";
 
-                foreach (var embed in message.embeds)
+                foreach (var embed in message.Embeds)
                 {
                     var subHTML = "";
-                    if (embed.provider != null)
+                    if (embed.Provider != null)
                     {
                         subHTML += string.Format("<div class='provider'>{0}</div>",
-                            HttpUtility.HtmlEncode(embed.provider.name));
+                            HttpUtility.HtmlEncode(embed.Provider.Name));
                     }
 
-                    if (embed.author != null)
+                    if (embed.Author != null)
                     {
                         subHTML += string.Format("<div class='author'>{0}</div>",
-                            HttpUtility.HtmlEncode(embed.author.name));
+                            HttpUtility.HtmlEncode(embed.Author.Name));
                     }
 
                     subHTML += string.Format("<div class='title'>{0}</div>",
-                        HttpUtility.HtmlEncode(embed.title));
+                        HttpUtility.HtmlEncode(embed.Title));
 
-                    if (embed.thumbnail != null)
+                    if (embed.Thumbnail != null)
                     {
                         subHTML += string.Format("<div class='preview'><img src='{0}' alt='{1}'></div>",
-                            HttpUtility.HtmlEncode(embed.thumbnail.proxy_url),
-                            HttpUtility.HtmlEncode("Превью для «" + embed.title + "»")
+                            HttpUtility.HtmlEncode(embed.Thumbnail.ProxyUrl),
+                            HttpUtility.HtmlEncode("Превью для «" + embed.Title + "»")
                         );
                     }
 
-                    var nickColor = embed.color.ToString("X");
+                    var nickColor = embed.Color.ToString("X");
                     nickColor = "#" + nickColor.PadLeft(6, '0');
 
                     previewHTML += string.Format(
@@ -226,7 +226,7 @@ namespace NKDiscordChatWidget.Services.Services
                         subHTML,
                         nickColor,
                         (chatOption.link_preview == 1) ? "blur" : "",
-                        string.IsNullOrEmpty(embed.title) ? "embed-content_no-title" : ""
+                        string.IsNullOrEmpty(embed.Title) ? "embed-content_no-title" : ""
                     );
                 }
 
@@ -235,15 +235,15 @@ namespace NKDiscordChatWidget.Services.Services
 
             // Реакции
             if (
-                (message.reactions != null) && message.reactions.Any() &&
+                (message.Reactions != null) && message.Reactions.Any() &&
                 ((chatOption.message_relative_reaction != 2) || (chatOption.message_stranger_reaction != 2))
             )
             {
                 // Реакции
                 var reactionHTMLs = new List<string>();
-                foreach (var reaction in message.reactions)
+                foreach (var reaction in message.Reactions)
                 {
-                    bool isRelative = ((reaction.emoji.id == null) || thisGuildEmojis.Contains(reaction.emoji.id));
+                    bool isRelative = ((reaction.Emoji.Id == null) || thisGuildEmojis.Contains(reaction.Emoji.Id));
                     int emojiShow = isRelative
                         ? chatOption.message_relative_reaction
                         : chatOption.message_stranger_reaction;
@@ -276,15 +276,15 @@ namespace NKDiscordChatWidget.Services.Services
             ChatDrawOption chatOption
         )
         {
-            if (reaction.emoji.id != null)
+            if (reaction.Emoji.Id != null)
             {
                 // Эмодзи из Дискорда (паки эмодзей с серверов)
                 reactionHTMLs.Add(string.Format(
                     "<div class='emoji {2}'><img src='{0}' alt=':{1}:'><span class='count'>{3}</span></div>",
-                    HttpUtility.HtmlEncode(reaction.emoji.URL),
-                    HttpUtility.HtmlEncode(reaction.emoji.name),
+                    HttpUtility.HtmlEncode(reaction.Emoji.URL),
+                    HttpUtility.HtmlEncode(reaction.Emoji.Name),
                     (emojiShow == 1) ? "blur" : "",
-                    reaction.count
+                    reaction.Count
                 ));
             }
             else
@@ -299,14 +299,14 @@ namespace NKDiscordChatWidget.Services.Services
                 }
                 else
                 {
-                    emojiHtml = HttpUtility.HtmlEncode(reaction.emoji.name);
+                    emojiHtml = HttpUtility.HtmlEncode(reaction.Emoji.Name);
                 }
 
                 reactionHTMLs.Add(string.Format(
                     "<div class='emoji {1}'>{0}<span class='count'>{2}</span></div>",
                     emojiHtml,
                     (emojiShow == 1) ? "blur" : "",
-                    reaction.count
+                    reaction.Count
                 ));
             }
         }
@@ -316,13 +316,13 @@ namespace NKDiscordChatWidget.Services.Services
             EmojiPackType emojiPack
         )
         {
-            var longs = Utf8ToUnicode.ToUnicodeCode(reaction.emoji.name);
+            var longs = Utf8ToUnicode.ToUnicodeCode(reaction.Emoji.Name);
             var u = longs.Any(code => !UnicodeEmojiEngine.IsInIntervalEmoji(code, emojiPack));
 
             if (u)
             {
                 // Реакция без ID, но при этом не является эмодзи, рисуем как есть
-                return HttpUtility.HtmlEncode(reaction.emoji.name);
+                return HttpUtility.HtmlEncode(reaction.Emoji.Name);
             }
 
             // Реакция без ID и является эмодзи, поэтому рисуем как картинку
@@ -350,7 +350,7 @@ namespace NKDiscordChatWidget.Services.Services
 
                 emojiHtml += string.Format("<img src='{0}' alt=':{1}:'>",
                     HttpUtility.HtmlEncode(url),
-                    HttpUtility.HtmlEncode(reaction.emoji.name)
+                    HttpUtility.HtmlEncode(reaction.Emoji.Name)
                 );
             }
 

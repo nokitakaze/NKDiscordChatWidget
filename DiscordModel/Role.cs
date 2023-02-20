@@ -1,3 +1,5 @@
+using Newtonsoft.Json;
+
 namespace NKDiscordChatWidget.DiscordModel
 {
     /// <summary>
@@ -5,13 +7,28 @@ namespace NKDiscordChatWidget.DiscordModel
     /// </summary>
     public class Role
     {
-        public string id;
-        public string name;
-        public long color;
-        public bool hoist;
-        public int position;
-        public long permissions;
-        public bool managed;
-        public bool mentionable;
+        [JsonProperty(PropertyName = "id")]
+        public string Id;
+        
+        [JsonProperty(PropertyName = "name")]
+        public string Name;
+        
+        [JsonProperty(PropertyName = "color")]
+        public long Color;
+        
+        [JsonProperty(PropertyName = "hoist")]
+        public bool Hoist;
+        
+        [JsonProperty(PropertyName = "position")]
+        public int Position;
+        
+        [JsonProperty(PropertyName = "permissions")]
+        public long Permissions;
+        
+        [JsonProperty(PropertyName = "managed")]
+        public bool Managed;
+        
+        [JsonProperty(PropertyName = "mentionable")]
+        public bool Mentionable;
     }
 }

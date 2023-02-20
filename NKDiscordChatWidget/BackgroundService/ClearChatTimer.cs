@@ -91,7 +91,7 @@ namespace NKDiscordChatWidget.BackgroundService
                     messages.Sort((a, b) => a.timestampAsDT.CompareTo(b.timestampAsDT));
                     for (int i = 0; i < messages.Count - MaximumMessagesPerChannelCount; i++)
                     {
-                        messagesInChannel.Remove(messages[i].id, out _);
+                        messagesInChannel.Remove(messages[i].Id, out _);
                     }
 
                     Console.WriteLine("{0}\tServer {1} channel {2}. {3} messages deleted",

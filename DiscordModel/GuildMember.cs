@@ -1,20 +1,28 @@
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
+using Newtonsoft.Json;
 
-namespace NKDiscordChatWidget.DiscordModel
+namespace NKDiscordChatWidget.DiscordModel;
+
+/// <summary>
+/// https://discordapp.com/developers/docs/resources/guild#guild-member-object
+/// </summary>
+public class GuildMember
 {
-    /// <summary>
-    /// https://discordapp.com/developers/docs/resources/guild#guild-member-object
-    /// </summary>
-    [SuppressMessage("ReSharper", "UnassignedField.Global")]
-    [SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
-    public class GuildMember
-    {
-        public User user;
-        public string nick;
-        public List<string> roles;
-        public string joined_at;
-        public bool deaf;
-        public bool mute;
-    }
+    [JsonProperty(PropertyName = "user")]
+    public User User;
+        
+    [JsonProperty(PropertyName = "nick")]
+    public string Nick;
+        
+    [JsonProperty(PropertyName = "roles")]
+    public List<string> Roles;
+        
+    [JsonProperty(PropertyName = "joined_at")]
+    public string JoinedAt;
+        
+    [JsonProperty(PropertyName = "deaf")]
+    public bool Deaf;
+        
+    [JsonProperty(PropertyName = "mute")]
+    public bool Mute;
 }

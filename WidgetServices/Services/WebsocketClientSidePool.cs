@@ -56,7 +56,7 @@ namespace NKDiscordChatWidget.Services.Services
             {
                 var localMessages = messages
                     .Where(message =>
-                        (client.GuildID == message.guild_id) && (client.ChannelID == message.channel_id))
+                        (client.GuildID == message.GuildId) && (client.ChannelID == message.ChannelId))
                     .ToArray();
 
                 if (!localMessages.Any())

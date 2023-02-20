@@ -1,15 +1,20 @@
-using System.Diagnostics.CodeAnalysis;
+using Newtonsoft.Json;
 
-namespace NKDiscordChatWidget.DiscordModel
+namespace NKDiscordChatWidget.DiscordModel;
+public class Reaction
 {
-    [SuppressMessage("ReSharper", "UnassignedField.Global")]
-    [SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
-    public class Reaction
-    {
-        public string user_id;
-        public string channel_id;
-        public string message_id;
-        public string guild_id;
-        public Emoji emoji;
-    }
+    [JsonProperty(PropertyName = "user_id")]
+    public string UserId;
+        
+    [JsonProperty(PropertyName = "channel_id")]
+    public string ChannelId;
+        
+    [JsonProperty(PropertyName = "message_id")]
+    public string MessageId;
+        
+    [JsonProperty(PropertyName = "guild_id")]
+    public string GuildId;
+        
+    [JsonProperty(PropertyName = "emoji")]
+    public Emoji Emoji;
 }

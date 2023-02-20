@@ -1,19 +1,15 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
+using Newtonsoft.Json;
 
-namespace NKDiscordChatWidget.DiscordModel
+namespace NKDiscordChatWidget.DiscordModel;
+
+/// <summary>
+/// https://discordapp.com/developers/docs/resources/channel#guild-ban-add
+/// </summary>
+public class EventGuildBanAdd
 {
-    /// <summary>
-    /// https://discordapp.com/developers/docs/resources/channel#guild-ban-add
-    /// </summary>
-    // ReSharper disable once ClassNeverInstantiated.Global
-    [SuppressMessage("ReSharper", "UnassignedField.Global")]
-    [SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
-    public class EventGuildBanAdd
-    {
-        public string guild_id;
-        public User user;
-    }
+    [JsonProperty(PropertyName = "guild_id")]
+    public string GuildId;
+        
+    [JsonProperty(PropertyName = "user")]
+    public User User;
 }

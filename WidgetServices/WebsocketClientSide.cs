@@ -83,7 +83,7 @@ namespace NKDiscordChatWidget.Services
                 messages.Sort((a, b) => a.timestampAsDT.CompareTo(b.timestampAsDT));
                 for (var i = Math.Max(messages.Count - 1000, 0); i < messages.Count; i++)
                 {
-                    answer.existedID.Add(messages[i].id);
+                    answer.existedID.Add(messages[i].Id);
                 }
 
                 // ReSharper disable once ForCanBeConvertedToForeach
